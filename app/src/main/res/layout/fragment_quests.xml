@@ -5,4 +5,11 @@
     tools:context="ru.coolone.travelquest.fragments.QuestsFragment"
     android:background="@color/colorAccent">
 
+    <com.google.android.gms.maps.MapView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/quests_map">
+
+    </com.google.android.gms.maps.MapView>
+
 </FrameLayout>
