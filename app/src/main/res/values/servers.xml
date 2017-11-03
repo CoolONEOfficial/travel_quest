@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+    <!ENTITY domainGlobal "bombards.ru">
+    <!ENTITY domainLocal "192.168.56.1">
+    <!ENTITY domain "&domainLocal;">
+    ]>
+<resources>
+    <!-- Servers urls -->
+
+    <string name="httpServerAuthority" translatable="false">&domain;:80/</string>
+    <string name="wsServerAuthority" translatable="false">&domain;:2342/</string>
+</resources>

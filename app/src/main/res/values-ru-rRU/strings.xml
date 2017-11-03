@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Navigation menu -->
     <string name="nav_about">Обратная связь</string>
     <string name="nav_settings">Настройки</string>
     <string name="nav_friends">Друзья</string>
     <string name="nav_messages">Сообщения</string>
     <string name="nav_quests">Квесты</string>
     <string name="nav_profile">Профиль</string>
+
+    <!-- Login -->
+
+    <string name="title_activity_login">Вход</string>
+    <string name="button_login">Вход</string>
+
+    <!-- Prompts -->
+    <string name="prompt_login">Логин или эл. почта</string>
+    <string name="prompt_password">Пароль</string>
+
+    <!-- Errors -->
+    <string name="error_login_incorrect">Этот логин некорректен</string>
+    <string name="error_password_incorrect">Этот пароль некорректен</string>
+    <string name="error_field_required">Это поле обязательно к заполнению</string>
+    <string name="permission_rationale">"Требуются права к контактам
+        для автодополнения адресов эл. почты"</string>
+    <string name="error_login">Логин и/или пароль неверны</string>
 </resources>

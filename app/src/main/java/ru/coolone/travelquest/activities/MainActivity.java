@@ -1,5 +1,8 @@
-package ru.coolone.travelquest;
+package ru.coolone.travelquest.activities;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -12,7 +15,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.activities.LoginActivity;
 import ru.coolone.travelquest.fragments.QuestsFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -29,16 +35,43 @@ public class MainActivity extends AppCompatActivity
         SETTINGS
     }
 
+    // Preferences
+    public static SharedPreferences preferences;
+
+    // Session key
+    public String sessionKey = "";
+
     // Fragments array
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
 
     // Drawer layout
     DrawerLayout drawer;
 
+    static final String EXTRA_SESSION_KEY = "sessionKey";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Intent intentInput = getIntent();
+
+        // Get preferences
+        preferences = getPreferences(MODE_PRIVATE);
+
+        // Session key
+        sessionKey = intentInput.getStringExtra(EXTRA_SESSION_KEY); // from bundle (default)
+        if(sessionKey == null || sessionKey.isEmpty())
+            sessionKey = preferences.getString(EXTRA_SESSION_KEY, ""); // from properties
+
+        if(sessionKey.isEmpty())
+        {
+            // Go to login
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+        }
+        else
+            Toast.makeText(this, "sessionKey: " + sessionKey, Toast.LENGTH_LONG).show();
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -72,6 +105,12 @@ public class MainActivity extends AppCompatActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
+
+        // Set default fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, fragmentArr.get(FragmentId.QUESTS.ordinal()))
+                .commit();
         return true;
     }
 
@@ -81,11 +120,6 @@ public class MainActivity extends AppCompatActivity
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
 
         return super.onOptionsItemSelected(item);
     }

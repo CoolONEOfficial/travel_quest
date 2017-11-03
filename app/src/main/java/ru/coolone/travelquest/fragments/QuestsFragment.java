@@ -62,6 +62,7 @@ public class QuestsFragment extends Fragment implements OnMapReadyCallback{
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Map view
         mapView = (MapView) view.findViewById(R.id.quests_map);
         if(mapView != null)
         {
