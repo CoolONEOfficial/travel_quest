@@ -1,0 +1,5 @@
+<resources>
+    <string name="settings_filename">settings</string>
+
+    <string name="settings_map_style_key">mapstyle</string>
+</resources>

@@ -1,12 +1,14 @@
 package ru.coolone.travelquest.fragments;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -14,11 +16,18 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MapStyleOptions;
+import com.google.android.gms.maps.model.PointOfInterest;
 
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.activities.MainActivity;
 
-public class QuestsFragment extends Fragment implements OnMapReadyCallback{
+public class QuestsFragment extends Fragment
+        implements OnMapReadyCallback, GoogleMap.OnPoiClickListener{
 
+    static final String TAG = QuestsFragment.class.getSimpleName();
+
+    // Map
     GoogleMap map;
     MapView mapView;
     View view;
@@ -30,23 +39,27 @@ public class QuestsFragment extends Fragment implements OnMapReadyCallback{
         // Required empty public constructor
     }
 
-    public static QuestsFragment newInstance(String param1, String param2) {
-        // TODO: args
-//        QuestsFragment fragment = new QuestsFragment();
-//        Bundle args = new Bundle();
-//        args.putString(ARG_PARAM1, param1);
-//        args.putString(ARG_PARAM2, param2);
-//        fragment.setArguments(args);
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Update map
+        if(map != null) {
+            updateMapStyle();
+        }
+    }
+
+    public static QuestsFragment newInstance() {
+        // Create fragment
         return new QuestsFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // TODO: args
 //        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
+//            // Map style
+//            mapStyle = getArguments().getString(ARG_MAP_STYLE);
 //        }
     }
 
@@ -63,7 +76,7 @@ public class QuestsFragment extends Fragment implements OnMapReadyCallback{
         super.onViewCreated(view, savedInstanceState);
 
         // Map view
-        mapView = (MapView) view.findViewById(R.id.quests_map);
+        mapView = view.findViewById(R.id.quests_map);
         if(mapView != null)
         {
             mapView.onCreate(null);
@@ -95,10 +108,52 @@ public class QuestsFragment extends Fragment implements OnMapReadyCallback{
         MapsInitializer.initialize(getContext());
 
         map = googleMap;
+
+        // Type
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        // Style
+        updateMapStyle();
+
+        // To Nuzhny Novgorod
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(56.326887, 44.005986),
                 14.0f));
+    }
+
+    @Override
+    public void onPoiClick(PointOfInterest poi) {
+        Toast.makeText(getActivity().getApplicationContext(),
+                        "Clicked: " + poi.name +
+                        "\nPlace ID:" + poi.placeId +
+                        "\nLatitude:" + poi.latLng.latitude +
+                        " Longitude:" + poi.latLng.longitude,
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateMapStyle() {
+        String mapStyle = "map_" + MainActivity.settings.getString(
+                getResources().getString(R.string.settings_map_style_key),
+                "black"
+        );
+
+        // Set style
+        try {
+            boolean styleValid = map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            getActivity().getApplicationContext(),
+                            getResources().getIdentifier(
+                                    mapStyle,
+                                    "raw",
+                                    getActivity().getPackageName())
+                    )
+            );
+
+            if (!styleValid)
+                Log.e(TAG, "Parse style failed");
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Find style failed. ", e);
+        }
     }
 
     // TODO: interface

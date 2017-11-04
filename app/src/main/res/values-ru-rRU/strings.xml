@@ -7,6 +7,7 @@
     <string name="nav_messages">Сообщения</string>
     <string name="nav_quests">Квесты</string>
     <string name="nav_profile">Профиль</string>
+    <string name="nav_achievements">Достижения</string>
 
     <!-- Login -->
 
@@ -24,4 +25,14 @@
     <string name="permission_rationale">"Требуются права к контактам
         для автодополнения адресов эл. почты"</string>
     <string name="error_login">Логин и/или пароль неверны</string>
+
+    <!-- Map styles -->
+    <string-array name="map_styles">
+        <item>Классическая</item>
+        <item>Темная</item>
+        <item>Ночная</item>
+        <item>Ретро</item>
+        <item>Solarized</item>
+        <item>Светлая</item>
+    </string-array>
 </resources>

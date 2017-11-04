@@ -72,25 +72,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Password
         mPasswordView = findViewById(R.id.password);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
+        mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
+            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                attemptLogin();
+                return true;
             }
+            return false;
         });
 
         // Login button
         Button loginButton = findViewById(R.id.button_login);
-        loginButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                attemptLogin();
-            }
-        });
+        loginButton.setOnClickListener(view -> attemptLogin());
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
@@ -113,13 +105,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
             Snackbar.make(mLoginView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
-                    .setAction(android.R.string.ok, new View.OnClickListener() {
-                        @Override
-                        @TargetApi(Build.VERSION_CODES.M)
-                        public void onClick(View v) {
-                            requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
-                        }
-                    });
+                    .setAction(android.R.string.ok, v -> requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS));
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
         }
@@ -222,45 +208,37 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             JsonObjectRequest jReq = new JsonObjectRequest(Request.Method.GET,
                     reqUrlStr,
                     null,
-                    new Response.Listener<JSONObject>() {
-                        @Override
-                        public void onResponse(JSONObject response) {
-                            showProgress(false);
+                    response -> {
+                        showProgress(false);
 
-                            boolean result = false;
+                        boolean result = false;
 
-                            String mSessionKey = "";
-                            try {
-                                // Get session key
-                                mSessionKey = response.getString("sessionKey");
-                                result = true;
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            if(result) {
-                                Toast.makeText(LoginActivity.this,
-                                        "Session key is " + mSessionKey,
-                                        Toast.LENGTH_LONG).show();
-
-                                // To quests activity
-                                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                                intent.putExtra("sessionKey", mSessionKey);
-                                startActivity(intent);
-                            } else {
-                                Toast.makeText(LoginActivity.this,
-                                        getResources().getString(R.string.error_login),
-                                        Toast.LENGTH_LONG).show();
-                            }
+                        String mSessionKey = "";
+                        try {
+                            // Get session key
+                            mSessionKey = response.getString("sessionKey");
+                            result = true;
+                        } catch (JSONException e) {
+                            e.printStackTrace();
                         }
-                    }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(LoginActivity.this,
-                                "Request to server error\n:(\n" + error.toString(),
-                                Toast.LENGTH_LONG).show();
-                    }
-            });
+
+                        if(result) {
+                            Toast.makeText(LoginActivity.this,
+                                    "Session key is " + mSessionKey,
+                                    Toast.LENGTH_LONG).show();
+
+                            // To quests activity
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            intent.putExtra("sessionKey", mSessionKey);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(LoginActivity.this,
+                                    getResources().getString(R.string.error_login),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                    }, error -> Toast.makeText(LoginActivity.this,
+                            "Request to server error:\n" + error.toString(),
+                            Toast.LENGTH_LONG).show());
 
             // Access the RequestQueue through your singleton class.
             queue.add(jReq);

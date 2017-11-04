@@ -2,11 +2,12 @@ package ru.coolone.travelquest.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -15,14 +16,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.activities.LoginActivity;
 import ru.coolone.travelquest.fragments.QuestsFragment;
+import ru.coolone.travelquest.fragments.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    public MainActivity() {
+    }
 
     // Fragments id
     enum FragmentId {
@@ -35,43 +38,53 @@ public class MainActivity extends AppCompatActivity
         SETTINGS
     }
 
+    // Fragments array
+    SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
+
+    // Default fragment
+    static final FragmentId FRAGMENT_DEFAULT = FragmentId.QUESTS;
+
     // Preferences
-    public static SharedPreferences preferences;
+    public static SharedPreferences settings;
 
     // Session key
     public String sessionKey = "";
-
-    // Fragments array
-    SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
 
     // Drawer layout
     DrawerLayout drawer;
 
     static final String EXTRA_SESSION_KEY = "sessionKey";
 
+//    private void setDefaultSettings() {
+//        // Map style
+//        settings.edit()
+//                .putString(getResources().getString(R.string.settings_map_style_key), "retro")
+//                .apply();
+//    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Get intent
         Intent intentInput = getIntent();
 
-        // Get preferences
-        preferences = getPreferences(MODE_PRIVATE);
+        // Get settings
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Session key
-        sessionKey = intentInput.getStringExtra(EXTRA_SESSION_KEY); // from bundle (default)
-        if(sessionKey == null || sessionKey.isEmpty())
-            sessionKey = preferences.getString(EXTRA_SESSION_KEY, ""); // from properties
+        sessionKey = intentInput.getStringExtra(EXTRA_SESSION_KEY); // from intent (default)
+        if (sessionKey == null || sessionKey.isEmpty())
+            sessionKey = settings.getString(
+                    getResources().getString(R.string.settings_map_style_key),
+                    ""); // from settings
 
-        if(sessionKey.isEmpty())
-        {
+        if (sessionKey.isEmpty()) {
             // Go to login
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
         }
-        else
-            Toast.makeText(this, "sessionKey: " + sessionKey, Toast.LENGTH_LONG).show();
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -89,7 +102,8 @@ public class MainActivity extends AppCompatActivity
         navigationView.setNavigationItemSelectedListener(this);
 
         // Fragments array
-        fragmentArr.put(FragmentId.QUESTS.ordinal(), new QuestsFragment());
+        fragmentArr.put(FragmentId.QUESTS.ordinal(), QuestsFragment.newInstance());
+        fragmentArr.put(FragmentId.SETTINGS.ordinal(), SettingsFragment.newInstance());
     }
 
     @Override
@@ -127,18 +141,22 @@ public class MainActivity extends AppCompatActivity
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        // TODO: handlers
-
+        // To fragment
         FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
-        switch (id)
-        {
+        FragmentId fragId = FRAGMENT_DEFAULT;
+        switch (id) {
             case R.id.nav_quests:
-                fragTrans.replace(R.id.fragment_container, fragmentArr.get(FragmentId.QUESTS.ordinal()));
+                fragId = FragmentId.QUESTS;
+                break;
+            case R.id.nav_settings:
+                fragId = FragmentId.SETTINGS;
+                break;
         }
-        fragTrans.commit();
+        fragTrans.replace(R.id.fragment_container,
+                fragmentArr.get(fragId.ordinal()))
+                .commit();
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
