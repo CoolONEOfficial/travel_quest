@@ -2,7 +2,6 @@ package ru.coolone.travelquest.activities;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Intent;
@@ -16,26 +15,20 @@ import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.view.KeyEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +42,8 @@ import static android.R.layout.simple_dropdown_item_1line;
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+
+    static final String TAG = LoginActivity.class.getSimpleName();
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -227,6 +222,9 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                     "Session key is " + mSessionKey,
                                     Toast.LENGTH_LONG).show();
 
+                            // Set default settings
+                            MainActivity.setDefaultSettings(LoginActivity.this.getApplicationContext());
+
                             // To quests activity
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.putExtra("sessionKey", mSessionKey);
@@ -242,9 +240,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             // Access the RequestQueue through your singleton class.
             queue.add(jReq);
-
-            //mAuthTask = new UserLoginTask(mLoginOrMail, mLoginMode, mPassword);
-            //mAuthTask.execute((Void) null);
         }
     }
 

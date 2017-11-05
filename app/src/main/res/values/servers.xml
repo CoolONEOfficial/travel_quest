@@ -1,6 +1,6 @@
 <!DOCTYPE resources [
     <!ENTITY domainGlobal "bombards.ru">
-    <!ENTITY domainLocal "192.168.56.1">
+    <!ENTITY domainLocal "192.168.1.2">
     <!ENTITY domain "&domainLocal;">
     ]>
 <resources>

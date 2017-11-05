@@ -1,7 +1,9 @@
 package ru.coolone.travelquest.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
@@ -23,6 +25,8 @@ import ru.coolone.travelquest.fragments.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    static final String TAG = MainActivity.class.getSimpleName();
 
     public MainActivity() {
     }
@@ -47,6 +51,14 @@ public class MainActivity extends AppCompatActivity
     // Preferences
     public static SharedPreferences settings;
 
+    public static void setDefaultSettings(Context context) {
+        // Map style
+        settings.edit()
+                .putString(context.getResources().getString(R.string.settings_map_style_key),
+                        context.getResources().getStringArray(R.array.settings_map_style_values)[0])
+                .apply();
+    }
+
     // Session key
     public String sessionKey = "";
 
@@ -54,13 +66,6 @@ public class MainActivity extends AppCompatActivity
     DrawerLayout drawer;
 
     static final String EXTRA_SESSION_KEY = "sessionKey";
-
-//    private void setDefaultSettings() {
-//        // Map style
-//        settings.edit()
-//                .putString(getResources().getString(R.string.settings_map_style_key), "retro")
-//                .apply();
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

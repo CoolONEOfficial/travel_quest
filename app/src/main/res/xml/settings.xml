@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ListPreference
-        android:entries="@array/map_styles"
+        android:entries="@array/map_style_titles"
         android:entryValues="@array/settings_map_style_values"
         android:key="@string/settings_map_style_key"
         android:summary="@string/settings_map_style_summary"

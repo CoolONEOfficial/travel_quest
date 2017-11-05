@@ -37,19 +37,17 @@
     <!-- Map styles -->
     <string name="settings_map_style_summary">Map color scheme</string>
     <string name="settings_map_style">Map style</string>
-    <string-array name="map_styles">
-        <item>Classic</item>
-        <item>Dark</item>
-        <item>Night</item>
+    <string-array name="map_style_titles">
         <item>Retro</item>
+        <item>Classic</item>
+        <item>Night</item>
         <item>Solarized</item>
         <item>White</item>
     </string-array>
     <string-array name="settings_map_style_values" translatable="false">
-        <item>сlassic</item>
-        <item>dark</item>
-        <item>night</item>
         <item>retro</item>
+        <item>сlassic</item>
+        <item>night</item>
         <item>solarized</item>
         <item>white</item>
     </string-array>

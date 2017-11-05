@@ -132,27 +132,35 @@ public class QuestsFragment extends Fragment
     }
 
     private void updateMapStyle() {
-        String mapStyle = "map_" + MainActivity.settings.getString(
+        // Get style
+        String mapStyle = MainActivity.settings.getString(
                 getResources().getString(R.string.settings_map_style_key),
-                "black"
+                null
         );
 
-        // Set style
-        try {
-            boolean styleValid = map.setMapStyle(
-                    MapStyleOptions.loadRawResourceStyle(
-                            getActivity().getApplicationContext(),
-                            getResources().getIdentifier(
-                                    mapStyle,
-                                    "raw",
-                                    getActivity().getPackageName())
-                    )
-            );
+        if(mapStyle == null) {
+            Log.e(TAG, "Map style by \"R.string.settings_map_style_key\" not found!");
+        } else {
+            // Add prefix
+            mapStyle = "map_" + mapStyle;
 
-            if (!styleValid)
-                Log.e(TAG, "Parse style failed");
-        } catch (Resources.NotFoundException e) {
-            Log.e(TAG, "Find style failed. ", e);
+            // Set style
+            try {
+                boolean styleValid = map.setMapStyle(
+                        MapStyleOptions.loadRawResourceStyle(
+                                getActivity().getApplicationContext(),
+                                getResources().getIdentifier(
+                                        mapStyle,
+                                        "raw",
+                                        getActivity().getPackageName())
+                        )
+                );
+
+                if (!styleValid)
+                    Log.e(TAG, "Parse style failed");
+            } catch (Resources.NotFoundException e) {
+                Log.e(TAG, "Find style \"" + mapStyle + "\" failed", e);
+            }
         }
     }
 
