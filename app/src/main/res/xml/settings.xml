@@ -9,4 +9,3 @@
         android:summary="@string/settings_map_style_summary"
         android:title="@string/settings_map_style" />
 </PreferenceScreen>
-

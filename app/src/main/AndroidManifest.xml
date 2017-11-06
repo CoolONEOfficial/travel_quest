@@ -30,13 +30,13 @@
             </intent-filter>
         </activity>
 
-        <meta-data
-            android:name="com.google.android.geo.API_KEY"
-            android:value="${googleMapApiKey}" />
-
         <activity
             android:name=".activities.LoginActivity"
             android:label="@string/title_activity_login" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="${googleMapApiKey}" />
     </application>
 
 </manifest>

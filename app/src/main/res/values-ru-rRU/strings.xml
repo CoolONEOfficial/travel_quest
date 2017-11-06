@@ -25,13 +25,4 @@
     <string name="permission_rationale">"Требуются права к контактам
         для автодополнения адресов эл. почты"</string>
     <string name="error_login">Логин и/или пароль неверны</string>
-
-    <!-- Map styles -->
-    <string-array name="map_styles">
-        <item>Классическая</item>
-        <item>Ночная</item>
-        <item>Ретро</item>
-        <item>Solarized</item>
-        <item>Светлая</item>
-    </string-array>
 </resources>

@@ -5,11 +5,13 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.Serializable;
+import java.util.List;
 
 public class Quest implements Serializable {
 
     Quest(LatLng coord,
           String name,
+          List<Integer> types,
           String description) {
         // Coord
         this.coord = coord;
@@ -19,6 +21,17 @@ public class Quest implements Serializable {
 
         // Description
         this.description = description;
+    }
+
+    // Types
+    private List<Integer> types;
+
+    public List<Integer> getTypes() {
+        return types;
+    }
+
+    public void setTypes(List<Integer> types) {
+        this.types = types;
     }
 
     // Name

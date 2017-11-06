@@ -1,15 +1,39 @@
 package ru.coolone.travelquest.fragments;
 
+import android.animation.StateListAnimator;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
+import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
+import com.google.android.gms.location.places.GeoDataApi;
+import com.google.android.gms.location.places.GeoDataClient;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -18,12 +42,16 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.activities.MainActivity;
+import ru.coolone.travelquest.fragments.quests.QuestDetailsFragment;
 
 public class QuestsFragment extends Fragment
-        implements OnMapReadyCallback, GoogleMap.OnPoiClickListener{
+        implements OnMapReadyCallback,
+        GoogleMap.OnPoiClickListener,
+        PlaceSelectionListener {
 
     static final String TAG = QuestsFragment.class.getSimpleName();
 
@@ -32,21 +60,11 @@ public class QuestsFragment extends Fragment
     MapView mapView;
     View view;
 
-    // TODO: interface
-//    private OnFragmentInteractionListener mListener;
+    // Floating layout
+    FrameLayout slidingLayout;
 
     public QuestsFragment() {
         // Required empty public constructor
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        // Update map
-        if(map != null) {
-            updateMapStyle();
-        }
     }
 
     public static QuestsFragment newInstance() {
@@ -57,6 +75,9 @@ public class QuestsFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+//        geoDataClient = Places.getGeoDataClient(getActivity());
+
 //        if (getArguments() != null) {
 //            // Map style
 //            mapStyle = getArguments().getString(ARG_MAP_STYLE);
@@ -68,6 +89,36 @@ public class QuestsFragment extends Fragment
                              Bundle savedInstanceState) {
         // Inflate layout
         view = inflater.inflate(R.layout.fragment_quests, container, false);
+
+        // Create toolbar
+        if (toolbarView != null) {
+            ViewGroup parent = (ViewGroup) toolbarView.getParent();
+            if (parent != null)
+                parent.removeView(toolbarView);
+        }
+        try {
+            Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
+            toolbarView = getActivity().getLayoutInflater().inflate(R.layout.fragment_quests_toolbar,
+                    toolbar.findViewById(R.id.toolbar_container),
+                    false);
+        } catch (InflateException e) {
+            e.printStackTrace();
+        }
+
+        // Autocomplete fragment
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+                getActivity().getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
+        // Autocomplete filter
+        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .build();
+        autocompleteFragment.setFilter(typeFilter);
+        autocompleteFragment.setOnPlaceSelectedListener(this);
+
+        // Floating layout
+        slidingLayout = view.findViewById(R.id.sliding_container);
+
         return  view;
     }
 
@@ -77,30 +128,9 @@ public class QuestsFragment extends Fragment
 
         // Map view
         mapView = view.findViewById(R.id.quests_map);
-        if(mapView != null)
-        {
-            mapView.onCreate(null);
-            mapView.onResume();
-            mapView.getMapAsync(this);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        // TODO: interface
-//        if (context instanceof OnFragmentInteractionListener) {
-//            mListener = (OnFragmentInteractionListener) context;
-//        } else {
-//            throw new RuntimeException(context.toString()
-//                    + " must implement OnFragmentInteractionListener");
-//        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-//        mListener = null;
+        mapView.onCreate(null);
+        mapView.onResume();
+        mapView.getMapAsync(this);
     }
 
     @Override
@@ -119,16 +149,9 @@ public class QuestsFragment extends Fragment
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(56.326887, 44.005986),
                 14.0f));
-    }
 
-    @Override
-    public void onPoiClick(PointOfInterest poi) {
-        Toast.makeText(getActivity().getApplicationContext(),
-                        "Clicked: " + poi.name +
-                        "\nPlace ID:" + poi.placeId +
-                        "\nLatitude:" + poi.latLng.latitude +
-                        " Longitude:" + poi.latLng.longitude,
-                Toast.LENGTH_SHORT).show();
+        // Listen poi clicks
+        googleMap.setOnPoiClickListener(this);
     }
 
     private void updateMapStyle() {
@@ -164,8 +187,91 @@ public class QuestsFragment extends Fragment
         }
     }
 
-    // TODO: interface
-//    public interface OnFragmentInteractionListener {
-//        void onFragmentInteraction(Uri uri);
-//    }
+    @Override
+    public void onPoiClick(PointOfInterest poi) {
+        Log.d(TAG, "Poi " + poi.name + " clicked!");
+
+        // Find place by id (from poi)
+        Places.GeoDataApi.getPlaceById(MainActivity.apiClient, poi.placeId)
+                .setResultCallback(places -> {
+                    if(places.getStatus().isSuccess() &&
+                            places.getCount() > 0) {
+                        // Select place
+                        onPlaceSelected(places.get(0));
+                    }
+                });
+    }
+
+    @Override
+    public void onPlaceSelected(Place place) {
+        Toast.makeText(getActivity(),
+                "Place selected: " + place.getName(),
+                Toast.LENGTH_LONG).show();
+
+        // Go to place
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                place.getLatLng(),
+                14.0f));
+
+        // - Show details -
+
+        // Create details fragment
+        Fragment detailsFragment = QuestDetailsFragment.newInstance(getActivity(), place);
+
+        // Set
+        FragmentTransaction fragTrans = getFragmentManager().
+                beginTransaction();
+        fragTrans.replace(R.id.sliding_container,
+                detailsFragment);
+        fragTrans.commit();
+
+        // Show
+        SlidingUpPanelLayout slidingPanel = getActivity().findViewById(R.id.sliding_panel);
+
+        Toast.makeText(getActivity(),
+                "Name: " + place.getName(),
+                Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onError(Status status) {
+        Toast.makeText(getActivity(),
+                "Error place select: " + status.getStatusMessage(),
+                Toast.LENGTH_LONG).show();
+    }
+
+    // Toolbar view with search
+    View toolbarView;
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Get toolbar layout
+        LinearLayout toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
+
+        // Delete old toolbar search
+        ViewParent toolbarViewParent = toolbarView.getParent();
+        if(toolbarViewParent != null)
+            ((ViewGroup)toolbarViewParent).removeView(toolbarView);
+
+        // Add toolbar search
+        toolbarContainer.addView(toolbarView);
+
+        // Update map
+        if(map != null) {
+            updateMapStyle();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // Get toolbar and toolbar view
+        LinearLayout toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
+
+        // Remove toolbar search
+        toolbarContainer.removeView(toolbarView);
+    }
 }

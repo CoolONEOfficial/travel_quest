@@ -1,15 +1,29 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="ru.coolone.travelquest.fragments.QuestsFragment"
-    android:background="@color/colorAccent">
+    android:background="@color/primary">
 
-    <com.google.android.gms.maps.MapView
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        xmlns:sothree="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/sliding_panel"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/quests_map">
+        android:gravity="bottom" >
 
-    </com.google.android.gms.maps.MapView>
+        <com.google.android.gms.maps.MapView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/quests_map"
+            android:gravity="center" />
 
-</FrameLayout>
+        <FrameLayout
+            android:id="@+id/sliding_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center|top" />
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+</RelativeLayout>
