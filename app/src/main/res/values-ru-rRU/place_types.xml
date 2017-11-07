@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="TYPE_MUSEUM">Музей</string>
+    <string name="TYPE_PARK">Парк</string>
+    <string name="TYPE_RESTAURANT">Ресторан</string>
+    <string name="TYPE_SCHOOL">Школа</string>
+    <string name="TYPE_STADIUM">Стадион</string>
+    <string name="TYPE_STORE">Магазин</string>
+    <string name="TYPE_TRAIN_STATION">Железнодорожная станция</string>
+    <string name="TYPE_UNIVERSITY">Университет</string>
+    <string name="TYPE_ZOO">Зоопарк</string>
+    <string name="TYPE_PLACE_OF_WORSHIP">Памятник</string>
+    <string name="TYPE_GYM">Спортзал</string>
+    <string name="TYPE_CASINO">Казино</string>
+    <string name="TYPE_ART_GALLERY">Художественная галерея</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_1">Админинстративное здание</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_2">Админинстративное здание</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_3">Админинстративное здание</string>
+    <string name="TYPE_AMUSEMENT_PARK">Парк развлечений</string>
+    <string name="TYPE_AQUARIUM">Аквариум</string>
+</resources>

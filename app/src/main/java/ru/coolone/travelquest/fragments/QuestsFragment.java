@@ -1,15 +1,9 @@
 package ru.coolone.travelquest.fragments;
 
-import android.animation.StateListAnimator;
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.InflateException;
@@ -21,18 +15,11 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
-import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.AutocompleteFilter;
-import com.google.android.gms.location.places.GeoDataApi;
-import com.google.android.gms.location.places.GeoDataClient;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -60,8 +47,11 @@ public class QuestsFragment extends Fragment
     MapView mapView;
     View view;
 
-    // Floating layout
+    // Sliding layout
     FrameLayout slidingLayout;
+
+    // Sliding panel
+    SlidingUpPanelLayout slidingPanel;
 
     public QuestsFragment() {
         // Required empty public constructor
@@ -116,8 +106,11 @@ public class QuestsFragment extends Fragment
         autocompleteFragment.setFilter(typeFilter);
         autocompleteFragment.setOnPlaceSelectedListener(this);
 
-        // Floating layout
+        // Sliding layout
         slidingLayout = view.findViewById(R.id.sliding_container);
+
+        // Sliding panel
+        slidingPanel = view.findViewById(R.id.sliding_panel);
 
         return  view;
     }
@@ -226,11 +219,8 @@ public class QuestsFragment extends Fragment
         fragTrans.commit();
 
         // Show
-        SlidingUpPanelLayout slidingPanel = getActivity().findViewById(R.id.sliding_panel);
-
-        Toast.makeText(getActivity(),
-                "Name: " + place.getName(),
-                Toast.LENGTH_LONG).show();
+        if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
     @Override

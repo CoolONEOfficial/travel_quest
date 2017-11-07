@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="TYPE_MUSEUM">Museum</string>
+    <string name="TYPE_PARK">Park</string>
+    <string name="TYPE_RESTAURANT">Restaurant</string>
+    <string name="TYPE_SCHOOL">School</string>
+    <string name="TYPE_STADIUM">Stadium</string>
+    <string name="TYPE_STORE">Store</string>
+    <string name="TYPE_TRAIN_STATION">Train station</string>
+    <string name="TYPE_UNIVERSITY">University</string>
+    <string name="TYPE_ZOO">Zoo</string>
+    <string name="TYPE_PLACE_OF_WORSHIP">Place of worship</string>
+    <string name="TYPE_GYM">Gym</string>
+    <string name="TYPE_CASINO">Casino</string>
+    <string name="TYPE_ART_GALLERY">Art gallery</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_1">Administrative area</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_2">Administrative area</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_3">Administrative area</string>
+    <string name="TYPE_AMUSEMENT_PARK">Amusement park</string>
+    <string name="TYPE_AQUARIUM">Aquarium</string>
+</resources>

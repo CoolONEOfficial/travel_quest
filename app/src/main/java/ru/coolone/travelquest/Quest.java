@@ -1,5 +1,6 @@
 package ru.coolone.travelquest;
 
+import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -56,7 +57,7 @@ public class Quest implements Serializable {
         this.description = description;
     }
 
-    // - Coordinate -
+    // Coordinate
 
     private LatLng coord;
 
@@ -66,6 +67,17 @@ public class Quest implements Serializable {
 
     public void setCoord(LatLng coord) {
         this.coord = coord;
+    }
+
+    // Photos
+    private PlacePhotoMetadataResult photos;
+
+    public PlacePhotoMetadataResult getPhotos() {
+        return photos;
+    }
+
+    public void setPhotos(PlacePhotoMetadataResult photos) {
+        this.photos = photos;
     }
 
     // Add self to map
