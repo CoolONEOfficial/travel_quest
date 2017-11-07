@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity
         QUESTS,
         SETTINGS
     }
+    static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
 
     // Fragments array
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity
         // Set default fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragmentArr.get(FragmentId.QUESTS.ordinal()))
+                .replace(R.id.fragment_container, fragmentArr.get(FRAGMENT_DEFAULT_ID.ordinal()))
                 .commit();
         return true;
     }
