@@ -1,10 +1,13 @@
 package ru.coolone.travelquest.fragments;
 
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
+import android.text.Layout;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
@@ -75,7 +78,7 @@ public class QuestsFragment extends Fragment
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate layout
         view = inflater.inflate(R.layout.fragment_quests, container, false);
@@ -111,12 +114,34 @@ public class QuestsFragment extends Fragment
 
         // Sliding panel
         slidingPanel = view.findViewById(R.id.sliding_panel);
+        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
 
-        return  view;
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel,
+                                            SlidingUpPanelLayout.PanelState previousState,
+                                            SlidingUpPanelLayout.PanelState newState) {
+                LinearLayout panelLayout = getActivity().findViewById(R.id.layout_details_head);
+                switch (newState) {
+                    case HIDDEN:
+                        map.setPadding(0, 0,
+                                0,0);
+                        break;
+                    default:
+                        map.setPadding(0, 0,
+                                0, panelLayout.getHeight());
+                }
+            }
+        });
+
+        return view;
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         // Map view
@@ -141,7 +166,7 @@ public class QuestsFragment extends Fragment
         // To Nuzhny Novgorod
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 new LatLng(56.326887, 44.005986),
-                14.0f));
+                getResources().getDimension(R.dimen.map_zoom)));
 
         // Listen poi clicks
         googleMap.setOnPoiClickListener(this);
@@ -154,7 +179,7 @@ public class QuestsFragment extends Fragment
                 null
         );
 
-        if(mapStyle == null) {
+        if (mapStyle == null) {
             Log.e(TAG, "Map style by \"R.string.settings_map_style_key\" not found!");
         } else {
             // Add prefix
@@ -187,7 +212,7 @@ public class QuestsFragment extends Fragment
         // Find place by id (from poi)
         Places.GeoDataApi.getPlaceById(MainActivity.apiClient, poi.placeId)
                 .setResultCallback(places -> {
-                    if(places.getStatus().isSuccess() &&
+                    if (places.getStatus().isSuccess() &&
                             places.getCount() > 0) {
                         // Select place
                         onPlaceSelected(places.get(0));
@@ -197,14 +222,15 @@ public class QuestsFragment extends Fragment
 
     @Override
     public void onPlaceSelected(Place place) {
-        Toast.makeText(getActivity(),
-                "Place selected: " + place.getName(),
-                Toast.LENGTH_LONG).show();
-
         // Go to place
+        float currentZoom = map.getCameraPosition().zoom;
+        float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                 place.getLatLng(),
-                14.0f));
+                (currentZoom < defaultZoom)
+                        ? defaultZoom
+                        : currentZoom
+        ));
 
         // - Show details -
 
@@ -212,14 +238,13 @@ public class QuestsFragment extends Fragment
         Fragment detailsFragment = QuestDetailsFragment.newInstance(getActivity(), place);
 
         // Set
-        FragmentTransaction fragTrans = getFragmentManager().
-                beginTransaction();
+        FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
         fragTrans.replace(R.id.sliding_container,
                 detailsFragment);
         fragTrans.commit();
 
         // Show
-        if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
+        if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
@@ -242,14 +267,14 @@ public class QuestsFragment extends Fragment
 
         // Delete old toolbar search
         ViewParent toolbarViewParent = toolbarView.getParent();
-        if(toolbarViewParent != null)
-            ((ViewGroup)toolbarViewParent).removeView(toolbarView);
+        if (toolbarViewParent != null)
+            ((ViewGroup) toolbarViewParent).removeView(toolbarView);
 
         // Add toolbar search
         toolbarContainer.addView(toolbarView);
 
         // Update map
-        if(map != null) {
+        if (map != null) {
             updateMapStyle();
         }
     }

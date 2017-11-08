@@ -2,18 +2,11 @@
     <!-- Map styles -->
     <string name="settings_map_style">Стиль карты</string>
     <string name="settings_map_style_summary">Цветовая схема карты</string>
-    <string-array name="map_styles">
+    <string-array name="map_style_titles">
         <item>Ретро</item>
         <item>Классическая</item>
         <item>Ночная</item>
         <item>Solarized</item>
         <item>Светлая</item>
-    </string-array>
-    <string-array name="settings_map_style_values" translatable="false">
-        <item>retro</item>
-        <item>сlassic</item>
-        <item>night</item>
-        <item>solarized</item>
-        <item>white</item>
     </string-array>
 </resources>

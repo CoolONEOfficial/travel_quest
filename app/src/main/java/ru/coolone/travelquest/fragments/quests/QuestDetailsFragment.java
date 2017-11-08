@@ -4,15 +4,15 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.SparseArray;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
@@ -22,7 +22,6 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 
-import java.lang.reflect.Field;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +30,8 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.activities.MainActivity;
 
 public class QuestDetailsFragment extends Fragment {
+
+    static final String TAG = QuestDetailsFragment.class.getSimpleName();
 
     // Arguments
     enum ArgKeys {
@@ -107,7 +108,7 @@ public class QuestDetailsFragment extends Fragment {
         args.putString(ArgKeys.ARG_URL.toString(),
                 url != null
                         ? url.toString()
-                        : parent.getResources().getString(R.string.url_unknown));
+                        : null);
         args.putFloat(ArgKeys.ARG_RATING.toString(), rating);
         args.putIntegerArrayList(ArgKeys.ARG_TYPES.toString(), types);
         args.putParcelable(ArgKeys.ARG_PHOTOS.toString(), photos);
@@ -124,7 +125,7 @@ public class QuestDetailsFragment extends Fragment {
                 place.getPhoneNumber().toString(),
                 place.getWebsiteUri(),
                 place.getRating(),
-                new ArrayList<Integer>(Arrays.asList(place.getPlaceTypes().toArray(new Integer[0]))),
+                new ArrayList<>(Arrays.asList(place.getPlaceTypes().toArray(new Integer[0]))),
                 null
         );
         Places.GeoDataApi.getPlacePhotos(MainActivity.apiClient, place.getId())
@@ -141,14 +142,16 @@ public class QuestDetailsFragment extends Fragment {
             // Get arguments
             title = args.getString(ArgKeys.ARG_TITLE.toString());
             phone = args.getString(ArgKeys.ARG_PHONE.toString());
-            url = Uri.parse(args.getString(ArgKeys.ARG_URL.toString()));
+            String urlStr = args.getString(ArgKeys.ARG_URL.toString());
+            if (urlStr != null)
+                url = Uri.parse(urlStr);
             rating = args.getFloat(ArgKeys.ARG_RATING.toString());
             types = args.getIntegerArrayList(ArgKeys.ARG_TYPES.toString());
         }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_quest_details,
@@ -161,7 +164,10 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.details_phone,
                 R.id.details_url,
                 R.id.details_types,
-                R.id.details_rating
+                R.id.details_rating,
+                R.id.details_rating_star,
+                R.id.details_photos_layout,
+                R.id.details_photos_scroll
         };
         for (int mViewId : viewIdArr) {
             viewArr.put(mViewId,
@@ -175,53 +181,105 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     private void refreshTitle() {
-        if(title != null) {
+        if (title != null) {
             ((TextView) viewArr.get(R.id.details_title)).setText(title);
         }
     }
 
     private void refreshPhone() {
-        if(phone != null) {
+        // Set phone
+        if (phone != null) {
             ((TextView) viewArr.get(R.id.details_phone)).setText(phone);
         }
+
+        // Set visibility
+        boolean visibility = (phone != null);
+        viewArr.get(R.id.details_phone).setVisibility(
+                visibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
     }
 
     private void refreshTypes() {
-        if(types != null) {
+        if (types != null) {
+            // - Get types string -
+
             // Generate types string
             StringBuilder typesStrBuilder = new StringBuilder();
             for (Integer mType : types) {
-                typesStrBuilder.append(placeTypeIdToString(mType))
-                        .append(" ");
+                String placeTypeStr = placeTypeIdToString(getActivity(), mType);
+
+                if (placeTypeStr != null && !placeTypeStr.trim().isEmpty())
+                    typesStrBuilder.append(placeTypeIdToString(getActivity(), mType))
+                            .append(", ");
             }
+
+            // Get types string
             String typesStr = typesStrBuilder.toString();
-            typesStr = typesStr.trim();
+            if (typesStr.endsWith(", "))
+                typesStr = typesStr.substring(0, typesStr.length() - 2);
+
+            // - Set types string -
+
+            // Set visibility
+            int visibility = typesStr.isEmpty()
+                    ? View.GONE
+                    : View.VISIBLE;
+            viewArr.get(R.id.details_types).setVisibility(visibility);
 
             ((TextView) viewArr.get(R.id.details_types)).setText(typesStr);
         }
     }
 
     private void refreshUrl() {
-        if(url != null) {
+        // Set url
+        if (url != null) {
             ((TextView) viewArr.get(R.id.details_url)).setText(url.toString());
         }
+
+        // Set url visibility
+        boolean visibility = (url != null);
+        viewArr.get(R.id.details_url).setVisibility(
+                visibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
     }
 
     private void refreshRating() {
-        ((TextView) viewArr.get(R.id.details_rating))
-                .setText(new DecimalFormat("#.#").format(rating));
+        // Set rating
+        if (rating != -1) {
+            ((TextView) viewArr.get(R.id.details_rating))
+                    .setText(new DecimalFormat("#.#").format(rating));
+        }
+
+        // Set rating visibility
+        int visibility = (rating == -1
+                ? View.GONE
+                : View.VISIBLE
+        );
+        setRatingVisibility(visibility);
+    }
+
+    private void setRatingVisibility(int visibility) {
+        viewArr.get(R.id.details_rating).setVisibility(visibility);
+        viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
     private void refreshPhotos() {
-        if(photos != null) {
-            // Get photos layout
-            LinearLayout photoLayout = getActivity().findViewById(R.id.details_photos_layout);
+        boolean visibility;
 
-            // Get photos scroll
-            HorizontalScrollView photoScroll = getActivity().findViewById(R.id.details_photos_scroll);
+        // Set photos
+        if (photos != null) {
+            // Get photos layout
+            LinearLayout photoLayout = (LinearLayout) viewArr.get(R.id.details_photos_layout);
 
             // Get photos buffer
             PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
+
+            // Set visibility bool
+            visibility = (photosBuffer.getCount() != 0);
 
             // Get all from buffer
             for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
@@ -230,10 +288,18 @@ public class QuestDetailsFragment extends Fragment {
                 // Get metadata
                 PlacePhotoMetadata mPhotoMeta = photosBuffer.get(mPhotoId);
 
+                // Get photos height
+                TypedValue photosHeightValue = new TypedValue();
+                getResources().getValue(R.dimen.details_photos_height_float,
+                        photosHeightValue,
+                        true);
+
+
                 // Get photo
                 mPhotoMeta.getScaledPhoto(MainActivity.apiClient,
                         Integer.MAX_VALUE,
-                        photoScroll.getHeight()).setResultCallback(
+                        ((int) (photosHeightValue.getFloat() * getResources().getDisplayMetrics().density))
+                ).setResultCallback(
                         (PlacePhotoResult placePhotoResult) -> {
                             // Get bitmap
                             Bitmap mPhoto = placePhotoResult.getBitmap();
@@ -250,7 +316,21 @@ public class QuestDetailsFragment extends Fragment {
                         }
                 );
             }
-        }
+
+            // Delete photos buffer
+            photosBuffer.release();
+        } else visibility = false;
+
+        // Set photos visibility
+        setPhotosVisibility(visibility
+                ? View.VISIBLE
+                : View.GONE
+        );
+    }
+
+    private void setPhotosVisibility(int visibility) {
+        viewArr.get(R.id.details_photos_layout).setVisibility(visibility);
+        viewArr.get(R.id.details_photos_scroll).setVisibility(visibility);
     }
 
     private void refresh() {
@@ -317,9 +397,69 @@ public class QuestDetailsFragment extends Fragment {
         refreshPhotos();
     }
 
-    private static String placeTypeIdToString(Integer placeTypeId) {
+    private static String placeTypeIdToString(Context parent, Integer placeTypeId) {
+        // Get place type resource id
+        int placeTypeResId = -1;
+        switch (placeTypeId) {
+            case Place.TYPE_MUSEUM:
+                placeTypeResId = R.string.TYPE_MUSEUM;
+                break;
+            case Place.TYPE_PARK:
+                placeTypeResId = R.string.TYPE_PARK;
+                break;
+            case Place.TYPE_RESTAURANT:
+                placeTypeResId = R.string.TYPE_RESTAURANT;
+                break;
+            case Place.TYPE_SCHOOL:
+                placeTypeResId = R.string.TYPE_SCHOOL;
+                break;
+            case Place.TYPE_STADIUM:
+                placeTypeResId = R.string.TYPE_STADIUM;
+                break;
+            case Place.TYPE_STORE:
+                placeTypeResId = R.string.TYPE_STORE;
+                break;
+            case Place.TYPE_TRAIN_STATION:
+                placeTypeResId = R.string.TYPE_TRAIN_STATION;
+                break;
+            case Place.TYPE_UNIVERSITY:
+                placeTypeResId = R.string.TYPE_UNIVERSITY;
+                break;
+            case Place.TYPE_ZOO:
+                placeTypeResId = R.string.TYPE_ZOO;
+                break;
+            case Place.TYPE_PLACE_OF_WORSHIP:
+                placeTypeResId = R.string.TYPE_PLACE_OF_WORSHIP;
+                break;
+            case Place.TYPE_GYM:
+                placeTypeResId = R.string.TYPE_GYM;
+                break;
+            case Place.TYPE_CASINO:
+                placeTypeResId = R.string.TYPE_CASINO;
+                break;
+            case Place.TYPE_ART_GALLERY:
+                placeTypeResId = R.string.TYPE_ART_GALLERY;
+                break;
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_1:
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_2:
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_3:
+                placeTypeResId = R.string.TYPE_ADMINISTRATIVE_AREA;
+                break;
+            case Place.TYPE_AMUSEMENT_PARK:
+                placeTypeResId = R.string.TYPE_AMUSEMENT_PARK;
+                break;
+            case Place.TYPE_AQUARIUM:
+                placeTypeResId = R.string.TYPE_AQUARIUM;
+                break;
+        }
 
+        // Get resource string
+        String placeTypeStr;
+        if (placeTypeResId != -1)
+            placeTypeStr = parent.getResources().getString(placeTypeResId);
+        else
+            placeTypeStr = null;
 
-        return null;
+        return placeTypeStr;
     }
 }

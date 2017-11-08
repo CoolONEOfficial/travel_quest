@@ -13,9 +13,7 @@
     <string name="TYPE_GYM">Спортзал</string>
     <string name="TYPE_CASINO">Казино</string>
     <string name="TYPE_ART_GALLERY">Художественная галерея</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_1">Админинстративное здание</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_2">Админинстративное здание</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_3">Админинстративное здание</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA">Админинстративное здание</string>
     <string name="TYPE_AMUSEMENT_PARK">Парк развлечений</string>
     <string name="TYPE_AQUARIUM">Аквариум</string>
 </resources>

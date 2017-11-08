@@ -13,9 +13,7 @@
     <string name="TYPE_GYM">Gym</string>
     <string name="TYPE_CASINO">Casino</string>
     <string name="TYPE_ART_GALLERY">Art gallery</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_1">Administrative area</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_2">Administrative area</string>
-    <string name="TYPE_ADMINISTRATIVE_AREA_LEVEL_3">Administrative area</string>
+    <string name="TYPE_ADMINISTRATIVE_AREA">Administrative area</string>
     <string name="TYPE_AMUSEMENT_PARK">Amusement park</string>
     <string name="TYPE_AQUARIUM">Aquarium</string>
 </resources>

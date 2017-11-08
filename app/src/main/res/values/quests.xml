@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="url_unknown">Url unknown</string>
+    <!-- Map default zoom -->
+    <dimen name="map_zoom">14px</dimen>
+
+    <!-- Photos line height -->
+    <dimen name="details_photos_height">150dp</dimen>
+    <item name="details_photos_height_float" format="float" type="dimen">150.0</item>
 </resources>
