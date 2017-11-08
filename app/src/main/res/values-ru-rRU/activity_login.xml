@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Login button -->
+    <string name="login_button_login">Вход</string>
+
+    <!-- To signin textView -->
+    <string name="login_text_view_signin">Не зарегистрированы?</string>
+
+    <!-- Prompts -->
+    <string name="login_prompt_login_or_mail">Логин или эл. почта</string>
+    <string name="login_prompt_password">Пароль</string>
+
+    <!-- Errors -->
+    <string name="login_error_login_or_mail_incorrect">Этот логин или эл. почта некорректен(-на)</string>
+    <string name="login_error_password_incorrect">Этот пароль некорректен</string>
+    <string name="login_error_field_required">Это поле обязательно к заполнению</string>
+    <string name="login_permission_rationale">"Права к контактам требуются
+        для автодополнения адресов эл. почты"</string>
+    <string name="login_error_login">Логин и/или пароль неверны</string>
+</resources>

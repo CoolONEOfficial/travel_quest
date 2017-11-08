@@ -21,6 +21,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.android.volley.Request;
@@ -62,11 +63,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         setContentView(R.layout.activity_login);
 
         // Login form.
-        mLoginView = findViewById(R.id.login);
+        mLoginView = findViewById(R.id.login_text_login_or_mail);
         populateAutoComplete();
 
         // Password
-        mPasswordView = findViewById(R.id.password);
+        mPasswordView = findViewById(R.id.login_text_password);
         mPasswordView.setOnEditorActionListener((textView, id, keyEvent) -> {
             if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
                 attemptLogin();
@@ -76,10 +77,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         });
 
         // Login button
-        Button loginButton = findViewById(R.id.button_login);
+        Button loginButton = findViewById(R.id.login_button_login);
         loginButton.setOnClickListener(view -> attemptLogin());
 
+        // Signin text view
+        TextView signinTextView = findViewById(R.id.login_text_view_signin);
+        signinTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // To signin activity
+                Intent intent = new Intent(LoginActivity.this, SigninActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        // Login form
         mLoginFormView = findViewById(R.id.login_form);
+
+        // Progress
         mProgressView = findViewById(R.id.login_progress);
     }
 
@@ -99,7 +114,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             return true;
         }
         if (shouldShowRequestPermissionRationale(READ_CONTACTS)) {
-            Snackbar.make(mLoginView, R.string.permission_rationale, Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(mLoginView, R.string.login_permission_rationale, Snackbar.LENGTH_INDEFINITE)
                     .setAction(android.R.string.ok, v -> requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS));
         } else {
             requestPermissions(new String[]{READ_CONTACTS}, REQUEST_READ_CONTACTS);
@@ -127,6 +142,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     RequestQueue queue;
+
     private void attemptLogin() {
         // Reset errors
         mLoginView.setError(null);
@@ -148,38 +164,35 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // - Setting url -
 
         // Check for a valid password, if the user entered one.
-        if(mPassword.isEmpty())
-        {
+        if (mPassword.isEmpty()) {
             // Password not entered
-            mPasswordView.setError(getString(R.string.error_field_required));
+            mPasswordView.setError(getString(R.string.login_error_field_required));
             focusView = mPasswordView;
             cancel = true;
         } else if (isPasswordValid(mPassword)) {
             // Add pass parameter
             reqUrlBuilder.appendQueryParameter("pass", mPassword);
-        } else  {
+        } else {
             // Invalid password
-            mPasswordView.setError(getString(R.string.error_password_incorrect));
+            mPasswordView.setError(getString(R.string.login_error_password_incorrect));
             focusView = mPasswordView;
             cancel = true;
         }
 
         // Check for a valid mail or login address.
-        if(mLoginOrMail.isEmpty())
-        {
-            mLoginView.setError(getString(R.string.error_field_required));
+        if (mLoginOrMail.isEmpty()) {
+            mLoginView.setError(getString(R.string.login_error_field_required));
             focusView = mLoginView;
             cancel = true;
-        } else if(isMailValid(mLoginOrMail)) {
+        } else if (isMailValid(mLoginOrMail)) {
             // Add mail parameter
             reqUrlBuilder.appendQueryParameter("mail", mLoginOrMail);
-        } else if(isLoginValid(mLoginOrMail))
-        {
+        } else if (isLoginValid(mLoginOrMail)) {
             // Add login parameter
             reqUrlBuilder.appendQueryParameter("login", mLoginOrMail);
         } else {
             // Invalid login or mail
-            mLoginView.setError(getString(R.string.error_login));
+            mLoginView.setError(getString(R.string.login_error_login));
             focusView = mLoginView;
             cancel = true;
         }
@@ -217,7 +230,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             e.printStackTrace();
                         }
 
-                        if(result) {
+                        if (result) {
                             Toast.makeText(LoginActivity.this,
                                     "Session key is " + mSessionKey,
                                     Toast.LENGTH_LONG).show();
@@ -231,12 +244,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             startActivity(intent);
                         } else {
                             Toast.makeText(LoginActivity.this,
-                                    getResources().getString(R.string.error_login),
+                                    getResources().getString(R.string.login_error_login),
                                     Toast.LENGTH_LONG).show();
                         }
-                    }, error -> Toast.makeText(LoginActivity.this,
-                            "Request to server error:\n" + error.toString(),
-                            Toast.LENGTH_LONG).show());
+                    },
+                    error -> {
+                        // Hide progress
+                        showProgress(false);
+
+                        // Show error
+                        Toast.makeText(LoginActivity.this,
+                                "Request to server error:\n" + error.toString(),
+                                Toast.LENGTH_LONG).show();
+                    }
+            );
 
             // Access the RequestQueue through your singleton class.
             queue.add(jReq);

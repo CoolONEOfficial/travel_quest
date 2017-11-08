@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Login button -->
+    <string name="login_button_login">Login</string>
+
+    <!-- To signin textView -->
+    <string name="login_text_view_signin">Not signed?</string>
+
+    <!-- Prompts -->
+    <string name="login_prompt_login_or_mail">Login or mail</string>
+    <string name="login_prompt_password">Password</string>
+
+    <!-- Errors -->
+    <string name="login_error_login_or_mail_incorrect">This login or mail is incorrect</string>
+    <string name="login_error_password_incorrect">This password is incorrect</string>
+    <string name="login_error_field_required">This field is required</string>
+    <string name="login_permission_rationale">"Contacts permissions are needed
+        for providing mail completions"</string>
+    <string name="login_error_login">Login and/or password is invalid</string>
+</resources>

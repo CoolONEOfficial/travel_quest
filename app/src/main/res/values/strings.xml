@@ -17,20 +17,7 @@
     <string name="nav_about">About</string>
     <string name="nav_achievements">Achievements</string>
 
-    <!-- Login -->
-
+    <!-- Activity titles -->
     <string name="title_activity_login">Log in</string>
-    <string name="button_login">Login</string>
-
-    <!-- Prompts -->
-    <string name="prompt_login">Login or mail</string>
-    <string name="prompt_password">Password</string>
-
-    <!-- Errors -->
-    <string name="error_login_incorrect">This login is incorrect</string>
-    <string name="error_password_incorrect">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed
-        for providing email completions"</string>
-    <string name="error_login">Login and/or password is invalid</string>
+    <string name="title_activity_signin">Sign in</string>
 </resources>

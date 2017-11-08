@@ -8,16 +8,16 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="ru.coolone.travelquest.activities.LoginActivity">
+    tools:context="ru.coolone.travelquest.activities.SigninActivity">
 
-    <!-- Login progress -->
+    <!-- Signin progress -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
 
         <ProgressBar
-            android:id="@+id/login_progress"
+            android:id="@+id/signin_progress"
             style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -26,7 +26,7 @@
     </RelativeLayout>
 
     <LinearLayout
-        android:id="@+id/login_form"
+        android:id="@+id/signin_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -35,15 +35,32 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <AutoCompleteTextView
-                android:id="@+id/login_text_login_or_mail"
+            <EditText
+                android:id="@+id/signin_text_login"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/login_prompt_login_or_mail"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"
+                android:hint="@string/signin_prompt_login"
                 android:imeActionId="1"
                 android:imeOptions="actionNext"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <AutoCompleteTextView
+                android:id="@+id/signin_text_mail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/signin_prompt_mail"
+                android:inputType="textEmailAddress"
+                android:imeActionId="2"
+                android:imeOptions="actionNext"
+                android:maxLines="1"
                 android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
@@ -53,11 +70,11 @@
             android:layout_height="wrap_content">
 
             <EditText
-                android:id="@+id/login_text_password"
+                android:id="@+id/signin_text_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/login_prompt_password"
-                android:imeActionId="2"
+                android:hint="@string/signin_prompt_password"
+                android:imeActionId="3"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:maxLines="1"
@@ -66,19 +83,19 @@
         </android.support.design.widget.TextInputLayout>
 
         <Button
-            android:id="@+id/login_button_login"
+            android:id="@+id/signin_button_signin"
             style="?android:textAppearanceSmall"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="@string/login_button_login"
+            android:text="@string/signin_button_signin"
             android:textStyle="bold" />
 
         <TextView
-            android:id="@+id/login_text_view_signin"
+            android:id="@+id/signin_text_view_login"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login_text_view_signin" />
+            android:text="@string/signin_text_view_login" />
 
     </LinearLayout>
 </LinearLayout>
