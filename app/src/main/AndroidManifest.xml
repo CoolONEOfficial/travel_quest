@@ -38,7 +38,8 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${googleMapApiKey}" />
 
-        <activity android:name=".activities.SigninActivity"></activity>
+        <activity android:name=".activities.SigninActivity" />
+        <activity android:name=".activities.AbstractAuthActivity"></activity>
     </application>
 
 </manifest>

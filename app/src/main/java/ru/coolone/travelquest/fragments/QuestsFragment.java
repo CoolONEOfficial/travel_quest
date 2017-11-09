@@ -305,7 +305,7 @@ public class QuestsFragment extends Fragment
 
             // Show
             if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
-                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
         });
     }
 }

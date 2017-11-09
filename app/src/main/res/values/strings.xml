@@ -7,4 +7,15 @@
     <!-- Activity titles -->
     <string name="title_activity_login">Log in</string>
     <string name="title_activity_signin">Sign in</string>
+
+    <!-- Errors -->
+    <string name="error_mail_incorrect">This mail is incorrect</string>
+    <string name="error_password_incorrect">This password is incorrect</string>
+    <string name="error_mail_small">This mail is small</string>
+    <string name="error_password_small">This password is small</string>
+    <string name="error_mail_long">This mail is long</string>
+    <string name="error_password_long">This password is long</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="error_permission_rationale">"Contacts permissions are needed for providing mail completions"</string>
+    <string name="error_auth">Something went wrong\nLogin and/or password is invalid</string>
 </resources>

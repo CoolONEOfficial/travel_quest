@@ -23,6 +23,8 @@ import android.view.MenuItem;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.fragments.QuestsFragment;
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity
     public MainActivity() {
     }
 
+    // Api client
     public static GoogleApiClient apiClient;
 
     @Override
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Strict mode
         StrictMode.setThreadPolicy(
                 new StrictMode.ThreadPolicy
                         .Builder()
@@ -97,6 +101,7 @@ public class MainActivity extends AppCompatActivity
                         .penaltyLog()
                         .penaltyDeath()
                         .build());
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 

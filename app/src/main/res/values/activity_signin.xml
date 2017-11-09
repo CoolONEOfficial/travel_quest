@@ -10,13 +10,4 @@
     <string name="signin_prompt_login">Login</string>
     <string name="signin_prompt_mail">Mail</string>
     <string name="signin_prompt_password">Password</string>
-
-    <!-- Errors -->
-    <string name="signin_error_login_incorrect">This login is incorrect</string>
-    <string name="signin_error_mail_incorrect">This mail is incorrect</string>
-    <string name="signin_error_password_incorrect">This password is incorrect</string>
-    <string name="signin_error_field_required">This field is required</string>
-    <string name="signin_permission_rationale">"Contacts permissions are needed
-        for providing mail completions"</string>
-    <string name="signin_error_signin">Login, mail or password is invalid</string>
 </resources>
