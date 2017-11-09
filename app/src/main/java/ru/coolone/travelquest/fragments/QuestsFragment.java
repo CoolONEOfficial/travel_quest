@@ -1,21 +1,22 @@
 package ru.coolone.travelquest.fragments;
 
+import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.widget.Toolbar;
-import android.text.Layout;
 import android.util.Log;
 import android.view.InflateException;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -41,7 +42,8 @@ import ru.coolone.travelquest.fragments.quests.QuestDetailsFragment;
 public class QuestsFragment extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
-        PlaceSelectionListener {
+        PlaceSelectionListener,
+        QuestDetailsFragment.OnCreateViewListener {
 
     static final String TAG = QuestsFragment.class.getSimpleName();
 
@@ -117,22 +119,21 @@ public class QuestsFragment extends Fragment
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-
             }
 
             @Override
             public void onPanelStateChanged(View panel,
                                             SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
-                LinearLayout panelLayout = getActivity().findViewById(R.id.layout_details_head);
                 switch (newState) {
                     case HIDDEN:
                         map.setPadding(0, 0,
-                                0,0);
+                                0, 0);
                         break;
-                    default:
+                    case COLLAPSED:
                         map.setPadding(0, 0,
-                                0, panelLayout.getHeight());
+                                0, panel.findViewById(R.id.layout_details_head)
+                                        .getHeight());
                 }
             }
         });
@@ -235,17 +236,14 @@ public class QuestsFragment extends Fragment
         // - Show details -
 
         // Create details fragment
-        Fragment detailsFragment = QuestDetailsFragment.newInstance(getActivity(), place);
+        QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(getActivity(), place);
+        detailsFragment.setOnCreateViewListener(this);
 
         // Set
         FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
         fragTrans.replace(R.id.sliding_container,
                 detailsFragment);
         fragTrans.commit();
-
-        // Show
-        if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
-            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
     }
 
     @Override
@@ -288,5 +286,26 @@ public class QuestsFragment extends Fragment
 
         // Remove toolbar search
         toolbarContainer.removeView(toolbarView);
+    }
+
+    @Override
+    public void onQuestDetailsCreateView(
+            @NonNull View view,
+            ViewGroup container, Bundle savedInstanceState) {
+        view.post(() -> {
+            // Get panel height
+            RelativeLayout detailsHead = view.findViewById(R.id.layout_details_head);
+            Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
+
+            // Set panel height
+            slidingPanel.setPanelHeight(detailsHead.getHeight());
+
+            // Set panel anchor point
+            slidingPanel.setAnchorPoint(0.5f);
+
+            // Show
+            if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
+                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+        });
     }
 }

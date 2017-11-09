@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation menu -->
+    <string name="nav_about">Обратная связь</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="nav_friends">Друзья</string>
+    <string name="nav_messages">Сообщения</string>
+    <string name="nav_quests">Квесты</string>
+    <string name="nav_profile">Профиль</string>
+    <string name="nav_achievements">Достижения</string>
+</resources>

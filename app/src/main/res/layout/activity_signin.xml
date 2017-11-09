@@ -44,7 +44,8 @@
                 android:imeOptions="actionNext"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:cursorVisible="false" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -78,7 +79,8 @@
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true" />
+                android:singleLine="true"
+                android:cursorVisible="false" />
 
         </android.support.design.widget.TextInputLayout>
 

@@ -82,13 +82,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         // Signin text view
         TextView signinTextView = findViewById(R.id.login_text_view_signin);
-        signinTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // To signin activity
-                Intent intent = new Intent(LoginActivity.this, SigninActivity.class);
-                startActivity(intent);
-            }
+        signinTextView.setOnClickListener(view -> {
+            // To signin activity
+            Intent intent = new Intent(LoginActivity.this, SigninActivity.class);
+            startActivity(intent);
         });
 
         // Login form

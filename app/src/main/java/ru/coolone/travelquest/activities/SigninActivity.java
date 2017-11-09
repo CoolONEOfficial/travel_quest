@@ -30,13 +30,10 @@ public class SigninActivity extends AppCompatActivity {
 
         // Login text view
         TextView textViewLogin = findViewById(R.id.signin_text_view_login);
-        textViewLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // To login activity
-                Intent intent = new Intent(SigninActivity.this, LoginActivity.class);
-                startActivity(intent);
-            }
+        textViewLogin.setOnClickListener(view -> {
+            // To login activity
+            Intent intent = new Intent(SigninActivity.this, LoginActivity.class);
+            startActivity(intent);
         });
     }
 }

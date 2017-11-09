@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -52,6 +53,7 @@ public class MainActivity extends AppCompatActivity
         QUESTS,
         SETTINGS
     }
+
     static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
 
     // Fragments array
@@ -81,16 +83,30 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        StrictMode.setThreadPolicy(
+                new StrictMode.ThreadPolicy
+                        .Builder()
+                        .detectAll()
+                        .penaltyLog()
+                        .build());
+        StrictMode.setVmPolicy(
+                new StrictMode.VmPolicy
+                        .Builder()
+                        .detectLeakedSqlLiteObjects()
+                        .detectLeakedClosableObjects()
+                        .penaltyLog()
+                        .penaltyDeath()
+                        .build());
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         // Google api client
         apiClient = new GoogleApiClient
-        .Builder(this)
-        .addApi(Places.GEO_DATA_API)
-        .addApi(Places.PLACE_DETECTION_API)
-        .enableAutoManage(this, this)
-        .build();
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
 
         // Get intent
         Intent intentInput = getIntent();

@@ -1,8 +1,10 @@
-<!DOCTYPE resources [
-    <!ENTITY domainGlobal "bombards.ru">
-    <!ENTITY domainLocal "192.168.1.2">
-    <!ENTITY domain "&domainLocal;">
-    ]>
+<!DOCTYPE resources
+    [
+        <!ENTITY domainGlobal "bombards.ru">
+        <!ENTITY domainLocal  "192.168.1.2">
+        <!ENTITY domain       "&domainLocal;">
+    ]
+>
 <resources>
     <!-- Servers urls -->
 

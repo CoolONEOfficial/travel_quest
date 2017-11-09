@@ -1,11 +1,13 @@
 package ru.coolone.travelquest.fragments.quests;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -32,6 +34,8 @@ import ru.coolone.travelquest.activities.MainActivity;
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
+
+    private View view;
 
     // Arguments
     enum ArgKeys {
@@ -154,7 +158,7 @@ public class QuestDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_quest_details,
+        view = inflater.inflate(R.layout.fragment_quest_details,
                 container,
                 false);
 
@@ -176,6 +180,9 @@ public class QuestDetailsFragment extends Fragment {
 
         // Refresh views
         refresh();
+
+        // Call listener
+        onCreateViewListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
     }
@@ -277,6 +284,7 @@ public class QuestDetailsFragment extends Fragment {
 
             // Get photos buffer
             PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
+            Log.d(TAG, "Photo buffer created");
 
             // Set visibility bool
             visibility = (photosBuffer.getCount() != 0);
@@ -286,7 +294,7 @@ public class QuestDetailsFragment extends Fragment {
                 final int mPhotoIdFinal = mPhotoId;
 
                 // Get metadata
-                PlacePhotoMetadata mPhotoMeta = photosBuffer.get(mPhotoId);
+                PlacePhotoMetadata mPhotoMeta = photosBuffer.get(mPhotoIdFinal);
 
                 // Get photos height
                 TypedValue photosHeightValue = new TypedValue();
@@ -296,9 +304,16 @@ public class QuestDetailsFragment extends Fragment {
 
 
                 // Get photo
+                int photoHeight = ((int) (photosHeightValue.getFloat() *
+                        getResources().getDisplayMetrics().density));
+                Log.d(TAG, "Photo height:" + String.valueOf(photoHeight));
+                Log.d(TAG, "Density:" +
+                        String.valueOf(getResources().getDisplayMetrics().density));
+                Log.d(TAG, "Photo height float:" + String.valueOf(photosHeightValue.getFloat()));
+
                 mPhotoMeta.getScaledPhoto(MainActivity.apiClient,
                         Integer.MAX_VALUE,
-                        ((int) (photosHeightValue.getFloat() * getResources().getDisplayMetrics().density))
+                        photoHeight
                 ).setResultCallback(
                         (PlacePhotoResult placePhotoResult) -> {
                             // Get bitmap
@@ -318,6 +333,7 @@ public class QuestDetailsFragment extends Fragment {
             }
 
             // Delete photos buffer
+            Log.d(TAG, "Photo buffer released!");
             photosBuffer.release();
         } else visibility = false;
 
@@ -461,5 +477,30 @@ public class QuestDetailsFragment extends Fragment {
             placeTypeStr = null;
 
         return placeTypeStr;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if(onCreateViewListener == null) {
+            throw new ClassCastException(
+                    getActivity().toString() + " must implements OnCreateViewListener"
+            );
+        }
+    }
+
+    public interface OnCreateViewListener {
+        void onQuestDetailsCreateView(@NonNull View view, ViewGroup container,
+                                      Bundle savedInstanceState);
+    }
+
+    private OnCreateViewListener onCreateViewListener;
+
+    public void setOnCreateViewListener(OnCreateViewListener listener) {
+        onCreateViewListener = listener;
+    }
+
+    public OnCreateViewListener getOnCreateViewListener() {
+        return onCreateViewListener;
     }
 }
