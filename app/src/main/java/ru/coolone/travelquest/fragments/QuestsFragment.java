@@ -35,6 +35,8 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.util.Locale;
+
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.activities.MainActivity;
 import ru.coolone.travelquest.fragments.quests.QuestDetailsFragment;
@@ -223,6 +225,8 @@ public class QuestsFragment extends Fragment
 
     @Override
     public void onPlaceSelected(Place place) {
+        Log.d(TAG, "Place selected:\nname: " + place.getName() + "\nunical id: " + place.getId());
+
         // Go to place
         float currentZoom = map.getCameraPosition().zoom;
         float defaultZoom = getResources().getDimension(R.dimen.map_zoom);

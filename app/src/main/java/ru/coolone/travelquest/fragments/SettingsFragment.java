@@ -1,11 +1,13 @@
 package ru.coolone.travelquest.fragments;
 
 import android.os.Bundle;
-import android.support.v4.preference.PreferenceFragment;
+import android.support.annotation.Nullable;
+
+import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat;
 
 import ru.coolone.travelquest.R;
 
-public class SettingsFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragmentCompat {
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -21,5 +23,10 @@ public class SettingsFragment extends PreferenceFragment {
 
         // Add settings
         addPreferencesFromResource(R.xml.settings);
+    }
+
+    @Override
+    public void onCreatePreferencesFix(@Nullable Bundle savedInstanceState, String rootKey) {
+        setPreferencesFromResource(R.xml.settings, rootKey);
     }
 }
