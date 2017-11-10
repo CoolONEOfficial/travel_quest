@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Prompts -->
+    <string name="prompt_mail">Эл. почта</string>
+    <string name="prompt_password">Пароль</string>
+
+    <!-- Errors -->
+    <string name="error_mail_incorrect">Эта эл. почта некорректна</string>
+    <string name="error_password_incorrect">Этот пароль некорректен</string>
+    <string name="error_mail_small">Эта эл. почта слишком короткая</string>
+    <string name="error_password_small">Этот пароль слишком короткий</string>
+    <string name="error_mail_long">Эта эл. почта слишком длинная</string>
+    <string name="error_password_long">Этот пароль слишком длинный</string>
+    <string name="error_field_required">Это поле обязательно к заполнению</string>
+    <string name="error_field_incorrect">Это поле некорректно</string>
+    <string name="error_permission_rationale">"Права к контактам требуются для автодополнения адресов эл. почты"</string>
+    <string name="error_auth">Чтото пошло не так\nЛогин и/или пароль неверны</string>
+</resources>

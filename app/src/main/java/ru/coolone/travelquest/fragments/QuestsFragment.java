@@ -211,7 +211,7 @@ public class QuestsFragment extends Fragment
         Log.d(TAG, "Poi " + poi.name + " clicked!");
 
         // Find place by id (from poi)
-        Places.GeoDataApi.getPlaceById(MainActivity.apiClient, poi.placeId)
+        Places.GeoDataApi.getPlaceById(MainActivity.getApiClient(), poi.placeId)
                 .setResultCallback(places -> {
                     if (places.getStatus().isSuccess() &&
                             places.getCount() > 0) {
@@ -297,15 +297,15 @@ public class QuestsFragment extends Fragment
             RelativeLayout detailsHead = view.findViewById(R.id.layout_details_head);
             Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
 
-            // Set panel height
-            slidingPanel.setPanelHeight(detailsHead.getHeight());
-
             // Set panel anchor point
             slidingPanel.setAnchorPoint(0.5f);
 
+            // Set panel height
+            slidingPanel.setPanelHeight(detailsHead.getHeight());
+
             // Show
             if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
-                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.EXPANDED);
+                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         });
     }
 }

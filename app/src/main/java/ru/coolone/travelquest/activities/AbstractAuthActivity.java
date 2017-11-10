@@ -5,17 +5,19 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.SparseArray;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -24,7 +26,11 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
@@ -39,13 +45,20 @@ abstract public class AbstractAuthActivity
         extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    // Context
+    Context context;
+
+    static final String TAG = LoginActivity.class.getSimpleName();
+
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
 
-    // Firebase auth
-    FirebaseAuth auth;
+    public static final boolean AUTH_TOKEN_FORCE_REFRESH = false;
+
+    // Firebase onAuth
+    protected FirebaseAuth auth;
 
     // --- Ui references ---
 
@@ -68,66 +81,126 @@ abstract public class AbstractAuthActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // --- Set action auth ---
-
-        // After input password
-        passwordView.setOnEditorActionListener((textView, id, keyEvent) -> {
-            if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
-                attemptAuth();
-                return true;
-            }
-            return false;
-        });
-
-        // After click button
-        authButton.setOnClickListener(view -> attemptAuth());
+        // Auth
+        auth = FirebaseAuth.getInstance();
 
         // Populate autocomplete
         populateAutoComplete();
+    }
+
+    private boolean initViewsCalled = false;
+
+    protected void initViews() {
+        // --- Set listeners ---
+
+        // After input password
+        passwordView.setOnEditorActionListener(
+                (textView, id, keyEvent) -> {
+                    if (checkPassword() == InputError.NONE) {
+                        startAuth();
+                        return true;
+                    }
+                    return false;
+                }
+        );
+
+        // After input mail
+        mailView.setOnEditorActionListener(
+                (textView, id, keyEvent) -> checkMail() == InputError.NONE
+        );
+
+        // After click button
+        authButton.setOnClickListener(
+                view -> startAuth()
+        );
+
+        // Activate called flag
+        initViewsCalled = true;
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        if (!initViewsCalled)
+            Log.e(TAG, "Views not initialized! Use initViews() function.");
+
+        if(context == null)
+            Log.e(TAG, "Context is null!");
     }
 
     /**
      * @param mail Mail, that will be checked
      * @return Mail valid bool
      */
-    protected InputError isMailValid(String mail) {
-        if(mail.length() < getResources().getInteger(R.integer.mail_len_min))
-            return InputError.INPUT_ERROR_SMALL;
+    protected InputError checkMailStr(String mail) {
+        InputError error = InputError.NONE;
+        mail = mail.trim();
 
-        if(mail.length() > getResources().getInteger(R.integer.mail_len_max))
-            return InputError.INPUT_ERROR_LONG;
+        // Empty
+        if(mail.isEmpty())
+            error = InputError.EMPTY;
+        // Small
+        else if (mail.length() < context.getResources().getInteger(R.integer.mail_len_min))
+            error = InputError.SMALL;
+        // Long
+        else if (mail.length() > context.getResources().getInteger(R.integer.mail_len_max))
+            error = InputError.LONG;
+        // Mail
+        else if (!mail.contains("@"))
+            error = InputError.INCORRECT;
 
-        if(!mail.contains("@"))
-            return InputError.INPUT_ERROR_INCORRECT;
-
-        return InputError.INPUT_GOOD;
+        return error;
     }
-    final protected InputError isMailValid() {
-        return isMailValid(mailView.getText().toString());
+
+    final protected InputError checkMail() {
+        // Check error
+        InputError error = checkMailStr(mailView.getText().toString());
+
+        // Handle error
+        if(error != InputError.NONE)
+            inputError(mailView, error);
+
+        return error;
     }
 
     /**
      * @param password Pass, that will be checked
      * @return Pass valid bool
      */
-    protected InputError isPasswordValid(String password) {
-        if(password.length() < getResources().getInteger(R.integer.password_len_min))
-            return InputError.INPUT_ERROR_SMALL;
+    protected InputError checkPasswordStr(String password) {
+        InputError error = InputError.NONE;
+        password = password.trim();
 
-        if(password.length() > getResources().getInteger(R.integer.password_len_max))
-            return InputError.INPUT_ERROR_LONG;
+        // Empty
+        if(password.isEmpty())
+            error = InputError.EMPTY;
+        // Small
+        else if (password.length() < context.getResources().getInteger(R.integer.password_len_min))
+            error = InputError.SMALL;
+        // Long
+        else if (password.length() > context.getResources().getInteger(R.integer.password_len_max))
+            error = InputError.LONG;
 
-        return InputError.INPUT_GOOD;
+        return error;
     }
-    final protected InputError isPasswordValid() {
-        return isPasswordValid(passwordView.getText().toString());
+
+    final protected InputError checkPassword() {
+        // Check error
+        InputError error = checkPasswordStr(passwordView.getText().toString());
+
+        // Handle error
+        if(error != InputError.NONE)
+            inputError(passwordView, error);
+
+        return error;
     }
 
     /**
      * Shows / hides the progress UI and hides / shows the login form.
      */
     protected void setProgressVisibility(final boolean visibility) {
-        int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
+        int shortAnimTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
 
         // Show login form
         authFormView.setVisibility(
@@ -161,23 +234,26 @@ abstract public class AbstractAuthActivity
                         ? 1
                         : 0)
                 .setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                progressView.setVisibility(
-                        visibility
-                                ? View.VISIBLE
-                                : View.GONE
-                );
-            }
-        });
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        progressView.setVisibility(
+                                visibility
+                                        ? View.VISIBLE
+                                        : View.GONE
+                        );
+                    }
+                });
     }
 
     /**
      * Hides or shows software keyboard
      */
     protected void setSoftKeyboardVisibility(boolean visibility) {
-        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
+        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        assert imm != null;
+        IBinder windowToken = getCurrentFocus().getWindowToken();
+        assert windowToken != null;
+        imm.hideSoftInputFromWindow(windowToken, 0);
     }
 
     @Override
@@ -272,86 +348,97 @@ abstract public class AbstractAuthActivity
         }
     }
 
-    protected void attemptAuth() {
+    final protected void startAuth() {
         // Hide keyboard
         setSoftKeyboardVisibility(false);
 
         // Reset errors
         mailView.setError(null);
         passwordView.setError(null);
+
+        // Check input
+        if(checkInput())
+            onAuth();
     }
 
+    abstract void onAuth();
+
     private void inputError(TextView textView,
-                            InputError err,
-                            int strErrIdIncorrect,
-                            int strErrIdLong,
-                            int strErrIdSmall) {
+                            InputError err) {
         // Get error string id
-        int errStrResId = strErrIdIncorrect;
+        int errStrResId = R.string.error_field_incorrect;
         switch (err) {
-            case INPUT_ERROR_INCORRECT:
-                errStrResId = strErrIdIncorrect;
+            case INCORRECT:
+                errStrResId = R.string.error_field_incorrect;
                 break;
-            case INPUT_ERROR_LONG:
-                errStrResId = strErrIdLong;
+            case LONG:
+                errStrResId = R.string.error_field_long;
                 break;
-            case INPUT_ERROR_SMALL:
-                errStrResId = strErrIdSmall;
+            case SMALL:
+                errStrResId = R.string.error_field_small;
                 break;
-            case INPUT_ERROR_EMPTY:
+            case EMPTY:
                 errStrResId = R.string.error_field_required;
                 break;
         }
 
         // Show error
-        textView.setError(getResources().getString(errStrResId));
-    }
-
-    final protected void passwordError(InputError err) {
-        inputError(
-                passwordView,
-                err,
-                R.string.error_password_incorrect,
-                R.string.error_password_long,
-                R.string.error_password_small
-        );
-    }
-
-    final protected void mailError(InputError err) {
-        inputError(
-                mailView,
-                err,
-                R.string.error_mail_incorrect,
-                R.string.error_mail_long,
-                R.string.error_mail_small
-        );
+        textView.setError(context.getResources().getString(errStrResId));
     }
 
     enum InputError {
-        INPUT_GOOD,
-        INPUT_ERROR_LONG,
-        INPUT_ERROR_SMALL,
-        INPUT_ERROR_INCORRECT,
-        INPUT_ERROR_EMPTY
+        NONE,
+        LONG,
+        SMALL,
+        INCORRECT,
+        EMPTY
     }
 
     protected boolean checkInput() {
-        boolean inputGood = true;
 
-        // Check mail
-        InputError mailError = isMailValid();
-        if(mailError != InputError.INPUT_GOOD) {
-            inputGood = false;
-            mailError(mailError);
+        // Check input
+        return (
+                checkMail()     == InputError.NONE &&
+                checkPassword() == InputError.NONE
+        );
+    }
+
+    final protected void authError(int strErrIdAuth) {
+        // Hide progress
+        setProgressVisibility(false);
+
+        // Show toast
+        Toast.makeText(getParent(),
+                context.getResources().getString(strErrIdAuth),
+                Toast.LENGTH_LONG).show();
+    }
+
+    final protected void onAuthComplete(Task<AuthResult> task) {
+        if (task.isSuccessful()) {
+            Log.d(TAG, "SignInWithEmail success!");
+            onAuthSuccess();
+        } else {
+            Log.w(TAG, "SignInWithEmail error!", task.getException());
+            onAuthError(task.getException());
         }
+    }
 
-        // Check password
-        InputError passwordError = isPasswordValid();
-        if(passwordError != InputError.INPUT_GOOD) {
-            inputGood = false;
-            passwordError(passwordError);
-        }
+    protected void onAuthSuccess() {
+        Log.d(TAG, "Auth success!");
 
-        return inputGood;
+        // To main activity
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    protected void onAuthError(Exception exception) {
+        Log.w(TAG, "Auth error!", exception);
+
+        // Show error
+        Toast.makeText(context,
+                context.getResources().getString(R.string.error_auth),
+                Toast.LENGTH_SHORT).show();
     }
 }

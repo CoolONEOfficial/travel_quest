@@ -132,7 +132,7 @@ public class QuestDetailsFragment extends Fragment {
                 new ArrayList<>(Arrays.asList(place.getPlaceTypes().toArray(new Integer[0]))),
                 null
         );
-        Places.GeoDataApi.getPlacePhotos(MainActivity.apiClient, place.getId())
+        Places.GeoDataApi.getPlacePhotos(MainActivity.getApiClient(), place.getId())
                 .setResultCallback(ret::setPhotos);
         return ret;
     }
@@ -311,7 +311,7 @@ public class QuestDetailsFragment extends Fragment {
                         String.valueOf(getResources().getDisplayMetrics().density));
                 Log.d(TAG, "Photo height float:" + String.valueOf(photosHeightValue.getFloat()));
 
-                mPhotoMeta.getScaledPhoto(MainActivity.apiClient,
+                mPhotoMeta.getScaledPhoto(MainActivity.getApiClient(),
                         Integer.MAX_VALUE,
                         photoHeight
                 ).setResultCallback(

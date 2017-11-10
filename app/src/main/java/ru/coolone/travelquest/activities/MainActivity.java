@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -35,15 +37,33 @@ public class MainActivity extends AppCompatActivity
 
     static final String TAG = MainActivity.class.getSimpleName();
 
+    // Arguments
+    enum ArgKeys {
+        TITLE("user");
+
+        private final String val;
+
+        ArgKeys(String val) {
+            this.val = val;
+        }
+
+        @Override
+        public String toString() {
+            return val;
+        }
+    }
+
     public MainActivity() {
     }
 
     // Api client
-    public static GoogleApiClient apiClient;
+    private static GoogleApiClient apiClient;
+
+    // Firebase user
+    public FirebaseUser user;
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
     }
 
     // Fragments id
@@ -76,13 +96,8 @@ public class MainActivity extends AppCompatActivity
                 .apply();
     }
 
-    // Session key
-    public String sessionKey = "";
-
     // Drawer layout
     DrawerLayout drawer;
-
-    static final String EXTRA_SESSION_KEY = "sessionKey";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -113,20 +128,14 @@ public class MainActivity extends AppCompatActivity
                 .enableAutoManage(this, this)
                 .build();
 
-        // Get intent
-        Intent intentInput = getIntent();
-
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Session key
-        sessionKey = intentInput.getStringExtra(EXTRA_SESSION_KEY); // from intent (default)
-        if (sessionKey == null || sessionKey.isEmpty())
-            sessionKey = settings.getString(
-                    getResources().getString(R.string.settings_map_style_key),
-                    ""); // from settings
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
-        if (sessionKey.isEmpty()) {
+        // User not authenticated?
+        if (user == null) {
             // Go to login
             Intent intent = new Intent(this, LoginActivity.class);
             startActivity(intent);
@@ -208,5 +217,9 @@ public class MainActivity extends AppCompatActivity
 
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public static GoogleApiClient getApiClient() {
+        return apiClient;
     }
 }
