@@ -180,6 +180,9 @@ public class QuestDetailsFragment extends Fragment {
 
         // Get views
         final int[] viewIdArr = new int[]{
+                R.id.layout_details_head,
+                R.id.layout_details_body,
+                R.id.layout_details,
                 R.id.details_title,
                 R.id.details_description_expandable,
                 R.id.details_phone,
@@ -188,7 +191,8 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.details_rating,
                 R.id.details_rating_star,
                 R.id.details_photos_layout,
-                R.id.details_photos_scroll
+                R.id.details_photos_scroll,
+                R.id.details_delimiter
         };
         for (int mViewId : viewIdArr) {
             viewArr.put(mViewId,
@@ -223,6 +227,19 @@ public class QuestDetailsFragment extends Fragment {
                         ? View.VISIBLE
                         : View.GONE
         );
+
+        // Set delimiter visibility
+        boolean delimVisibility = visibility ||
+                viewArr.get(R.id.details_url).getVisibility() == View.VISIBLE;
+        viewArr.get(R.id.details_delimiter).setVisibility(
+                delimVisibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+        if(visibility)
+            ((RelativeLayout.LayoutParams)viewArr.get(R.id.details_delimiter).getLayoutParams())
+                    .addRule(RelativeLayout.ABOVE,
+                            R.id.details_phone);
     }
 
     private void refreshTypes() {
@@ -269,6 +286,19 @@ public class QuestDetailsFragment extends Fragment {
                         ? View.VISIBLE
                         : View.GONE
         );
+
+        // Set delimiter visibility
+        boolean delimVisibility = visibility ||
+                viewArr.get(R.id.details_phone).getVisibility() == View.VISIBLE;
+        viewArr.get(R.id.details_delimiter).setVisibility(
+                delimVisibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+        if(visibility)
+            ((RelativeLayout.LayoutParams)viewArr.get(R.id.details_delimiter).getLayoutParams())
+                    .addRule(RelativeLayout.ABOVE,
+                            R.id.details_url);
     }
 
     private void refreshRating() {
@@ -401,48 +431,58 @@ public class QuestDetailsFragment extends Fragment {
             // Set visibility bool
             visibility = (photosBuffer.getCount() != 0);
 
-            // Get all from buffer
-            for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
-                final int mPhotoIdFinal = mPhotoId;
+            if(photosBuffer.getCount() != 0) {
 
-                // Get metadata
-                PlacePhotoMetadata mPhotoMeta = photosBuffer.get(mPhotoIdFinal);
+                // Create metadata photos array
+                PlacePhotoMetadata[] photosMetadata = new PlacePhotoMetadata[photosBuffer.getCount()];
 
-                // Get photos height
-                TypedValue photosHeightValue = new TypedValue();
-                getResources().getValue(R.dimen.details_photos_height_float,
-                        photosHeightValue,
-                        true);
+                // Get metadata photos
+                for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
+                    photosMetadata[mPhotoId] = photosBuffer.get(mPhotoId);
+                }
 
+                // Get all from buffer
+                for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
+                    final int mPhotoIdFinal = mPhotoId;
 
-                // Get photo
-                int photoHeight = ((int) (photosHeightValue.getFloat() *
-                        getResources().getDisplayMetrics().density));
+                    // Get metadata
+                    PlacePhotoMetadata mPhotoMeta = photosMetadata[mPhotoIdFinal];
 
-                mPhotoMeta.getScaledPhoto(MainActivity.getApiClient(),
-                        Integer.MAX_VALUE,
-                        photoHeight
-                ).setResultCallback(
-                        (PlacePhotoResult placePhotoResult) -> {
-                            // Get bitmap
-                            Bitmap mPhoto = placePhotoResult.getBitmap();
+                            // Get photos height
+                            TypedValue photosHeightValue = new TypedValue();
+                    getResources().getValue(R.dimen.details_photos_height_float,
+                            photosHeightValue,
+                            true);
 
-                            // Create image view
-                            ImageView mPhotoView = new ImageView(getActivity());
-                            mPhotoView.setId(mPhotoIdFinal);
-                            mPhotoView.setPadding(5, 5,
-                                    5, 5);
-                            mPhotoView.setImageBitmap(mPhoto);
+                    // Get photo
+                    int photoHeight = ((int) (photosHeightValue.getFloat() *
+                            getResources().getDisplayMetrics().density));
 
-                            // Add view
-                            photoLayout.addView(mPhotoView);
-                        }
-                );
+                    mPhotoMeta.getScaledPhoto(MainActivity.getApiClient(),
+                            Integer.MAX_VALUE,
+                            photoHeight
+                    ).setResultCallback(
+                            (PlacePhotoResult placePhotoResult) -> {
+                                // Get bitmap
+                                Bitmap mPhoto = placePhotoResult.getBitmap();
+
+                                // Create image view
+                                ImageView mPhotoView = new ImageView(getActivity());
+                                mPhotoView.setId(mPhotoIdFinal);
+                                mPhotoView.setPadding(5, 5,
+                                        5, 5);
+                                mPhotoView.setImageBitmap(mPhoto);
+
+                                // Add view
+                                photoLayout.addView(mPhotoView);
+                            }
+                    );
+                }
             }
 
-            // Delete photos buffer
-            Log.d(TAG, "Photo buffer released!");
+            // Release photos buffer
             photosBuffer.release();
+            Log.d(TAG, "Photos buffer released");
         } else visibility = false;
 
         // Set photos visibility
