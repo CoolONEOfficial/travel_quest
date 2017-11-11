@@ -22,7 +22,8 @@
             android:text="2,5"
             android:textAlignment="center"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp" />
+            android:textSize="42sp"
+            android:layout_marginTop="5dp"/>
 
         <TextView
             android:id="@+id/details_rating_star"
@@ -34,7 +35,8 @@
             android:text="★"
             android:textAlignment="viewStart"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp" />
+            android:textSize="42sp"
+            android:layout_margin="5dp" />
 
         <TextView
             android:id="@+id/details_title"
@@ -44,7 +46,8 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Title"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:layout_margin="5dp" />
 
         <TextView
             android:id="@+id/details_types"
@@ -57,7 +60,8 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Types"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:layout_margin="5dp"/>
 
     </RelativeLayout>
 
@@ -83,35 +87,75 @@
 
         </HorizontalScrollView>
 
+        <com.ms.square.android.expandabletextview.ExpandableTextView
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/details_description_expandable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/details_photos_scroll"
+            expandableTextView:maxCollapsedLines="4"
+            expandableTextView:animDuration="200">
+            <TextView
+                android:id="@id/expandable_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:textSize="16sp"
+                android:textColor="@color/primary_text" />
+            <ImageButton
+                android:id="@id/expand_collapse"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:layout_gravity="right|bottom"
+                android:background="@android:color/transparent"/>
+        </com.ms.square.android.expandabletextview.ExpandableTextView>
+
+        <!--<com.ms.square.android.expandabletextview.ExpandableTextView-->
+            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
+            <!--xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_below="@+id/details_photos_scroll"-->
+            <!--expandableTextView:maxCollapsedLines="4"-->
+            <!--android:id="@+id/details_description_expandable">-->
+            <!--<TextView-->
+                <!--android:layout_width="match_parent"-->
+                <!--android:layout_height="match_parent"-->
+                <!--android:id="@+id/details_description" />-->
+            <!--<ImageButton-->
+                <!--android:layout_width="wrap_content"-->
+                <!--android:layout_height="wrap_content"-->
+                <!--android:padding="16dp"-->
+                <!--android:layout_gravity="right|bottom"-->
+                <!--android:background="@android:color/transparent" />-->
+        <!--</com.ms.square.android.expandabletextview.ExpandableTextView>-->
+
         <TextView
             android:id="@+id/details_url"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_below="@+id/details_description"
+            android:layout_below="@id/details_description_expandable"
             android:text="Url"
             android:textColor="@color/primary_text"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            android:layout_margin="5dp" />
 
         <TextView
             android:id="@+id/details_phone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/details_description"
+            android:layout_below="@id/details_description_expandable"
             android:gravity="end"
             android:text="Phone"
             android:textAlignment="textEnd"
             android:textColor="@color/primary_text"
-            android:textSize="18sp" />
-
-        <EditText
-            android:id="@+id/details_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/details_photos_scroll"
-            android:ems="10"
-            android:inputType="textMultiLine" />
+            android:textSize="18sp"
+            android:layout_margin="5dp"/>
 
     </RelativeLayout>
 

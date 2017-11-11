@@ -7,3 +7,7 @@
 /build
 /captures
 .externalNativeBuild
+Будет удалено .idea/workspace (2).xml
+Будет удалено app/google-services.json
+Будет удалено app/libs/
+Будет удалено app/src/main/res/drawable-v21/

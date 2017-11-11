@@ -5,8 +5,4 @@
 
     <!-- To signin textView -->
     <string name="login_text_view_signin">Not signed?</string>
-
-    <!-- Prompts -->
-    <string name="login_prompt_login_or_mail">Login or mail</string>
-    <string name="login_prompt_password">Password</string>
 </resources>

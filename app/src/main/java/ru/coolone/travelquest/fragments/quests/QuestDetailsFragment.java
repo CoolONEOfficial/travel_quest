@@ -1,6 +1,5 @@
 package ru.coolone.travelquest.fragments.quests;
 
-import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -13,8 +12,10 @@ import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
@@ -23,6 +24,13 @@ import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.GenericTypeIndicator;
+import com.google.firebase.database.ValueEventListener;
+import com.ms.square.android.expandabletextview.ExpandableTextView;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -39,12 +47,13 @@ public class QuestDetailsFragment extends Fragment {
 
     // Arguments
     enum ArgKeys {
-        ARG_TITLE("title"),
-        ARG_PHONE("phone"),
-        ARG_URL("url"),
-        ARG_RATING("rating"),
-        ARG_TYPES("types"),
-        ARG_PHOTOS("photos");
+        TITLE("title"),
+        PHONE("phone"),
+        URL("url"),
+        RATING("rating"),
+        TYPES("types"),
+        DESCRIPTION_PLACE_ID("description_place_id"),
+        PHOTOS("photos");
 
         private final String val;
 
@@ -60,6 +69,9 @@ public class QuestDetailsFragment extends Fragment {
 
     // Title
     private String title;
+
+    // Description
+    private String descriptionPlaceId;
 
     // Phone
     private String phone;
@@ -101,21 +113,23 @@ public class QuestDetailsFragment extends Fragment {
             Uri url,
             float rating,
             ArrayList<Integer> types,
-            PlacePhotoMetadataResult photos) {
+            PlacePhotoMetadataResult photos,
+            String descriptionPlaceId) {
         // Create quest
         QuestDetailsFragment fragment = new QuestDetailsFragment();
 
         // Put arguments
         Bundle args = new Bundle();
-        args.putString(ArgKeys.ARG_TITLE.toString(), title);
-        args.putString(ArgKeys.ARG_PHONE.toString(), phone);
-        args.putString(ArgKeys.ARG_URL.toString(),
+        args.putString(ArgKeys.TITLE.toString(), title);
+        args.putString(ArgKeys.DESCRIPTION_PLACE_ID.toString(), descriptionPlaceId);
+        args.putString(ArgKeys.PHONE.toString(), phone);
+        args.putString(ArgKeys.URL.toString(),
                 url != null
                         ? url.toString()
                         : null);
-        args.putFloat(ArgKeys.ARG_RATING.toString(), rating);
-        args.putIntegerArrayList(ArgKeys.ARG_TYPES.toString(), types);
-        args.putParcelable(ArgKeys.ARG_PHOTOS.toString(), photos);
+        args.putFloat(ArgKeys.RATING.toString(), rating);
+        args.putIntegerArrayList(ArgKeys.TYPES.toString(), types);
+        args.putParcelable(ArgKeys.PHOTOS.toString(), photos);
         fragment.setArguments(args);
 
         return fragment;
@@ -130,7 +144,8 @@ public class QuestDetailsFragment extends Fragment {
                 place.getWebsiteUri(),
                 place.getRating(),
                 new ArrayList<>(Arrays.asList(place.getPlaceTypes().toArray(new Integer[0]))),
-                null
+                null,
+                place.getId()
         );
         Places.GeoDataApi.getPlacePhotos(MainActivity.getApiClient(), place.getId())
                 .setResultCallback(ret::setPhotos);
@@ -144,13 +159,14 @@ public class QuestDetailsFragment extends Fragment {
 
         if (args != null) {
             // Get arguments
-            title = args.getString(ArgKeys.ARG_TITLE.toString());
-            phone = args.getString(ArgKeys.ARG_PHONE.toString());
-            String urlStr = args.getString(ArgKeys.ARG_URL.toString());
+            title = args.getString(ArgKeys.TITLE.toString());
+            descriptionPlaceId = args.getString(ArgKeys.DESCRIPTION_PLACE_ID.toString());
+            phone = args.getString(ArgKeys.PHONE.toString());
+            String urlStr = args.getString(ArgKeys.URL.toString());
             if (urlStr != null)
                 url = Uri.parse(urlStr);
-            rating = args.getFloat(ArgKeys.ARG_RATING.toString());
-            types = args.getIntegerArrayList(ArgKeys.ARG_TYPES.toString());
+            rating = args.getFloat(ArgKeys.RATING.toString());
+            types = args.getIntegerArrayList(ArgKeys.TYPES.toString());
         }
     }
 
@@ -165,6 +181,7 @@ public class QuestDetailsFragment extends Fragment {
         // Get views
         final int[] viewIdArr = new int[]{
                 R.id.details_title,
+                R.id.details_description_expandable,
                 R.id.details_phone,
                 R.id.details_url,
                 R.id.details_types,
@@ -274,6 +291,55 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
+    private void refreshDescription() {
+        if (descriptionPlaceId != null) {
+
+            DatabaseReference dbRef = FirebaseDatabase
+                    .getInstance()
+                    .getReference();
+
+            dbRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    // Get description
+                    String description = dataSnapshot.child("quests")
+                            .child(getLocaleStr())
+                            .child(descriptionPlaceId)
+                            .getValue(String.class);
+
+                    if (description != null &&
+                            !description.isEmpty()) {
+                        // Set description
+                        ((ExpandableTextView) viewArr.get(R.id.details_description_expandable))
+                                .setText(description);
+
+                        // Show description
+                        viewArr.get(R.id.details_description_expandable).setVisibility(View.VISIBLE);
+                    } else {
+                        Log.e(TAG, "Description is null or empty!");
+
+                        // Hide description
+                        viewArr.get(R.id.details_description_expandable).setVisibility(View.GONE);
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.e(TAG,
+                            "Read description from db error: "
+                                    + databaseError.getMessage());
+
+                    // Hide description
+                    viewArr.get(R.id.details_description_expandable).setVisibility(View.GONE);
+                }
+            });
+        }
+    }
+
+    private String getLocaleStr() {
+        return getResources().getConfiguration().locale.getCountry();
+    }
+
     private void refreshPhotos() {
         boolean visibility;
 
@@ -284,7 +350,6 @@ public class QuestDetailsFragment extends Fragment {
 
             // Get photos buffer
             PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
-            Log.d(TAG, "Photo buffer created");
 
             // Set visibility bool
             visibility = (photosBuffer.getCount() != 0);
@@ -356,6 +421,7 @@ public class QuestDetailsFragment extends Fragment {
         refreshUrl();
         refreshRating();
         refreshTypes();
+        refreshDescription();
         refreshPhotos();
     }
 
@@ -393,6 +459,15 @@ public class QuestDetailsFragment extends Fragment {
     public void setRating(float rating) {
         this.rating = rating;
         refreshRating();
+    }
+
+    public String getDescriptionPlaceId() {
+        return descriptionPlaceId;
+    }
+
+    public void setDescriptionPlaceId(String descriptionPlaceId) {
+        this.descriptionPlaceId = descriptionPlaceId;
+        refreshDescription();
     }
 
     public ArrayList<Integer> getTypes() {
@@ -482,7 +557,7 @@ public class QuestDetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if(onCreateViewListener == null) {
+        if (onCreateViewListener == null) {
             throw new ClassCastException(
                     getActivity().toString() + " must implements OnCreateViewListener"
             );
