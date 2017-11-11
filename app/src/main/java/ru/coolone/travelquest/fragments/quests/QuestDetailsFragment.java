@@ -291,6 +291,51 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
+    private String getTabs() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int mTab = 0; mTab < tabsCount; mTab++)
+            stringBuilder.append('\t');
+        return stringBuilder.toString();
+    }
+
+    int tabsCount = 1;
+    StringBuilder placeDescription;
+    private void parseDescription(Iterable<DataSnapshot> descriptionChild, int step) {
+
+        Log.d(TAG, "Start parse description.. \n\tStep: " + String.valueOf(step));
+
+        if(step == 0) {
+            // Clear buffer
+            placeDescription = new StringBuilder();
+        }
+
+        for(DataSnapshot mDescriptionChild: descriptionChild) {
+            // Add title
+            placeDescription.append(getTabs() + mDescriptionChild.getKey() + "\n");
+            if(mDescriptionChild.getChildrenCount() == 0) {
+                // Add description
+                placeDescription.append(mDescriptionChild.getValue(String.class) + '\n');
+                Log.d(TAG, "Add description");
+            } else {
+                // To next level
+                tabsCount++;
+                parseDescription(mDescriptionChild.getChildren(), step + 1);
+                tabsCount--;
+                Log.d(TAG, "Added title");
+            }
+        }
+
+        if(step == 0) {
+            // Set description
+            ((ExpandableTextView) viewArr.get(R.id.details_description_expandable))
+                    .setText(placeDescription.toString());
+        }
+    }
+
+    private void parseDescription(Iterable<DataSnapshot> descriptionChild) {
+        parseDescription(descriptionChild, 0);
+    }
+
     private void refreshDescription() {
         if (descriptionPlaceId != null) {
 
@@ -302,16 +347,17 @@ public class QuestDetailsFragment extends Fragment {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // Get description
-                    String description = dataSnapshot.child("quests")
+                    Log.d(TAG, "get from db in:\n\t\"quests\"\n\t\""
+                            + getLocaleStr() + "\"\n\t"
+                            + descriptionPlaceId + "\"\n\t\"");
+                    Iterable<DataSnapshot> descriptionChild = dataSnapshot.child("quests")
                             .child(getLocaleStr())
                             .child(descriptionPlaceId)
-                            .getValue(String.class);
+                            .getChildren();
 
-                    if (description != null &&
-                            !description.isEmpty()) {
-                        // Set description
-                        ((ExpandableTextView) viewArr.get(R.id.details_description_expandable))
-                                .setText(description);
+                    if (descriptionChild != null) {
+                        // Parse/Set description
+                        parseDescription(descriptionChild);
 
                         // Show description
                         viewArr.get(R.id.details_description_expandable).setVisibility(View.VISIBLE);
@@ -350,6 +396,7 @@ public class QuestDetailsFragment extends Fragment {
 
             // Get photos buffer
             PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
+            Log.d(TAG, "Photo buffer created");
 
             // Set visibility bool
             visibility = (photosBuffer.getCount() != 0);
@@ -371,10 +418,6 @@ public class QuestDetailsFragment extends Fragment {
                 // Get photo
                 int photoHeight = ((int) (photosHeightValue.getFloat() *
                         getResources().getDisplayMetrics().density));
-                Log.d(TAG, "Photo height:" + String.valueOf(photoHeight));
-                Log.d(TAG, "Density:" +
-                        String.valueOf(getResources().getDisplayMetrics().density));
-                Log.d(TAG, "Photo height float:" + String.valueOf(photosHeightValue.getFloat()));
 
                 mPhotoMeta.getScaledPhoto(MainActivity.getApiClient(),
                         Integer.MAX_VALUE,

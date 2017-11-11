@@ -10,7 +10,8 @@
         android:id="@+id/layout_details_head"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/accent">
+        android:background="@color/accent"
+        android:padding="5dp">
 
         <TextView
             android:id="@+id/details_rating"
@@ -22,8 +23,7 @@
             android:text="2,5"
             android:textAlignment="center"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp"
-            android:layout_marginTop="5dp"/>
+            android:textSize="42sp"/>
 
         <TextView
             android:id="@+id/details_rating_star"
@@ -35,8 +35,7 @@
             android:text="★"
             android:textAlignment="viewStart"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp"
-            android:layout_margin="5dp" />
+            android:textSize="42sp"/>
 
         <TextView
             android:id="@+id/details_title"
@@ -46,8 +45,7 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Title"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="24sp"
-            android:layout_margin="5dp" />
+            android:textSize="24sp"/>
 
         <TextView
             android:id="@+id/details_types"
@@ -60,8 +58,7 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Types"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="18sp"
-            android:layout_margin="5dp"/>
+            android:textSize="18sp"/>
 
     </RelativeLayout>
 
@@ -70,7 +67,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffffff"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="5dp">
 
         <HorizontalScrollView
             android:id="@+id/details_photos_scroll"
@@ -96,14 +94,21 @@
             android:layout_below="@id/details_photos_scroll"
             expandableTextView:maxCollapsedLines="4"
             expandableTextView:animDuration="200">
-            <TextView
-                android:id="@id/expandable_text"
-                android:layout_width="match_parent"
+            <ScrollView
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginRight="10dp"
-                android:textSize="16sp"
-                android:textColor="@color/primary_text" />
+                android:scrollbars="vertical">
+                <TextView
+                    android:id="@id/expandable_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:maxLines = "9999"
+                    android:scrollbars = "vertical"
+                    android:lines="7"
+                    android:textColor="@color/primary_text" />
+            </ScrollView>
+
             <ImageButton
                 android:id="@id/expand_collapse"
                 android:layout_width="wrap_content"
@@ -112,26 +117,6 @@
                 android:layout_gravity="right|bottom"
                 android:background="@android:color/transparent"/>
         </com.ms.square.android.expandabletextview.ExpandableTextView>
-
-        <!--<com.ms.square.android.expandabletextview.ExpandableTextView-->
-            <!--xmlns:android="http://schemas.android.com/apk/res/android"-->
-            <!--xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_below="@+id/details_photos_scroll"-->
-            <!--expandableTextView:maxCollapsedLines="4"-->
-            <!--android:id="@+id/details_description_expandable">-->
-            <!--<TextView-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="match_parent"-->
-                <!--android:id="@+id/details_description" />-->
-            <!--<ImageButton-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:padding="16dp"-->
-                <!--android:layout_gravity="right|bottom"-->
-                <!--android:background="@android:color/transparent" />-->
-        <!--</com.ms.square.android.expandabletextview.ExpandableTextView>-->
 
         <TextView
             android:id="@+id/details_url"
@@ -142,8 +127,7 @@
             android:layout_below="@id/details_description_expandable"
             android:text="Url"
             android:textColor="@color/primary_text"
-            android:textSize="18sp"
-            android:layout_margin="5dp" />
+            android:textSize="18sp"/>
 
         <TextView
             android:id="@+id/details_phone"
@@ -154,8 +138,7 @@
             android:text="Phone"
             android:textAlignment="textEnd"
             android:textColor="@color/primary_text"
-            android:textSize="18sp"
-            android:layout_margin="5dp"/>
+            android:textSize="18sp"/>
 
     </RelativeLayout>
 
