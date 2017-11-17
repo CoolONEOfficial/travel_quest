@@ -1,7 +1,7 @@
-package ru.coolone.travelquest.fragments;
+package ru.coolone.travelquest.ui.fragments.quests;
 
-import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,7 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.ViewTreeObserver;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -35,11 +35,9 @@ import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
-import java.util.Locale;
-
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.activities.MainActivity;
-import ru.coolone.travelquest.fragments.quests.QuestDetailsFragment;
+import ru.coolone.travelquest.ui.activities.MainActivity;
+import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment;
 
 public class QuestsFragment extends Fragment
         implements OnMapReadyCallback,
@@ -134,8 +132,18 @@ public class QuestsFragment extends Fragment
                         break;
                     case COLLAPSED:
                         map.setPadding(0, 0,
-                                0, panel.findViewById(R.id.layout_details_head)
+                                0, panel.findViewById(R.id.layout_details_header)
                                         .getHeight());
+                        panel.findViewById(R.id.details_photos_scroll)
+                                .setVisibility(View.VISIBLE);
+                        break;
+                    case ANCHORED:
+                        panel.findViewById(R.id.details_photos_scroll)
+                                .setVisibility(View.VISIBLE);
+                        break;
+                    case EXPANDED:
+                        panel.findViewById(R.id.details_photos_scroll)
+                                .setVisibility(View.GONE);
                 }
             }
         });
@@ -298,7 +306,7 @@ public class QuestsFragment extends Fragment
             ViewGroup container, Bundle savedInstanceState) {
         view.post(() -> {
             // Get panel height
-            RelativeLayout detailsHead = view.findViewById(R.id.layout_details_head);
+            RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
             Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
 
             // Set panel anchor point

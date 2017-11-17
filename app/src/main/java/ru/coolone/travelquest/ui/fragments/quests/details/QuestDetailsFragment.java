@@ -1,18 +1,23 @@
-package ru.coolone.travelquest.fragments.quests;
+package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Rect;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -28,22 +33,23 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.GenericTypeIndicator;
 import com.google.firebase.database.ValueEventListener;
-import com.ms.square.android.expandabletextview.ExpandableTextView;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.activities.MainActivity;
+import ru.coolone.travelquest.ui.activities.MainActivity;
+import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
+import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+import ru.coolone.travelquest.ui.views.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.views.adapters.BaseSectionedHeader;
 
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
-
-    private View view;
 
     // Arguments
     enum ArgKeys {
@@ -67,28 +73,15 @@ public class QuestDetailsFragment extends Fragment {
         }
     }
 
-    // Title
     private String title;
-
-    // Description
     private String descriptionPlaceId;
-
-    // Phone
+    RecyclerView descriptionRecyclerView;
     private String phone;
-
-    // Url
     private Uri url;
-
-    // Rating
     private float rating;
-
-    // Types
     private ArrayList<Integer> types;
-
-    // Photos
     private PlacePhotoMetadataResult photos;
 
-    // Views
     private SparseArray<View> viewArr = new SparseArray<>();
 
     public QuestDetailsFragment() {
@@ -103,7 +96,7 @@ public class QuestDetailsFragment extends Fragment {
      * @param phone  Phone number.
      * @param url    Website url.
      * @param rating Rating.
-     * @param types  Array of type ID's (Integers)
+     * @param types  Array of type ID's
      * @return A new instance of fragment QuestDetailsFragment.
      */
     public static QuestDetailsFragment newInstance(
@@ -174,17 +167,17 @@ public class QuestDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        view = inflater.inflate(R.layout.fragment_quest_details,
+        View view = inflater.inflate(R.layout.fragment_quest_details,
                 container,
                 false);
 
         // Get views
         final int[] viewIdArr = new int[]{
-                R.id.layout_details_head,
+                R.id.layout_details_header,
                 R.id.layout_details_body,
                 R.id.layout_details,
                 R.id.details_title,
-                R.id.details_description_expandable,
+                R.id.details_description_recycler,
                 R.id.details_phone,
                 R.id.details_url,
                 R.id.details_types,
@@ -198,6 +191,10 @@ public class QuestDetailsFragment extends Fragment {
             viewArr.put(mViewId,
                     view.findViewById(mViewId));
         }
+
+        // Recycle view
+        descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
+        setDescriptionRecyclerView(descriptionRecyclerView);
 
         // Refresh views
         refresh();
@@ -236,8 +233,8 @@ public class QuestDetailsFragment extends Fragment {
                         ? View.VISIBLE
                         : View.GONE
         );
-        if(visibility)
-            ((RelativeLayout.LayoutParams)viewArr.get(R.id.details_delimiter).getLayoutParams())
+        if (visibility)
+            ((RelativeLayout.LayoutParams) viewArr.get(R.id.details_delimiter).getLayoutParams())
                     .addRule(RelativeLayout.ABOVE,
                             R.id.details_phone);
     }
@@ -295,8 +292,8 @@ public class QuestDetailsFragment extends Fragment {
                         ? View.VISIBLE
                         : View.GONE
         );
-        if(visibility)
-            ((RelativeLayout.LayoutParams)viewArr.get(R.id.details_delimiter).getLayoutParams())
+        if (visibility)
+            ((RelativeLayout.LayoutParams) viewArr.get(R.id.details_delimiter).getLayoutParams())
                     .addRule(RelativeLayout.ABOVE,
                             R.id.details_url);
     }
@@ -321,49 +318,178 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
-    private String getTabs() {
-        StringBuilder stringBuilder = new StringBuilder();
-        for (int mTab = 0; mTab < tabsCount; mTab++)
-            stringBuilder.append('\t');
-        return stringBuilder.toString();
+    private int getResourcesColor(int id) {
+        // Get theme
+        Resources.Theme theme = null;
+        try {
+            theme = getActivity().getTheme();
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+
+        // Get color from resources
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+                theme != null)
+            return getResources().getColor(id, theme);
+        else
+            return getResources().getColor(id);
     }
 
-    int tabsCount = 1;
-    StringBuilder placeDescription;
-    private void parseDescription(Iterable<DataSnapshot> descriptionChild, int step) {
+    private void setDescriptionRecyclerView(RecyclerView recyclerView) {
+        // Recycler view
+        recyclerView.setHasFixedSize(true);
 
-        Log.d(TAG, "Start parse description.. \n\tStep: " + String.valueOf(step));
+        // Layout manager
+        RecyclerView.LayoutManager descriptionLayoutManager = new LinearLayoutManager(getActivity());
+        recyclerView.setLayoutManager(descriptionLayoutManager);
 
-        if(step == 0) {
-            // Clear buffer
-            placeDescription = new StringBuilder();
-        }
+        // Adapter
+        QuestDetailsAdapter adapter = (recyclerView.getAdapter() == null
+                ? new QuestDetailsAdapter()
+                : (QuestDetailsAdapter) recyclerView.getAdapter());
+        adapter.setHeaderClickListener(
+                new BaseSectionedAdapter.OnClickListener
+                        <BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder>() {
+                    @Override
+                    public void onClick(BaseSectionedHeader i,
+                                        QuestDetailsAdapter.HeaderHolder i2,
+                                        int section) {
+                        Log.d(TAG, "Toggle section expanded");
+                        adapter.toggleSectionExpanded(section);
+                    }
 
-        for(DataSnapshot mDescriptionChild: descriptionChild) {
-            // Add title
-            placeDescription.append(getTabs() + mDescriptionChild.getKey() + "\n");
-            if(mDescriptionChild.getChildrenCount() == 0) {
+                    @Override
+                    public boolean onLongClick(BaseSectionedHeader i,
+                                               QuestDetailsAdapter.HeaderHolder i2,
+                                               int section) {
+                        return false;
+                    }
+                });
+        adapter.shouldShowHeadersForEmptySections(true);
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void parseDescription(
+            Iterable<DataSnapshot> descriptionChild,
+            int step,
+            RecyclerView recyclerView
+    ) {
+        // Get adapter
+        QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
+
+        StringBuilder tabsBuilder = new StringBuilder("\t");
+        for (int mTab = 0; mTab < step; mTab++)
+            tabsBuilder.append("\t");
+        String tabs = tabsBuilder.toString();
+
+        Log.d(TAG, tabs + "mAdapter:" + ((adapter == null) ? "null" : String.valueOf(adapter)));
+        Log.d(TAG, tabs + "mStep:" + String.valueOf(step));
+
+        // Update adapter
+        Log.d(TAG, tabs + "Start loop...");
+        int mDescriptionChildNum = 0;
+        for (DataSnapshot mDescriptionChild : descriptionChild) {
+            mDescriptionChildNum++;
+            Log.d(TAG, tabs + "loop number " + String.valueOf(mDescriptionChildNum)
+                    + "\n" + tabs + "title: " + String.valueOf(mDescriptionChild.getKey()));
+
+            BaseQuestDetailsItem item;
+
+            if (mDescriptionChild.getChildrenCount() == 0) {
+                Log.d(TAG, tabs + "Adding text");
+
                 // Add description
-                placeDescription.append(mDescriptionChild.getValue(String.class) + '\n');
-                Log.d(TAG, "Add description");
+                item = new QuestDetailsItemText() {{
+                    setText(mDescriptionChild.getValue(String.class));
+                }};
             } else {
-                // To next level
-                tabsCount++;
-                parseDescription(mDescriptionChild.getChildren(), step + 1);
-                tabsCount--;
-                Log.d(TAG, "Added title");
+                Log.d(TAG, tabs + "Adding recycler");
+
+                // Create recycler
+                RecyclerView nextRecyclerView = new RecyclerView(getActivity());
+                setDescriptionRecyclerView(nextRecyclerView);
+
+                // Get adapter
+                QuestDetailsAdapter nextAdapter =
+                        (QuestDetailsAdapter) nextRecyclerView.getAdapter();
+
+                // Add to adapter in next level
+                parseDescription(mDescriptionChild.getChildren(),
+                        step + 1,
+                        nextRecyclerView);
+
+                // Update adapter
+                nextRecyclerView.setAdapter(nextAdapter);
+
+                // Add adapter
+                item = new QuestDetailsItemRecycler() {{
+                    setRecyclerView(nextRecyclerView);
+                }};
             }
+
+            // Add section
+            Log.d(TAG, tabs + "Adding section..."
+                    + "\n" + tabs + "item: " + String.valueOf(item));
+            adapter.addSection(
+                    new BaseSectionedHeader() {{
+                        setTitle(mDescriptionChild.getKey());
+                    }},
+                    new ArrayList<BaseQuestDetailsItem>() {{
+                        add(item);
+                    }}
+            );
         }
 
-        if(step == 0) {
-            // Set description
-            ((ExpandableTextView) viewArr.get(R.id.details_description_expandable))
-                    .setText(placeDescription.toString());
-        }
+        Log.d(TAG, tabs + "End loop...");
+//        adapter.collapseAllSections();
+
+        // Apply adapter
+        recyclerView.setAdapter(adapter);
     }
 
     private void parseDescription(Iterable<DataSnapshot> descriptionChild) {
-        parseDescription(descriptionChild, 0);
+        RecyclerView recyclerView = getActivity().findViewById(R.id.details_description_recycler);
+//        QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
+//
+//        adapter.addSection(
+//
+//                new BaseSectionedHeader() {{
+//                    setTitle("super title");
+//                }},
+//                new ArrayList<BaseQuestDetailsItem>() {{
+//
+//                    RecyclerView nextRecyclerView = createDescriptionRecyclerView();
+//                    QuestDetailsAdapter nextAdapter = (QuestDetailsAdapter) nextRecyclerView.getAdapter();
+//
+//                    nextAdapter.addSection(
+//                            new BaseSectionedHeader() {{
+//                                setTitle("super subtitle");
+//                            }},
+//                            new ArrayList<BaseQuestDetailsItem>() {{
+//                                add(new QuestDetailsItemText() {{
+//                                    setText("super subtitle text!");
+//                                }});
+//                            }}
+//                    );
+//
+//                    Log.d(TAG, "next adapter: " + String.valueOf(nextAdapter));
+//                    nextRecyclerView.setAdapter(nextAdapter);
+//
+//                    QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler() {{
+//                        setRecyclerView(nextRecyclerView);
+//                    }};
+//
+//                    add(itemRecycler);
+//                }}
+//        );
+//
+//        Log.d(TAG, "adapter: " + String.valueOf(adapter));
+//        recyclerView.setAdapter(adapter);
+
+        parseDescription(descriptionChild,
+                0,
+                recyclerView);
+        Log.d(TAG, "Childs count: " + String.valueOf(recyclerView.getAdapter().getItemCount()));
     }
 
     private void refreshDescription() {
@@ -378,10 +504,10 @@ public class QuestDetailsFragment extends Fragment {
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     // Get description
                     Log.d(TAG, "get from db in:\n\t\"quests\"\n\t\""
-                            + getLocaleStr() + "\"\n\t"
+                            + MainActivity.getLocaleStr(getContext()) + "\"\n\t"
                             + descriptionPlaceId + "\"\n\t\"");
                     Iterable<DataSnapshot> descriptionChild = dataSnapshot.child("quests")
-                            .child(getLocaleStr())
+                            .child(MainActivity.getLocaleStr(getContext()))
                             .child(descriptionPlaceId)
                             .getChildren();
 
@@ -390,12 +516,14 @@ public class QuestDetailsFragment extends Fragment {
                         parseDescription(descriptionChild);
 
                         // Show description
-                        viewArr.get(R.id.details_description_expandable).setVisibility(View.VISIBLE);
+                        viewArr.get(R.id.details_description_recycler)
+                                .setVisibility(View.VISIBLE);
                     } else {
                         Log.e(TAG, "Description is null or empty!");
 
                         // Hide description
-                        viewArr.get(R.id.details_description_expandable).setVisibility(View.GONE);
+                        viewArr.get(R.id.details_description_recycler)
+                                .setVisibility(View.GONE);
                     }
                 }
 
@@ -406,14 +534,21 @@ public class QuestDetailsFragment extends Fragment {
                                     + databaseError.getMessage());
 
                     // Hide description
-                    viewArr.get(R.id.details_description_expandable).setVisibility(View.GONE);
+                    viewArr.get(R.id.details_description_recycler)
+                            .setVisibility(View.GONE);
                 }
             });
         }
     }
 
-    private String getLocaleStr() {
-        return getResources().getConfiguration().locale.getCountry();
+    private Rect getSizeWithoutStatusbar() {
+        View content = getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT);
+        return new Rect(
+                0,
+                0,
+                content.getWidth(),
+                content.getHeight()
+        );
     }
 
     private void refreshPhotos() {
@@ -423,6 +558,9 @@ public class QuestDetailsFragment extends Fragment {
         if (photos != null) {
             // Get photos layout
             LinearLayout photoLayout = (LinearLayout) viewArr.get(R.id.details_photos_layout);
+            ViewGroup.LayoutParams params = photoLayout.getLayoutParams();
+            params.height = getSizeWithoutStatusbar().height() / 3;
+            photoLayout.setLayoutParams(params);
 
             // Get photos buffer
             PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
@@ -431,7 +569,7 @@ public class QuestDetailsFragment extends Fragment {
             // Set visibility bool
             visibility = (photosBuffer.getCount() != 0);
 
-            if(photosBuffer.getCount() != 0) {
+            if (photosBuffer.getCount() != 0) {
 
                 // Create metadata photos array
                 PlacePhotoMetadata[] photosMetadata = new PlacePhotoMetadata[photosBuffer.getCount()];
@@ -448,35 +586,31 @@ public class QuestDetailsFragment extends Fragment {
                     // Get metadata
                     PlacePhotoMetadata mPhotoMeta = photosMetadata[mPhotoIdFinal];
 
-                            // Get photos height
-                            TypedValue photosHeightValue = new TypedValue();
+                    // Get photos height
+                    TypedValue photosHeightValue = new TypedValue();
                     getResources().getValue(R.dimen.details_photos_height_float,
                             photosHeightValue,
                             true);
 
-                    // Get photo
-                    int photoHeight = ((int) (photosHeightValue.getFloat() *
-                            getResources().getDisplayMetrics().density));
+                    mPhotoMeta.getPhoto(MainActivity.getApiClient())
+                            .setResultCallback(
+                                    (PlacePhotoResult placePhotoResult) -> {
+                                        // Get bitmap
+                                        Bitmap mPhoto = placePhotoResult.getBitmap();
 
-                    mPhotoMeta.getScaledPhoto(MainActivity.getApiClient(),
-                            Integer.MAX_VALUE,
-                            photoHeight
-                    ).setResultCallback(
-                            (PlacePhotoResult placePhotoResult) -> {
-                                // Get bitmap
-                                Bitmap mPhoto = placePhotoResult.getBitmap();
+                                        // Create image view
+                                        ImageView mPhotoView = new ImageView(getActivity());
+                                        mPhotoView.setId(mPhotoIdFinal);
+                                        mPhotoView.setPadding(5, 5,
+                                                5, 5);
+                                        mPhotoView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                                        mPhotoView.setAdjustViewBounds(true);
+                                        mPhotoView.setImageBitmap(mPhoto);
 
-                                // Create image view
-                                ImageView mPhotoView = new ImageView(getActivity());
-                                mPhotoView.setId(mPhotoIdFinal);
-                                mPhotoView.setPadding(5, 5,
-                                        5, 5);
-                                mPhotoView.setImageBitmap(mPhoto);
-
-                                // Add view
-                                photoLayout.addView(mPhotoView);
-                            }
-                    );
+                                        // Add view
+                                        photoLayout.addView(mPhotoView);
+                                    }
+                            );
                 }
             }
 
@@ -642,7 +776,7 @@ public class QuestDetailsFragment extends Fragment {
         super.onStart();
         if (onCreateViewListener == null) {
             throw new ClassCastException(
-                    getActivity().toString() + " must implements OnCreateViewListener"
+                    "Parent activity must implements OnCreateViewListener"
             );
         }
     }

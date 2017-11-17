@@ -4,26 +4,28 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="ru.coolone.travelquest.fragments.quests.QuestDetailsFragment">
+    tools:context=".ui.fragments.quests.details.QuestDetailsFragment">
 
     <RelativeLayout
-        android:id="@+id/layout_details_head"
+        android:id="@+id/layout_details_header"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/accent"
-        android:padding="5dp">
+        android:padding="@dimen/content_inset">
 
         <TextView
             android:id="@+id/details_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
             android:layout_toLeftOf="@+id/details_rating_star"
             android:layout_toStartOf="@+id/details_rating_star"
             android:gravity="end"
-            android:text="2,5"
+            android:text="5.0"
             android:textAlignment="center"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp" />
+            android:textSize="38sp"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/details_rating_star"
@@ -31,11 +33,13 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
             android:gravity="start"
             android:text="★"
             android:textAlignment="viewStart"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="42sp" />
+            android:textSize="38sp"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/details_title"
@@ -45,7 +49,8 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Title"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/details_types"
@@ -58,7 +63,8 @@
             android:layout_toStartOf="@+id/details_rating"
             android:text="Types"
             android:textColor="@color/primary_text_inverse"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            tools:ignore="HardcodedText" />
 
     </RelativeLayout>
 
@@ -68,7 +74,7 @@
         android:layout_height="match_parent"
         android:background="#ffffff"
         android:orientation="vertical"
-        android:padding="5dp">
+        android:padding="@dimen/content_inset">
 
         <HorizontalScrollView
             android:id="@+id/details_photos_scroll"
@@ -85,49 +91,13 @@
 
         </HorizontalScrollView>
 
-        <ScrollView
-            android:id="@+id/details_description_expandable_scroll"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/details_description_recycler"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_above="@+id/details_delimiter"
             android:layout_below="@id/details_photos_scroll"
-            android:scrollbars="vertical">
-
-            <com.ms.square.android.expandabletextview.ExpandableTextView xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:expandableTextView="http://schemas.android.com/apk/res-auto"
-                android:id="@+id/details_description_expandable"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                expandableTextView:animDuration="200"
-                expandableTextView:maxCollapsedLines="99">
-
-                <TextView
-                    android:id="@id/expandable_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:lines="99"
-                    android:maxLines="9999"
-                    android:scrollbars="vertical"
-                    android:textColor="@color/primary_text"
-                    android:textSize="16sp" />
-
-                <ImageButton
-                    android:id="@id/expand_collapse"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="right|bottom"
-                    android:background="@android:color/transparent"
-                    android:padding="16dp" />
-            </com.ms.square.android.expandabletextview.ExpandableTextView>
-        </ScrollView>
-
-        <View
-            android:id="@+id/details_delimiter"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_above="@id/details_phone"
-            android:layout_margin="5dp"
-            android:background="@color/secondary_text_inverse" />
+            android:scrollbars="vertical" />
 
         <TextView
             android:id="@+id/details_url"
@@ -138,7 +108,8 @@
             android:layout_alignParentRight="true"
             android:text="Url"
             android:textColor="@color/primary_text"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            tools:ignore="HardcodedText" />
 
         <TextView
             android:id="@+id/details_phone"
@@ -149,7 +120,16 @@
             android:layout_toStartOf="@id/details_url"
             android:text="Phone"
             android:textColor="@color/primary_text"
-            android:textSize="18sp" />
+            android:textSize="18sp"
+            tools:ignore="HardcodedText" />
+
+        <View
+            android:id="@+id/details_delimiter"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_above="@id/details_phone"
+            android:layout_margin="@dimen/content_inset"
+            android:background="@color/secondary_text_inverse" />
 
     </RelativeLayout>
 

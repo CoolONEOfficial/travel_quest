@@ -1,16 +1,8 @@
-package ru.coolone.travelquest.activities;
+package ru.coolone.travelquest.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
-import android.util.Log;
-import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.google.firebase.auth.FirebaseUser;
-
-import java.io.Serializable;
 
 import ru.coolone.travelquest.R;
 

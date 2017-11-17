@@ -1,12 +1,10 @@
-package ru.coolone.travelquest.activities;
+package ru.coolone.travelquest.ui.activities;
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -30,11 +28,9 @@ import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Locale;
-
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.fragments.QuestsFragment;
-import ru.coolone.travelquest.fragments.SettingsFragment;
+import ru.coolone.travelquest.ui.fragments.quests.QuestsFragment;
+import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
@@ -107,7 +103,7 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
 
         Log.d(TAG, "Current locale: "
-                + getResources().getConfiguration().locale.getCountry());
+                + getLocaleStr(this));
 
         // Strict mode
         StrictMode.setThreadPolicy(
@@ -227,12 +223,11 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public static Locale getCurrentLocale(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return context.getResources().getConfiguration().getLocales().get(0);
-        } else {
-            return context.getResources().getConfiguration().locale;
-        }
+    public static String getLocaleStr(Context context) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            return context.getResources().getConfiguration().getLocales().get(0).getCountry();
+        else
+            return context.getResources().getConfiguration().locale.getCountry();
     }
 
     public static GoogleApiClient getApiClient() {
