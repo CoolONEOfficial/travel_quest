@@ -36,6 +36,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -430,18 +431,26 @@ public class QuestDetailsFragment extends Fragment {
             // Add section
             Log.d(TAG, tabs + "Adding section..."
                     + "\n" + tabs + "item: " + String.valueOf(item));
+            BaseSectionedHeader header = new BaseSectionedHeader() {{
+                String title = mDescriptionChild.getKey();
+                if(title.equals("0"))
+                    setTitle(getResources().getString(R.string.details_description));
+                else
+                    setTitle(title);
+            }};
+
+            ArrayList<BaseQuestDetailsItem> items = new ArrayList<BaseQuestDetailsItem>() {{
+                add(item);
+            }};
+
             adapter.addSection(
-                    new BaseSectionedHeader() {{
-                        setTitle(mDescriptionChild.getKey());
-                    }},
-                    new ArrayList<BaseQuestDetailsItem>() {{
-                        add(item);
-                    }}
+                    header,
+                    items
             );
         }
 
         Log.d(TAG, tabs + "End loop...");
-//        adapter.collapseAllSections();
+        adapter.collapseAllSections();
 
         // Apply adapter
         recyclerView.setAdapter(adapter);
@@ -449,42 +458,6 @@ public class QuestDetailsFragment extends Fragment {
 
     private void parseDescription(Iterable<DataSnapshot> descriptionChild) {
         RecyclerView recyclerView = getActivity().findViewById(R.id.details_description_recycler);
-//        QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
-//
-//        adapter.addSection(
-//
-//                new BaseSectionedHeader() {{
-//                    setTitle("super title");
-//                }},
-//                new ArrayList<BaseQuestDetailsItem>() {{
-//
-//                    RecyclerView nextRecyclerView = createDescriptionRecyclerView();
-//                    QuestDetailsAdapter nextAdapter = (QuestDetailsAdapter) nextRecyclerView.getAdapter();
-//
-//                    nextAdapter.addSection(
-//                            new BaseSectionedHeader() {{
-//                                setTitle("super subtitle");
-//                            }},
-//                            new ArrayList<BaseQuestDetailsItem>() {{
-//                                add(new QuestDetailsItemText() {{
-//                                    setText("super subtitle text!");
-//                                }});
-//                            }}
-//                    );
-//
-//                    Log.d(TAG, "next adapter: " + String.valueOf(nextAdapter));
-//                    nextRecyclerView.setAdapter(nextAdapter);
-//
-//                    QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler() {{
-//                        setRecyclerView(nextRecyclerView);
-//                    }};
-//
-//                    add(itemRecycler);
-//                }}
-//        );
-//
-//        Log.d(TAG, "adapter: " + String.valueOf(adapter));
-//        recyclerView.setAdapter(adapter);
 
         parseDescription(descriptionChild,
                 0,

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="details_description_head_caret_description">Кнопка, которая открывает подзаголовок</string>
+
+    <string name="details_description">Описание</string>
 </resources>
