@@ -29,14 +29,11 @@ import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -179,6 +176,9 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.layout_details,
                 R.id.details_title,
                 R.id.details_description_recycler,
+                R.id.details_description_unknown_text,
+                R.id.details_description_unknown_text_primary,
+                R.id.details_description_unknown_text_smile,
                 R.id.details_phone,
                 R.id.details_url,
                 R.id.details_types,
@@ -370,148 +370,153 @@ public class QuestDetailsFragment extends Fragment {
         recyclerView.setAdapter(adapter);
     }
 
-    private void parseDescription(
-            Iterable<DataSnapshot> descriptionChild,
-            int step,
-            RecyclerView recyclerView
-    ) {
-        // Get adapter
+    private void refreshDescription() {
+
+        if (descriptionPlaceId != null) {
+
+            FirebaseFirestore db = FirebaseFirestore
+                    .getInstance();
+
+            DocumentReference docRef =
+                    db
+                            .collection(MainActivity.getLocaleStr(getContext()))
+                            .document("quests")
+                            .collection(descriptionPlaceId)
+                            .document("doc");
+
+            // Parse description
+
+            // Get doc
+            docRef
+                    .get()
+                    .addOnCompleteListener(task -> {
+                        DocumentSnapshot doc = task.getResult();
+
+                        // Show description
+                        setDescriptionVisibility(View.VISIBLE);
+
+                        // Parse description
+                        parse(doc, 0, (RecyclerView) viewArr.get(R.id.details_description_recycler));
+                    })
+                    .addOnFailureListener(this::descriptionError);
+        }
+    }
+
+    private void setDescriptionVisibility(int visibility) {
+        int errorVisibility = (visibility == View.VISIBLE
+                ? View.GONE
+                : View.VISIBLE);
+
+        // Description visibility
+        viewArr.get(R.id.details_description_recycler)
+                .setVisibility(visibility);
+
+        // Error visibility
+        viewArr.get(R.id.details_description_unknown_text)
+                .setVisibility(errorVisibility);
+        viewArr.get(R.id.details_description_unknown_text_primary)
+                .setVisibility(errorVisibility);
+        ((TextView) viewArr.get(R.id.details_description_unknown_text_primary)).setText("");
+        viewArr.get(R.id.details_description_unknown_text_smile)
+                .setVisibility(errorVisibility);
+    }
+
+    private void parse(DocumentSnapshot doc, int step, RecyclerView recyclerView) {
+        Log.d(TAG, "Parse step: " + step);
+
         QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
 
-        StringBuilder tabsBuilder = new StringBuilder("\t");
-        for (int mTab = 0; mTab < step; mTab++)
-            tabsBuilder.append("\t");
-        String tabs = tabsBuilder.toString();
+        // Get sub collections count
+        if (doc.exists()) {
+            for (int mCollectionId = 0; mCollectionId < doc.getLong("count"); mCollectionId++) {
+                // Get collection (wait get task)
+                doc
+                        .getReference()
+                        .collection(String.valueOf(mCollectionId))
+                        .get()
+                        .addOnSuccessListener(collection -> {
 
-        Log.d(TAG, tabs + "mAdapter:" + ((adapter == null) ? "null" : String.valueOf(adapter)));
-        Log.d(TAG, tabs + "mStep:" + String.valueOf(step));
+                            Log.d(TAG, "Collection:"
+                                    + "\n\tsize: " + collection.size());
+
+                            // Parse doc
+                            for (int mmNextDocId = 0; mmNextDocId < collection.size(); mmNextDocId++) {
+                                DocumentSnapshot mNextDoc = collection
+                                        .getDocuments()
+                                        .get(mmNextDocId);
+
+                                Log.d(TAG, "Next doc:"
+                                        + "\n\ttitle: " +
+                                        (mNextDoc.contains("title")
+                                                ? mNextDoc.get("title")
+                                                : "unknown")
+                                        + "\n\ttext: " +
+                                        (mNextDoc.contains("text")
+                                                ? mNextDoc.get("text")
+                                                : "unknown"));
+
+                                // Header
+                                BaseSectionedHeader header = new BaseSectionedHeader() {{
+                                    setTitle(mNextDoc.contains("title")
+                                            ? (String) mNextDoc.get("title")
+                                            : getResources().getString(R.string.details_title_unknown));
+                                }};
+
+                                // Item
+                                BaseQuestDetailsItem item;
+
+                                if (mNextDoc.contains("text")) {
+                                    // Text
+                                    item = new QuestDetailsItemText() {{
+                                        setText((String) mNextDoc.get("text"));
+                                    }};
+                                } else {
+                                    // Recycler
+                                    item = new QuestDetailsItemRecycler() {{
+                                        // Create recycler view
+                                        RecyclerView itemRecyclerView = new RecyclerView(getActivity());
+                                        setDescriptionRecyclerView(itemRecyclerView);
+
+                                        // Parse recycler view
+                                        parse(mNextDoc, step + 1, itemRecyclerView);
+
+                                        // Set recycler view
+                                        setRecyclerView(itemRecyclerView);
+                                    }};
+                                }
+
+                                // Add section
+                                adapter.addSection(
+                                        header,
+                                        new ArrayList<BaseQuestDetailsItem>() {{
+                                            add(item);
+                                        }}
+                                );
+                                adapter.notifyDataSetChanged();
+                            }
+                        }).addOnFailureListener(this::descriptionError);
+            }
+        } else setDescriptionVisibility(View.GONE);
+
+        // Collapse all
+        if (step != 0)
+            adapter.collapseAllSections();
 
         // Update adapter
-        Log.d(TAG, tabs + "Start loop...");
-        int mDescriptionChildNum = 0;
-        for (DataSnapshot mDescriptionChild : descriptionChild) {
-            mDescriptionChildNum++;
-            Log.d(TAG, tabs + "loop number " + String.valueOf(mDescriptionChildNum)
-                    + "\n" + tabs + "title: " + String.valueOf(mDescriptionChild.getKey()));
-
-            BaseQuestDetailsItem item;
-
-            if (mDescriptionChild.getChildrenCount() == 0) {
-                Log.d(TAG, tabs + "Adding text");
-
-                // Add description
-                item = new QuestDetailsItemText() {{
-                    setText(mDescriptionChild.getValue(String.class));
-                }};
-            } else {
-                Log.d(TAG, tabs + "Adding recycler");
-
-                // Create recycler
-                RecyclerView nextRecyclerView = new RecyclerView(getActivity());
-                setDescriptionRecyclerView(nextRecyclerView);
-
-                // Get adapter
-                QuestDetailsAdapter nextAdapter =
-                        (QuestDetailsAdapter) nextRecyclerView.getAdapter();
-
-                // Add to adapter in next level
-                parseDescription(mDescriptionChild.getChildren(),
-                        step + 1,
-                        nextRecyclerView);
-
-                // Update adapter
-                nextRecyclerView.setAdapter(nextAdapter);
-
-                // Add adapter
-                item = new QuestDetailsItemRecycler() {{
-                    setRecyclerView(nextRecyclerView);
-                }};
-            }
-
-            // Add section
-            Log.d(TAG, tabs + "Adding section..."
-                    + "\n" + tabs + "item: " + String.valueOf(item));
-            BaseSectionedHeader header = new BaseSectionedHeader() {{
-                String title = mDescriptionChild.getKey();
-                if(title.equals("0"))
-                    setTitle(getResources().getString(R.string.details_description));
-                else
-                    setTitle(title);
-            }};
-
-            ArrayList<BaseQuestDetailsItem> items = new ArrayList<BaseQuestDetailsItem>() {{
-                add(item);
-            }};
-
-            adapter.addSection(
-                    header,
-                    items
-            );
-        }
-
-        Log.d(TAG, tabs + "End loop...");
-        adapter.collapseAllSections();
-
-        // Apply adapter
         recyclerView.setAdapter(adapter);
     }
 
-    private void parseDescription(Iterable<DataSnapshot> descriptionChild) {
-        RecyclerView recyclerView = getActivity().findViewById(R.id.details_description_recycler);
+    private void descriptionError(String errStr) {
+        // Hide description and show errors
+        setDescriptionVisibility(View.GONE);
 
-        parseDescription(descriptionChild,
-                0,
-                recyclerView);
-        Log.d(TAG, "Childs count: " + String.valueOf(recyclerView.getAdapter().getItemCount()));
+        // Set error text
+        ((TextView) viewArr.get(R.id.details_description_unknown_text_primary))
+                .setText(errStr);
     }
 
-    private void refreshDescription() {
-        if (descriptionPlaceId != null) {
-
-            DatabaseReference dbRef = FirebaseDatabase
-                    .getInstance()
-                    .getReference();
-
-            dbRef.addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    // Get description
-                    Log.d(TAG, "get from db in:\n\t\"quests\"\n\t\""
-                            + MainActivity.getLocaleStr(getContext()) + "\"\n\t"
-                            + descriptionPlaceId + "\"\n\t\"");
-                    Iterable<DataSnapshot> descriptionChild = dataSnapshot.child("quests")
-                            .child(MainActivity.getLocaleStr(getContext()))
-                            .child(descriptionPlaceId)
-                            .getChildren();
-
-                    if (descriptionChild != null) {
-                        // Parse/Set description
-                        parseDescription(descriptionChild);
-
-                        // Show description
-                        viewArr.get(R.id.details_description_recycler)
-                                .setVisibility(View.VISIBLE);
-                    } else {
-                        Log.e(TAG, "Description is null or empty!");
-
-                        // Hide description
-                        viewArr.get(R.id.details_description_recycler)
-                                .setVisibility(View.GONE);
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.e(TAG,
-                            "Read description from db error: "
-                                    + databaseError.getMessage());
-
-                    // Hide description
-                    viewArr.get(R.id.details_description_recycler)
-                            .setVisibility(View.GONE);
-                }
-            });
-        }
+    private void descriptionError(Exception e) {
+        descriptionError(e.getLocalizedMessage());
     }
 
     private Rect getSizeWithoutStatusbar() {

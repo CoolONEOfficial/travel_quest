@@ -3,11 +3,13 @@
     <!-- Map default zoom -->
     <dimen name="map_zoom">14px</dimen>
 
+    <!-- Unknown -->
+    <string name="details_title_unknown">Unknown title</string>
+    <string name="details_description_unknown">Unknown description</string>
+
     <!-- Photos line height -->
     <dimen name="details_photos_height">150dp</dimen>
     <item name="details_photos_height_float" format="float" type="dimen">150.0</item>
 
     <string name="details_description_head_caret_description">Button, that open\'s subtitle</string>
-
-    <string name="details_description">Description</string>
 </resources>
