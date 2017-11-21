@@ -202,7 +202,7 @@ public class QuestDetailsFragment extends Fragment {
                                     height
                             );
                             mChildImage.setLayoutParams(mChildImageParams);
-                            mChildImage.requestLayout();
+//                            mChildImage.requestLayout();
                         }
                     }
                 });
@@ -538,8 +538,6 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     private void refreshPhotos() {
-        // --- Parse photos ---
-
         new PhotoTask(this).execute(placeId);
     }
 
@@ -572,7 +570,7 @@ public class QuestDetailsFragment extends Fragment {
                          mAttributedPhotoId++) {
 
                         // Get the first bitmap and its attributions
-                        PlacePhotoMetadata photo = photoMetadataBuffer.get(mAttributedPhotoId);
+                        PlacePhotoMetadata photo = photoMetadataBuffer.get(mAttributedPhotoId).freeze();
                         CharSequence attribution = photo.getAttributions();
 
                         // Load a scaled bitmap for this photo
@@ -640,7 +638,6 @@ public class QuestDetailsFragment extends Fragment {
         );
         imageView.setLayoutParams(layoutParams);
         imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        imageView.requestLayout();
     }
 
     private void setPhotosVisibility(int visibility) {

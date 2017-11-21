@@ -140,9 +140,9 @@ public class QuestsFragment extends Fragment
 
                 // Set height
                 if (photosHeightDimen != -1) {
+                    photos.requestLayout();
                     photos.getLayoutParams().height =
                             (int) getResources().getDimension(photosHeightDimen);
-                    photos.requestLayout();
                 }
             }
         });
