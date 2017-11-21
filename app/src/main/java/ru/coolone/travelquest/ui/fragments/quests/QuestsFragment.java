@@ -1,7 +1,7 @@
 package ru.coolone.travelquest.ui.fragments.quests;
 
+import android.app.Activity;
 import android.content.res.Resources;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -70,13 +69,6 @@ public class QuestsFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-//        geoDataClient = Places.getGeoDataClient(getActivity());
-
-//        if (getArguments() != null) {
-//            // Map style
-//            mapStyle = getArguments().getString(ARG_MAP_STYLE);
-//        }
     }
 
     @Override
@@ -125,6 +117,9 @@ public class QuestsFragment extends Fragment
             public void onPanelStateChanged(View panel,
                                             SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
+                View photos = panel.findViewById(R.id.details_photos_scroll);
+                int photosHeightDimen = -1;
+
                 switch (newState) {
                     case HIDDEN:
                         map.setPadding(0, 0,
@@ -134,16 +129,20 @@ public class QuestsFragment extends Fragment
                         map.setPadding(0, 0,
                                 0, panel.findViewById(R.id.layout_details_header)
                                         .getHeight());
-                        panel.findViewById(R.id.details_photos_scroll)
-                                .setVisibility(View.VISIBLE);
-                        break;
-                    case ANCHORED:
-                        panel.findViewById(R.id.details_photos_scroll)
-                                .setVisibility(View.VISIBLE);
                         break;
                     case EXPANDED:
-                        panel.findViewById(R.id.details_photos_scroll)
-                                .setVisibility(View.GONE);
+                        photosHeightDimen = R.dimen.details_photos_size_expanded;
+                        break;
+                    case ANCHORED:
+                        photosHeightDimen = R.dimen.details_photos_size_anchored;
+                        break;
+                }
+
+                // Set height
+                if (photosHeightDimen != -1) {
+                    photos.getLayoutParams().height =
+                            (int) getResources().getDimension(photosHeightDimen);
+                    photos.requestLayout();
                 }
             }
         });
@@ -190,9 +189,7 @@ public class QuestsFragment extends Fragment
                 null
         );
 
-        if (mapStyle == null) {
-            Log.e(TAG, "Map style by \"R.string.settings_map_style_key\" not found!");
-        } else {
+        if (mapStyle != null) {
             // Add prefix
             mapStyle = "map_" + mapStyle;
 
@@ -213,6 +210,10 @@ public class QuestsFragment extends Fragment
             } catch (Resources.NotFoundException e) {
                 Log.e(TAG, "Find style \"" + mapStyle + "\" failed", e);
             }
+        } else {
+            Log.d(TAG, "Map style by "
+                    + getResources().getString(R.string.settings_map_style_key)
+                    + " not found!\nUsing default map style...");
         }
     }
 
@@ -248,7 +249,7 @@ public class QuestsFragment extends Fragment
         // - Show details -
 
         // Create details fragment
-        QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(getActivity(), place);
+        QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(place);
         detailsFragment.setOnCreateViewListener(this);
 
         // Set
@@ -300,6 +301,12 @@ public class QuestsFragment extends Fragment
         toolbarContainer.removeView(toolbarView);
     }
 
+    static public float getPanelAnchoredHeight(Activity activity) {
+        return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
+                / MainActivity.getAppHeightWithoutBar(activity);
+    }
+
+
     @Override
     public void onQuestDetailsCreateView(
             @NonNull View view,
@@ -309,8 +316,17 @@ public class QuestsFragment extends Fragment
             RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
             Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
 
+//            int height = MainActivity.getAppHeightWithoutBar(getActivity());
+//            Log.d(TAG, "Height without bar: " + height);
+//
+//            float photosHeight = getResources().getDimension(R.dimen.details_photos_height);
+//            Log.d(TAG, "Height photos: " + photosHeight);
+//
+//            float anchorPoint = photosHeight / height;
+//            Log.d(TAG, "Anchor point: " + anchorPoint);
+
             // Set panel anchor point
-            slidingPanel.setAnchorPoint(0.5f);
+            slidingPanel.setAnchorPoint(getPanelAnchoredHeight(getActivity()));
 
             // Set panel height
             slidingPanel.setPanelHeight(detailsHead.getHeight());

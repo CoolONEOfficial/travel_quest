@@ -4,5 +4,5 @@
 
     <!-- Unknown title -->
     <string name="details_title_unknown">Название неизвестно</string>
-    <string name="details_description_unknown">Описания нет</string>
+    <string name="details_description_unknown">Описание не доступно\nили его еще не добавили</string>
 </resources>

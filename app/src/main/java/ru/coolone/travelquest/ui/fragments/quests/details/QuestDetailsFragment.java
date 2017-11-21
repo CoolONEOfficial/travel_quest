@@ -3,8 +3,8 @@ package ru.coolone.travelquest.ui.fragments.quests.details;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.Rect;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -13,11 +13,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.SparseArray;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -27,15 +25,14 @@ import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
-import com.google.android.gms.location.places.PlacePhotoResult;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
@@ -55,9 +52,8 @@ public class QuestDetailsFragment extends Fragment {
         PHONE("phone"),
         URL("url"),
         RATING("rating"),
-        TYPES("types"),
-        DESCRIPTION_PLACE_ID("description_place_id"),
-        PHOTOS("photos");
+        TYPE_ID("type_id"),
+        PLACE_ID("place_id");
 
         private final String val;
 
@@ -71,14 +67,15 @@ public class QuestDetailsFragment extends Fragment {
         }
     }
 
+    private SlidingUpPanelLayout panel;
+
     private String title;
-    private String descriptionPlaceId;
+    private String placeId;
     RecyclerView descriptionRecyclerView;
     private String phone;
     private Uri url;
     private float rating;
-    private ArrayList<Integer> types;
-    private PlacePhotoMetadataResult photos;
+    private int typeId;
 
     private SparseArray<View> viewArr = new SparseArray<>();
 
@@ -90,56 +87,49 @@ public class QuestDetailsFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param title  Title.
-     * @param phone  Phone number.
-     * @param url    Website url.
-     * @param rating Rating.
-     * @param types  Array of type ID's
+     * @param title   Title.
+     * @param phone   Phone number.
+     * @param url     Website url.
+     * @param rating  Rating.
+     * @param typeId  Type id
+     * @param placeId Place id
      * @return A new instance of fragment QuestDetailsFragment.
      */
     public static QuestDetailsFragment newInstance(
-            Context parent,
             String title,
             String phone,
             Uri url,
             float rating,
-            ArrayList<Integer> types,
-            PlacePhotoMetadataResult photos,
-            String descriptionPlaceId) {
+            int typeId,
+            String placeId) {
         // Create quest
         QuestDetailsFragment fragment = new QuestDetailsFragment();
 
         // Put arguments
         Bundle args = new Bundle();
         args.putString(ArgKeys.TITLE.toString(), title);
-        args.putString(ArgKeys.DESCRIPTION_PLACE_ID.toString(), descriptionPlaceId);
+        args.putString(ArgKeys.PLACE_ID.toString(), placeId);
         args.putString(ArgKeys.PHONE.toString(), phone);
         args.putString(ArgKeys.URL.toString(),
                 url != null
                         ? url.toString()
                         : null);
         args.putFloat(ArgKeys.RATING.toString(), rating);
-        args.putIntegerArrayList(ArgKeys.TYPES.toString(), types);
-        args.putParcelable(ArgKeys.PHOTOS.toString(), photos);
+        args.putInt(ArgKeys.TYPE_ID.toString(), typeId);
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    public static QuestDetailsFragment newInstance(Context parent,
-                                                   Place place) {
+    public static QuestDetailsFragment newInstance(Place place) {
         QuestDetailsFragment ret = newInstance(
-                parent,
                 place.getName().toString(),
                 place.getPhoneNumber().toString(),
                 place.getWebsiteUri(),
                 place.getRating(),
-                new ArrayList<>(Arrays.asList(place.getPlaceTypes().toArray(new Integer[0]))),
-                null,
+                place.getPlaceTypes().get(0),
                 place.getId()
         );
-        Places.GeoDataApi.getPlacePhotos(MainActivity.getApiClient(), place.getId())
-                .setResultCallback(ret::setPhotos);
         return ret;
     }
 
@@ -151,13 +141,13 @@ public class QuestDetailsFragment extends Fragment {
         if (args != null) {
             // Get arguments
             title = args.getString(ArgKeys.TITLE.toString());
-            descriptionPlaceId = args.getString(ArgKeys.DESCRIPTION_PLACE_ID.toString());
+            placeId = args.getString(ArgKeys.PLACE_ID.toString());
             phone = args.getString(ArgKeys.PHONE.toString());
             String urlStr = args.getString(ArgKeys.URL.toString());
             if (urlStr != null)
                 url = Uri.parse(urlStr);
             rating = args.getFloat(ArgKeys.RATING.toString());
-            types = args.getIntegerArrayList(ArgKeys.TYPES.toString());
+            typeId = args.getInt(ArgKeys.TYPE_ID.toString());
         }
     }
 
@@ -193,6 +183,30 @@ public class QuestDetailsFragment extends Fragment {
                     view.findViewById(mViewId));
         }
 
+        viewArr.get(R.id.details_photos_layout).addOnLayoutChangeListener(
+                (v, left, top, right, bottom,
+                 oldLeft, oldTop, oldRight, oldBottom) -> {
+
+                    int heightWas = oldBottom - oldTop; // bottom exclusive, top inclusive
+                    if (v.getHeight() != heightWas) {
+                        LinearLayout layout = (LinearLayout) v;
+
+                        for (int mChildId = 0; mChildId < layout.getChildCount(); mChildId++) {
+                            ImageView mChildImage = (ImageView) layout.getChildAt(mChildId);
+                            int width = right - left;
+                            int height = bottom - top;
+                            Log.d(TAG, "Photo layout changed:\n\twidth: " + width
+                                    + "\n\t height: " + height);
+                            LinearLayout.LayoutParams mChildImageParams = new LinearLayout.LayoutParams(
+                                    height,
+                                    height
+                            );
+                            mChildImage.setLayoutParams(mChildImageParams);
+                            mChildImage.requestLayout();
+                        }
+                    }
+                });
+
         // Recycle view
         descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
         setDescriptionRecyclerView(descriptionRecyclerView);
@@ -204,6 +218,14 @@ public class QuestDetailsFragment extends Fragment {
         onCreateViewListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
+    }
+
+    public void setPhotosSize(int size) {
+
+    }
+
+    private int getFragmentHeight() {
+        return getActivity().findViewById(R.id.layout_details).getHeight();
     }
 
     private void refreshTitle() {
@@ -241,34 +263,19 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     private void refreshTypes() {
-        if (types != null) {
-            // - Get types string -
+        // - Get type string -
+        String typeStr = placeTypeIdToString(getActivity(), typeId);
 
-            // Generate types string
-            StringBuilder typesStrBuilder = new StringBuilder();
-            for (Integer mType : types) {
-                String placeTypeStr = placeTypeIdToString(getActivity(), mType);
+        // - Set type string -
 
-                if (placeTypeStr != null && !placeTypeStr.trim().isEmpty())
-                    typesStrBuilder.append(placeTypeIdToString(getActivity(), mType))
-                            .append(", ");
-            }
+        // Set visibility
+        int visibility = (typeStr == null || typeStr.isEmpty())
+                ? View.GONE
+                : View.VISIBLE;
+        viewArr.get(R.id.details_types).setVisibility(visibility);
 
-            // Get types string
-            String typesStr = typesStrBuilder.toString();
-            if (typesStr.endsWith(", "))
-                typesStr = typesStr.substring(0, typesStr.length() - 2);
-
-            // - Set types string -
-
-            // Set visibility
-            int visibility = typesStr.isEmpty()
-                    ? View.GONE
-                    : View.VISIBLE;
-            viewArr.get(R.id.details_types).setVisibility(visibility);
-
-            ((TextView) viewArr.get(R.id.details_types)).setText(typesStr);
-        }
+        // Set text
+        ((TextView) viewArr.get(R.id.details_types)).setText(typeStr);
     }
 
     private void refreshUrl() {
@@ -372,7 +379,7 @@ public class QuestDetailsFragment extends Fragment {
 
     private void refreshDescription() {
 
-        if (descriptionPlaceId != null) {
+        if (placeId != null) {
 
             FirebaseFirestore db = FirebaseFirestore
                     .getInstance();
@@ -381,7 +388,7 @@ public class QuestDetailsFragment extends Fragment {
                     db
                             .collection(MainActivity.getLocaleStr(getContext()))
                             .document("quests")
-                            .collection(descriptionPlaceId)
+                            .collection(placeId)
                             .document("doc");
 
             // Parse description
@@ -428,6 +435,8 @@ public class QuestDetailsFragment extends Fragment {
 
         // Get sub collections count
         if (doc.exists()) {
+            Log.d(TAG, "Collection count: " + doc.getLong("count"));
+
             for (int mCollectionId = 0; mCollectionId < doc.getLong("count"); mCollectionId++) {
                 // Get collection (wait get task)
                 doc
@@ -440,10 +449,10 @@ public class QuestDetailsFragment extends Fragment {
                                     + "\n\tsize: " + collection.size());
 
                             // Parse doc
-                            for (int mmNextDocId = 0; mmNextDocId < collection.size(); mmNextDocId++) {
+                            for (int mNextDocId = 0; mNextDocId < collection.size(); mNextDocId++) {
                                 DocumentSnapshot mNextDoc = collection
                                         .getDocuments()
-                                        .get(mmNextDocId);
+                                        .get(mNextDocId);
 
                                 Log.d(TAG, "Next doc:"
                                         + "\n\ttitle: " +
@@ -486,14 +495,23 @@ public class QuestDetailsFragment extends Fragment {
                                 }
 
                                 // Add section
-                                adapter.addSection(
-                                        header,
-                                        new ArrayList<BaseQuestDetailsItem>() {{
-                                            add(item);
-                                        }}
-                                );
-                                adapter.notifyDataSetChanged();
+                                if (mNextDocId == 0)
+                                    adapter.addSection(
+                                            0,
+                                            header,
+                                            new ArrayList<BaseQuestDetailsItem>() {{
+                                                add(item);
+                                            }}
+                                    );
+                                else
+                                    adapter.addSection(
+                                            header,
+                                            new ArrayList<BaseQuestDetailsItem>() {{
+                                                add(item);
+                                            }}
+                                    );
                             }
+                            adapter.notifyDataSetChanged();
                         }).addOnFailureListener(this::descriptionError);
             }
         } else setDescriptionVisibility(View.GONE);
@@ -519,89 +537,110 @@ public class QuestDetailsFragment extends Fragment {
         descriptionError(e.getLocalizedMessage());
     }
 
-    private Rect getSizeWithoutStatusbar() {
-        View content = getActivity().getWindow().findViewById(Window.ID_ANDROID_CONTENT);
-        return new Rect(
-                0,
-                0,
-                content.getWidth(),
-                content.getHeight()
-        );
+    private void refreshPhotos() {
+        // --- Parse photos ---
+
+        new PhotoTask(this).execute(placeId);
     }
 
-    private void refreshPhotos() {
-        boolean visibility;
+    static private class PhotoTask extends AsyncTask<String, Void, PhotoTask.AttributedPhoto[]> {
 
-        // Set photos
-        if (photos != null) {
-            // Get photos layout
-            LinearLayout photoLayout = (LinearLayout) viewArr.get(R.id.details_photos_layout);
-            ViewGroup.LayoutParams params = photoLayout.getLayoutParams();
-            params.height = getSizeWithoutStatusbar().height() / 3;
-            photoLayout.setLayoutParams(params);
+        QuestDetailsFragment parent;
 
-            // Get photos buffer
-            PlacePhotoMetadataBuffer photosBuffer = photos.getPhotoMetadata();
-            Log.d(TAG, "Photo buffer created");
+        PhotoTask(QuestDetailsFragment parent) {
+            this.parent = parent;
+        }
 
-            // Set visibility bool
-            visibility = (photosBuffer.getCount() != 0);
-
-            if (photosBuffer.getCount() != 0) {
-
-                // Create metadata photos array
-                PlacePhotoMetadata[] photosMetadata = new PlacePhotoMetadata[photosBuffer.getCount()];
-
-                // Get metadata photos
-                for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
-                    photosMetadata[mPhotoId] = photosBuffer.get(mPhotoId);
-                }
-
-                // Get all from buffer
-                for (int mPhotoId = 0; mPhotoId < photosBuffer.getCount(); mPhotoId++) {
-                    final int mPhotoIdFinal = mPhotoId;
-
-                    // Get metadata
-                    PlacePhotoMetadata mPhotoMeta = photosMetadata[mPhotoIdFinal];
-
-                    // Get photos height
-                    TypedValue photosHeightValue = new TypedValue();
-                    getResources().getValue(R.dimen.details_photos_height_float,
-                            photosHeightValue,
-                            true);
-
-                    mPhotoMeta.getPhoto(MainActivity.getApiClient())
-                            .setResultCallback(
-                                    (PlacePhotoResult placePhotoResult) -> {
-                                        // Get bitmap
-                                        Bitmap mPhoto = placePhotoResult.getBitmap();
-
-                                        // Create image view
-                                        ImageView mPhotoView = new ImageView(getActivity());
-                                        mPhotoView.setId(mPhotoIdFinal);
-                                        mPhotoView.setPadding(5, 5,
-                                                5, 5);
-                                        mPhotoView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                                        mPhotoView.setAdjustViewBounds(true);
-                                        mPhotoView.setImageBitmap(mPhoto);
-
-                                        // Add view
-                                        photoLayout.addView(mPhotoView);
-                                    }
-                            );
-                }
+        @Override
+        protected AttributedPhoto[] doInBackground(String... params) {
+            if (params.length != 1) {
+                return null;
             }
+            final String placeId = params[0];
+            AttributedPhoto[] attributedPhotoArr = null;
 
-            // Release photos buffer
-            photosBuffer.release();
-            Log.d(TAG, "Photos buffer released");
-        } else visibility = false;
+            PlacePhotoMetadataResult result = Places.GeoDataApi
+                    .getPlacePhotos(MainActivity.getApiClient(), placeId).await();
 
-        // Set photos visibility
-        setPhotosVisibility(visibility
-                ? View.VISIBLE
-                : View.GONE
+            if (result.getStatus().isSuccess()) {
+                PlacePhotoMetadataBuffer photoMetadataBuffer = result.getPhotoMetadata();
+                if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
+                    attributedPhotoArr = new AttributedPhoto[photoMetadataBuffer.getCount()];
+
+                    for (int mAttributedPhotoId = 0;
+                         mAttributedPhotoId < photoMetadataBuffer.getCount();
+                         mAttributedPhotoId++) {
+
+                        // Get the first bitmap and its attributions
+                        PlacePhotoMetadata photo = photoMetadataBuffer.get(mAttributedPhotoId);
+                        CharSequence attribution = photo.getAttributions();
+
+                        // Load a scaled bitmap for this photo
+                        Bitmap image = photo.getPhoto(MainActivity.getApiClient())
+                                .await()
+                                .getBitmap();
+
+                        attributedPhotoArr[mAttributedPhotoId] = new AttributedPhoto(attribution, image);
+                    }
+                }
+                // Release the PlacePhotoMetadataBuffer
+                photoMetadataBuffer.release();
+            }
+            return attributedPhotoArr;
+        }
+
+        @Override
+        protected void onPostExecute(AttributedPhoto[] attributedPhotoArr) {
+            if (attributedPhotoArr != null && attributedPhotoArr.length != 0) {
+                for (AttributedPhoto mAttributedPhoto : attributedPhotoArr) {
+                    // Create image view
+                    ImageView mPhotoView = new ImageView(parent.getActivity());
+                    parent.setDescriptionPhotoImageView(mPhotoView);
+                    mPhotoView.setImageBitmap(mAttributedPhoto.bitmap);
+
+                    // Add view
+                    ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout)).addView(mPhotoView);
+
+//                    // Display the attribution as HTML content if set.
+//                    if (mAttributedPhoto.attribution == null) {
+//                        mText.setVisibility(View.GONE);
+//                    } else {
+//                        mText.setVisibility(View.VISIBLE);
+//                        mText.setText(Html.fromHtml(attributedPhoto.attribution.toString()));
+//                    }
+                }
+
+            } else {
+                // Hide photos
+                parent.setPhotosVisibility(View.GONE);
+            }
+        }
+
+        /**
+         * Holder for an image and its attribution
+         */
+        class AttributedPhoto {
+
+            public final CharSequence attribution;
+
+            public final Bitmap bitmap;
+
+            public AttributedPhoto(CharSequence attribution, Bitmap bitmap) {
+                this.attribution = attribution;
+                this.bitmap = bitmap;
+            }
+        }
+    }
+
+    private void setDescriptionPhotoImageView(ImageView imageView) {
+        // Set photo image view
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                (int) getResources().getDimension(R.dimen.details_photos_size_anchored),
+                (int) getResources().getDimension(R.dimen.details_photos_size_anchored)
         );
+        imageView.setLayoutParams(layoutParams);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        imageView.requestLayout();
     }
 
     private void setPhotosVisibility(int visibility) {
@@ -656,31 +695,23 @@ public class QuestDetailsFragment extends Fragment {
         refreshRating();
     }
 
-    public String getDescriptionPlaceId() {
-        return descriptionPlaceId;
+    public String getPlaceId() {
+        return placeId;
     }
 
-    public void setDescriptionPlaceId(String descriptionPlaceId) {
-        this.descriptionPlaceId = descriptionPlaceId;
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
         refreshDescription();
-    }
-
-    public ArrayList<Integer> getTypes() {
-        return types;
-    }
-
-    public void setTypes(ArrayList<Integer> types) {
-        this.types = types;
-        refreshTypes();
-    }
-
-    public PlacePhotoMetadataResult getPhotos() {
-        return photos;
-    }
-
-    public void setPhotos(PlacePhotoMetadataResult photos) {
-        this.photos = photos;
         refreshPhotos();
+    }
+
+    public int getType() {
+        return typeId;
+    }
+
+    public void setTypes(int typeId) {
+        this.typeId = typeId;
+        refreshTypes();
     }
 
     private static String placeTypeIdToString(Context parent, Integer placeTypeId) {
