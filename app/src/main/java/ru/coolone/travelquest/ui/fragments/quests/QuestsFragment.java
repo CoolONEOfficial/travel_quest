@@ -117,7 +117,6 @@ public class QuestsFragment extends Fragment
             public void onPanelStateChanged(View panel,
                                             SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
-                View photos = panel.findViewById(R.id.details_photos_scroll);
                 int photosHeightDimen = -1;
 
                 switch (newState) {
@@ -140,9 +139,14 @@ public class QuestsFragment extends Fragment
 
                 // Set height
                 if (photosHeightDimen != -1) {
-                    photos.requestLayout();
-                    photos.getLayoutParams().height =
-                            (int) getResources().getDimension(photosHeightDimen);
+                    LinearLayout photos = panel.findViewById(R.id.details_photos_layout);
+
+                    for (int mPhotoId = 0; mPhotoId < photos.getChildCount(); mPhotoId++) {
+                        View mPhoto = photos.getChildAt(mPhotoId);
+                        mPhoto.getLayoutParams().height =
+                                (int) getResources().getDimension(photosHeightDimen);
+                        photos.requestLayout();
+                    }
                 }
             }
         });
@@ -315,15 +319,6 @@ public class QuestsFragment extends Fragment
             // Get panel height
             RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
             Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
-
-//            int height = MainActivity.getAppHeightWithoutBar(getActivity());
-//            Log.d(TAG, "Height without bar: " + height);
-//
-//            float photosHeight = getResources().getDimension(R.dimen.details_photos_height);
-//            Log.d(TAG, "Height photos: " + photosHeight);
-//
-//            float anchorPoint = photosHeight / height;
-//            Log.d(TAG, "Anchor point: " + anchorPoint);
 
             // Set panel anchor point
             slidingPanel.setAnchorPoint(getPanelAnchoredHeight(getActivity()));

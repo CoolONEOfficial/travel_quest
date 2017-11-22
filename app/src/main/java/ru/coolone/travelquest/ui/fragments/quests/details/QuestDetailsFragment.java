@@ -183,30 +183,6 @@ public class QuestDetailsFragment extends Fragment {
                     view.findViewById(mViewId));
         }
 
-        viewArr.get(R.id.details_photos_layout).addOnLayoutChangeListener(
-                (v, left, top, right, bottom,
-                 oldLeft, oldTop, oldRight, oldBottom) -> {
-
-                    int heightWas = oldBottom - oldTop; // bottom exclusive, top inclusive
-                    if (v.getHeight() != heightWas) {
-                        LinearLayout layout = (LinearLayout) v;
-
-                        for (int mChildId = 0; mChildId < layout.getChildCount(); mChildId++) {
-                            ImageView mChildImage = (ImageView) layout.getChildAt(mChildId);
-                            int width = right - left;
-                            int height = bottom - top;
-                            Log.d(TAG, "Photo layout changed:\n\twidth: " + width
-                                    + "\n\t height: " + height);
-                            LinearLayout.LayoutParams mChildImageParams = new LinearLayout.LayoutParams(
-                                    height,
-                                    height
-                            );
-                            mChildImage.setLayoutParams(mChildImageParams);
-//                            mChildImage.requestLayout();
-                        }
-                    }
-                });
-
         // Recycle view
         descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
         setDescriptionRecyclerView(descriptionRecyclerView);
@@ -397,13 +373,15 @@ public class QuestDetailsFragment extends Fragment {
             docRef
                     .get()
                     .addOnCompleteListener(task -> {
-                        DocumentSnapshot doc = task.getResult();
+                        if (task.isSuccessful()) {
+                            DocumentSnapshot doc = task.getResult();
 
-                        // Show description
-                        setDescriptionVisibility(View.VISIBLE);
+                            // Show description
+                            setDescriptionVisibility(View.VISIBLE);
 
-                        // Parse description
-                        parse(doc, 0, (RecyclerView) viewArr.get(R.id.details_description_recycler));
+                            // Parse description
+                            parse(doc, 0, (RecyclerView) viewArr.get(R.id.details_description_recycler));
+                        } else descriptionError("Get document task not successful");
                     })
                     .addOnFailureListener(this::descriptionError);
         }
@@ -574,7 +552,7 @@ public class QuestDetailsFragment extends Fragment {
                         CharSequence attribution = photo.getAttributions();
 
                         // Load a scaled bitmap for this photo
-                        Bitmap image = photo.getPhoto(MainActivity.getApiClient())
+                        Bitmap image = photo.freeze().getPhoto(MainActivity.getApiClient())
                                 .await()
                                 .getBitmap();
 

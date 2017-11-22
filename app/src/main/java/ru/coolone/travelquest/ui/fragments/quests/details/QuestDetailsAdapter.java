@@ -1,6 +1,5 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
-import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
