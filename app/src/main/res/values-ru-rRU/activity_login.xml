@@ -5,8 +5,4 @@
 
     <!-- To signin textView -->
     <string name="login_text_view_signin">Не зарегистрированы?</string>
-
-    <!-- Prompts -->
-    <string name="login_prompt_login_or_mail">Логин или эл. почта</string>
-    <string name="login_prompt_password">Пароль</string>
 </resources>

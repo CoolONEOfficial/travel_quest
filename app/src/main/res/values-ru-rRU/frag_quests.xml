@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="details_description_head_caret_description">Кнопка, которая открывает подзаголовок</string>
-
     <!-- Unknown title -->
     <string name="details_title_unknown">Название неизвестно</string>
     <string name="details_description_unknown">Описание не доступно\nили его еще не добавили</string>
+
+    <string name="details_description_head_caret_description">Кнопка, которая открывает подзаголовок</string>
 </resources>

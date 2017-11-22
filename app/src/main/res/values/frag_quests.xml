@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Map default zoom -->
-    <dimen name="map_zoom">14px</dimen>
-
     <!-- Unknown -->
     <string name="details_title_unknown">Unknown title</string>
     <string name="details_description_unknown">Description is not available\nor has not been added yet</string>
+
+    <string name="details_description_head_caret_description">Button, that open\'s subtitle</string>
 
     <!-- Photos line height -->
     <dimen name="details_photos_size_anchored">200dp</dimen>
     <dimen name="details_photos_size_expanded">100dp</dimen>
 
-    <string name="details_description_head_caret_description">Button, that open\'s subtitle</string>
+    <!-- Map default zoom -->
+    <dimen name="map_zoom">14px</dimen>
 </resources>

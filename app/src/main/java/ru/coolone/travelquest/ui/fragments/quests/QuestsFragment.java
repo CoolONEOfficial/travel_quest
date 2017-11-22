@@ -111,14 +111,24 @@ public class QuestsFragment extends Fragment
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
+                LinearLayout photos = panel.findViewById(R.id.details_photos_layout);
+                float anchoredOffset = getPanelAnchoredOffset(getActivity());
+                if (slideOffset > anchoredOffset) {
+                    // Change photos height
+                    for (int mPhotoId = 0; mPhotoId < photos.getChildCount(); mPhotoId++) {
+                        photos.getChildAt(mPhotoId).getLayoutParams().height =
+                                (int) (getResources().getDimension(R.dimen.details_photos_size_anchored)
+                                        * (1 - (slideOffset - anchoredOffset)));
+                    }
+                    photos.requestLayout();
+                }
             }
 
             @Override
             public void onPanelStateChanged(View panel,
                                             SlidingUpPanelLayout.PanelState previousState,
                                             SlidingUpPanelLayout.PanelState newState) {
-                int photosHeightDimen = -1;
-
+                // Set map padding
                 switch (newState) {
                     case HIDDEN:
                         map.setPadding(0, 0,
@@ -129,24 +139,6 @@ public class QuestsFragment extends Fragment
                                 0, panel.findViewById(R.id.layout_details_header)
                                         .getHeight());
                         break;
-                    case EXPANDED:
-                        photosHeightDimen = R.dimen.details_photos_size_expanded;
-                        break;
-                    case ANCHORED:
-                        photosHeightDimen = R.dimen.details_photos_size_anchored;
-                        break;
-                }
-
-                // Set height
-                if (photosHeightDimen != -1) {
-                    LinearLayout photos = panel.findViewById(R.id.details_photos_layout);
-
-                    for (int mPhotoId = 0; mPhotoId < photos.getChildCount(); mPhotoId++) {
-                        View mPhoto = photos.getChildAt(mPhotoId);
-                        mPhoto.getLayoutParams().height =
-                                (int) getResources().getDimension(photosHeightDimen);
-                        photos.requestLayout();
-                    }
                 }
             }
         });
@@ -305,7 +297,7 @@ public class QuestsFragment extends Fragment
         toolbarContainer.removeView(toolbarView);
     }
 
-    static public float getPanelAnchoredHeight(Activity activity) {
+    static public float getPanelAnchoredOffset(Activity activity) {
         return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
                 / MainActivity.getAppHeightWithoutBar(activity);
     }
@@ -321,7 +313,7 @@ public class QuestsFragment extends Fragment
             Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
 
             // Set panel anchor point
-            slidingPanel.setAnchorPoint(getPanelAnchoredHeight(getActivity()));
+            slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
 
             // Set panel height
             slidingPanel.setPanelHeight(detailsHead.getHeight());

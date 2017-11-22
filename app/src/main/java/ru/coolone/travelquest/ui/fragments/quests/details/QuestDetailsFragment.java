@@ -489,6 +489,8 @@ public class QuestDetailsFragment extends Fragment {
                                             }}
                                     );
                             }
+                            if (step != 0)
+                                adapter.collapseAllSections();
                             adapter.notifyDataSetChanged();
                         }).addOnFailureListener(this::descriptionError);
             }
@@ -535,11 +537,17 @@ public class QuestDetailsFragment extends Fragment {
             final String placeId = params[0];
             AttributedPhoto[] attributedPhotoArr = null;
 
+            // Get photos result
             PlacePhotoMetadataResult result = Places.GeoDataApi
-                    .getPlacePhotos(MainActivity.getApiClient(), placeId).await();
+                    .getPlacePhotos(MainActivity.getApiClient(), placeId)
+                    .await();
 
+            // Parse photos result
             if (result.getStatus().isSuccess()) {
+                // Get photos buffer
                 PlacePhotoMetadataBuffer photoMetadataBuffer = result.getPhotoMetadata();
+
+                // Parse photos buffer
                 if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
                     attributedPhotoArr = new AttributedPhoto[photoMetadataBuffer.getCount()];
 
@@ -548,18 +556,24 @@ public class QuestDetailsFragment extends Fragment {
                          mAttributedPhotoId++) {
 
                         // Get the first bitmap and its attributions
-                        PlacePhotoMetadata photo = photoMetadataBuffer.get(mAttributedPhotoId).freeze();
+                        PlacePhotoMetadata photo = photoMetadataBuffer
+                                .get(mAttributedPhotoId)
+                                .freeze();
                         CharSequence attribution = photo.getAttributions();
 
                         // Load a scaled bitmap for this photo
-                        Bitmap image = photo.freeze().getPhoto(MainActivity.getApiClient())
+                        Bitmap image = photo
+                                .freeze()
+                                .getPhoto(MainActivity.getApiClient())
                                 .await()
                                 .getBitmap();
 
-                        attributedPhotoArr[mAttributedPhotoId] = new AttributedPhoto(attribution, image);
+                        attributedPhotoArr[mAttributedPhotoId] =
+                                new AttributedPhoto(attribution, image);
                     }
                 }
-                // Release the PlacePhotoMetadataBuffer
+
+                // Release the photos buffer
                 photoMetadataBuffer.release();
             }
             return attributedPhotoArr;

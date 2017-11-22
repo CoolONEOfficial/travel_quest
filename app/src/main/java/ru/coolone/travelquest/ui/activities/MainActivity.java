@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity
                         .Builder()
                         .detectAll()
                         .penaltyLog()
-                        .penaltyDeath()
+//                        .penaltyDeath()
                         .build());
         StrictMode.setVmPolicy(
                 new StrictMode.VmPolicy
@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity
                         .detectLeakedSqlLiteObjects()
                         .detectLeakedClosableObjects()
                         .penaltyLog()
-                        .penaltyDeath()
+//                        .penaltyDeath()
                         .build());
 
         super.onCreate(savedInstanceState);
