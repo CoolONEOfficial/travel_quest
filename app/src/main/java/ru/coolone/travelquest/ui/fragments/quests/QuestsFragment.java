@@ -111,17 +111,11 @@ public class QuestsFragment extends Fragment
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
-                LinearLayout photos = panel.findViewById(R.id.details_photos_layout);
-                float anchoredOffset = getPanelAnchoredOffset(getActivity());
-                if (slideOffset > anchoredOffset) {
-                    // Change photos height
-                    for (int mPhotoId = 0; mPhotoId < photos.getChildCount(); mPhotoId++) {
-                        photos.getChildAt(mPhotoId).getLayoutParams().height =
-                                (int) (getResources().getDimension(R.dimen.details_photos_size_anchored)
-                                        * (1 - (slideOffset - anchoredOffset)));
-                    }
-                    photos.requestLayout();
-                }
+                // Refresh photos size
+                refreshPhotosSize(
+                        panel.findViewById(R.id.details_photos_layout),
+                        slideOffset
+                );
             }
 
             @Override
@@ -144,6 +138,19 @@ public class QuestsFragment extends Fragment
         });
 
         return view;
+    }
+
+    private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
+        float anchoredOffset = getPanelAnchoredOffset(getActivity());
+        if (slideOffset > anchoredOffset) {
+            // Change photos height
+            for (int mPhotoId = 0; mPhotoId < photosLayout.getChildCount(); mPhotoId++) {
+                photosLayout.getChildAt(mPhotoId).getLayoutParams().height =
+                        (int) (getResources().getDimension(R.dimen.details_photos_size_anchored)
+                                * (1 - (slideOffset - anchoredOffset)));
+            }
+            photosLayout.requestLayout();
+        }
     }
 
     @Override

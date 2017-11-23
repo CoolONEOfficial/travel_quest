@@ -185,7 +185,7 @@ public class QuestDetailsFragment extends Fragment {
 
         // Recycle view
         descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
-        descriptionRecyclerView.requestDisallowInterceptTouchEvent(true);
+        descriptionRecyclerView.setNestedScrollingEnabled(false);
         setDescriptionRecyclerView(descriptionRecyclerView);
 
         // Refresh views
