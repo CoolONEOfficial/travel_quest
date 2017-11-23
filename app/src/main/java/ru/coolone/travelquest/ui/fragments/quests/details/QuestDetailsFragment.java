@@ -185,6 +185,7 @@ public class QuestDetailsFragment extends Fragment {
 
         // Recycle view
         descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
+        descriptionRecyclerView.requestDisallowInterceptTouchEvent(true);
         setDescriptionRecyclerView(descriptionRecyclerView);
 
         // Refresh views
@@ -194,14 +195,6 @@ public class QuestDetailsFragment extends Fragment {
         onCreateViewListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
-    }
-
-    public void setPhotosSize(int size) {
-
-    }
-
-    private int getFragmentHeight() {
-        return getActivity().findViewById(R.id.layout_details).getHeight();
     }
 
     private void refreshTitle() {

@@ -248,6 +248,12 @@ public class MainActivity extends AppCompatActivity
                 fragmentArr.get(fragId.ordinal()))
                 .commit();
 
+        switch (id) {
+            case R.id.nav_settings:
+                setTitle(getResources().getString(R.string.title_frag_settings));
+                break;
+        }
+
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

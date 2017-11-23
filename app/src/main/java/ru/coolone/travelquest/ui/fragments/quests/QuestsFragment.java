@@ -322,5 +322,8 @@ public class QuestsFragment extends Fragment
             if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
                 slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
         });
+
+        // Set recycler is scrollable
+        slidingPanel.setScrollableView(view.findViewById(R.id.details_description_recycler));
     }
 }

@@ -86,7 +86,7 @@
         android:id="@+id/layout_details_body"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="#ffffff"
+        android:background="@android:color/background_light"
         android:orientation="vertical">
 
         <android.support.v7.widget.RecyclerView

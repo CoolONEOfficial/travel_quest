@@ -3,4 +3,7 @@
     <!-- Activity titles -->
     <string name="title_activity_login">Вход</string>
     <string name="title_activity_signin">Регистрация</string>
+
+    <!-- Fragment titles -->
+    <string name="title_frag_settings">Настройки</string>
 </resources>

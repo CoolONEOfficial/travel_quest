@@ -1,10 +1,13 @@
 <resources>
     <string name="app_name" translatable="false">TravelQuest</string>
 
-    <!--Preferences filename-->
-    <string name="file_preferences" translatable="false">preferences</string>
-
     <!-- Activity titles -->
     <string name="title_activity_login">Log in</string>
     <string name="title_activity_signin">Sign in</string>
+
+    <!-- Fragment titles -->
+    <string name="title_frag_settings">Settings</string>
+
+    <!-- Preferences filename -->
+    <string name="file_preferences" translatable="false">preferences</string>
 </resources>
