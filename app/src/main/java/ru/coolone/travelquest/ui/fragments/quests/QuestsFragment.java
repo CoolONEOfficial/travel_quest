@@ -324,6 +324,6 @@ public class QuestsFragment extends Fragment
         });
 
         // Set recycler is scrollable
-        slidingPanel.setScrollableView(view.findViewById(R.id.details_description_recycler));
+        slidingPanel.setScrollableView(view.findViewById(R.id.details_description_scroll));
     }
 }

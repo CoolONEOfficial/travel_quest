@@ -466,7 +466,8 @@ public class QuestDetailsFragment extends Fragment {
                                 }
 
                                 // Add section
-                                if (mNextDocId == 0)
+                                if (mNextDoc.contains("first")) {
+                                    Log.d(TAG, "Adding at first");
                                     adapter.addSection(
                                             0,
                                             header,
@@ -474,7 +475,7 @@ public class QuestDetailsFragment extends Fragment {
                                                 add(item);
                                             }}
                                     );
-                                else
+                                } else
                                     adapter.addSection(
                                             header,
                                             new ArrayList<BaseQuestDetailsItem>() {{
@@ -552,7 +553,6 @@ public class QuestDetailsFragment extends Fragment {
                         PlacePhotoMetadata photo = photoMetadataBuffer
                                 .get(mAttributedPhotoId)
                                 .freeze();
-                        CharSequence attribution = photo.getAttributions();
 
                         // Load a scaled bitmap for this photo
                         Bitmap image = photo
@@ -562,7 +562,7 @@ public class QuestDetailsFragment extends Fragment {
                                 .getBitmap();
 
                         attributedPhotoArr[mAttributedPhotoId] =
-                                new AttributedPhoto(attribution, image);
+                                new AttributedPhoto(image);
                     }
                 }
 
@@ -583,14 +583,6 @@ public class QuestDetailsFragment extends Fragment {
 
                     // Add view
                     ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout)).addView(mPhotoView);
-
-//                    // Display the attribution as HTML content if set.
-//                    if (mAttributedPhoto.attribution == null) {
-//                        mText.setVisibility(View.GONE);
-//                    } else {
-//                        mText.setVisibility(View.VISIBLE);
-//                        mText.setText(Html.fromHtml(attributedPhoto.attribution.toString()));
-//                    }
                 }
 
             } else {
@@ -604,12 +596,9 @@ public class QuestDetailsFragment extends Fragment {
          */
         class AttributedPhoto {
 
-            public final CharSequence attribution;
-
             public final Bitmap bitmap;
 
-            public AttributedPhoto(CharSequence attribution, Bitmap bitmap) {
-                this.attribution = attribution;
+            public AttributedPhoto(Bitmap bitmap) {
                 this.bitmap = bitmap;
             }
         }

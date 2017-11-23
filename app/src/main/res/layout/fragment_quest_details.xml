@@ -1,174 +1,188 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/layout_details"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@android:color/background_light"
     tools:context=".ui.fragments.quests.details.QuestDetailsFragment">
 
-    <RelativeLayout
-        android:id="@+id/layout_details_header"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/accent"
-        android:padding="@dimen/content_inset">
-
-        <TextView
-            android:id="@+id/details_rating"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/details_rating_star"
-            android:layout_toStartOf="@+id/details_rating_star"
-            android:gravity="end"
-            android:text="5.0"
-            android:textAlignment="center"
-            android:textColor="@color/primary_text_inverse"
-            android:textSize="38sp"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/details_rating_star"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:gravity="start"
-            android:text="★"
-            android:textAlignment="viewStart"
-            android:textColor="@color/primary_text_inverse"
-            android:textSize="38sp"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/details_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/details_rating"
-            android:layout_toStartOf="@+id/details_rating"
-            android:text="Title"
-            android:textColor="@color/primary_text_inverse"
-            android:textSize="24sp"
-            tools:ignore="HardcodedText" />
-
-        <TextView
-            android:id="@+id/details_types"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/details_title"
-            android:layout_toLeftOf="@+id/details_rating"
-            android:layout_toStartOf="@+id/details_rating"
-            android:text="Types"
-            android:textColor="@color/primary_text_inverse"
-            android:textSize="18sp"
-            tools:ignore="HardcodedText" />
-
-    </RelativeLayout>
-
-    <HorizontalScrollView
-        android:id="@+id/details_photos_scroll"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none">
-
-        <LinearLayout
-            android:id="@+id/details_photos_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:orientation="horizontal" />
-
-    </HorizontalScrollView>
-
-    <RelativeLayout
-        android:id="@+id/layout_details_body"
+    <ScrollView
+        android:id="@+id/details_description_scroll"
+        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/background_light"
-        android:orientation="vertical">
+        android:layout_above="@id/details_delimiter">
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/details_description_recycler"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_above="@+id/details_delimiter"
-            android:layout_alignParentTop="true"
-            android:paddingLeft="@dimen/content_inset"
-            android:paddingRight="@dimen/content_inset"
-            android:scrollbars="vertical" />
-
-        <ImageView
-            android:id="@+id/details_description_unknown_text_smile"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:layout_below="@id/details_description_recycler"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="50dp"
-            android:scaleType="fitCenter"
-            android:src="@drawable/ic_smile_sad"
-            android:tint="@color/secondary_text"
-            android:visibility="gone" />
-
-        <TextView
-            android:id="@+id/details_description_unknown_text"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/details_description_unknown_text_smile"
-            android:gravity="center_horizontal"
-            android:text="@string/details_description_unknown"
-            android:textColor="@color/secondary_text"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/details_description_unknown_text_primary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/details_description_unknown_text"
-            android:layout_centerHorizontal="true"
-            android:gravity="center_horizontal"
-            android:textColor="@color/secondary_text_inverse"
-            android:textSize="18sp"
-            android:visibility="gone" />
+            <RelativeLayout
+                android:id="@+id/layout_details_header"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/accent"
+                android:padding="@dimen/content_inset">
 
+                <TextView
+                    android:id="@+id/details_rating"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/details_rating_star"
+                    android:layout_toStartOf="@id/details_rating_star"
+                    android:gravity="end"
+                    android:text="5.0"
+                    android:textAlignment="center"
+                    android:textColor="@color/primary_text_inverse"
+                    android:textSize="38sp"
+                    tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/details_url"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_margin="@dimen/content_inset"
-            android:text="Url"
-            android:textColor="@color/primary_text"
-            android:textSize="18sp"
-            tools:ignore="HardcodedText" />
+                <TextView
+                    android:id="@+id/details_rating_star"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="start"
+                    android:text="★"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/primary_text_inverse"
+                    android:textSize="38sp"
+                    tools:ignore="HardcodedText" />
 
-        <TextView
-            android:id="@+id/details_phone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_margin="@dimen/content_inset"
-            android:layout_toLeftOf="@id/details_url"
-            android:layout_toStartOf="@id/details_url"
-            android:text="Phone"
-            android:textColor="@color/primary_text"
-            android:textSize="18sp"
-            tools:ignore="HardcodedText" />
+                <TextView
+                    android:id="@+id/details_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_toLeftOf="@id/details_rating"
+                    android:layout_toStartOf="@id/details_rating"
+                    android:text="Title"
+                    android:textColor="@color/primary_text_inverse"
+                    android:textSize="24sp"
+                    tools:ignore="HardcodedText" />
 
-        <View
-            android:id="@+id/details_delimiter"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_above="@id/details_phone"
-            android:layout_marginLeft="@dimen/content_inset"
-            android:layout_marginRight="@dimen/content_inset"
-            android:background="@color/secondary_text_inverse" />
+                <TextView
+                    android:id="@+id/details_types"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_below="@id/details_title"
+                    android:layout_toLeftOf="@id/details_rating"
+                    android:layout_toStartOf="@id/details_rating"
+                    android:text="Types"
+                    android:textColor="@color/primary_text_inverse"
+                    android:textSize="18sp"
+                    tools:ignore="HardcodedText" />
 
-    </RelativeLayout>
+            </RelativeLayout>
 
-</LinearLayout>
+            <RelativeLayout
+                android:id="@+id/layout_details_body"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <HorizontalScrollView
+                    android:id="@+id/details_photos_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/details_photos_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal" />
+
+                </HorizontalScrollView>
+
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/details_description_recycler"
+                    android:layout_below="@id/details_photos_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:paddingLeft="@dimen/content_inset"
+                    android:paddingRight="@dimen/content_inset"
+                    android:scrollbars="none" />
+
+                <ImageView
+                    android:id="@+id/details_description_unknown_text_smile"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_below="@id/details_description_recycler"
+                    android:layout_centerHorizontal="true"
+                    android:layout_marginTop="50dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_smile_sad"
+                    android:tint="@color/secondary_text"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/details_description_unknown_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/details_description_unknown_text_smile"
+                    android:gravity="center_horizontal"
+                    android:text="@string/details_description_unknown"
+                    android:textColor="@color/secondary_text"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/details_description_unknown_text_primary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/details_description_unknown_text"
+                    android:layout_centerHorizontal="true"
+                    android:gravity="center_horizontal"
+                    android:textColor="@color/secondary_text_inverse"
+                    android:textSize="18sp"
+                    android:visibility="gone" />
+
+            </RelativeLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <TextView
+        android:id="@+id/details_url"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_margin="@dimen/content_inset"
+        android:text="Url"
+        android:textColor="@color/primary_text"
+        android:textSize="18sp"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/details_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="@dimen/content_inset"
+        android:layout_toLeftOf="@id/details_url"
+        android:layout_toStartOf="@id/details_url"
+        android:text="Phone"
+        android:textColor="@color/primary_text"
+        android:textSize="18sp"
+        tools:ignore="HardcodedText" />
+
+    <View
+        android:id="@+id/details_delimiter"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_above="@id/details_phone"
+        android:layout_marginLeft="@dimen/content_inset"
+        android:layout_marginRight="@dimen/content_inset"
+        android:background="@color/secondary_text_inverse" />
+
+</RelativeLayout>
