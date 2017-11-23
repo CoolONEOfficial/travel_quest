@@ -284,17 +284,16 @@ public class MainActivity extends AppCompatActivity
             localeStr = context.getResources().getConfiguration().locale.getCountry();
 
         // Check support
-        boolean support = false;
         for (String mLocale : supportLangs) {
-            if (localeStr == mLocale) {
-                support = true;
-                break;
+            Log.d(TAG, "Current locale: " + localeStr
+                    + "\n\tmLocale: " + mLocale);
+            if (localeStr.equals(mLocale)) {
+                Log.d(TAG, "Locale is supported!");
+                return localeStr;
             }
         }
-        if (!support)
-            return supportLangs[0];
 
-        return localeStr;
+        return supportLangs[0];
     }
 
     public static GoogleApiClient getApiClient() {
