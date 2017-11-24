@@ -314,21 +314,23 @@ public class QuestsFragment extends Fragment
     public void onQuestDetailsCreateView(
             @NonNull View view,
             ViewGroup container, Bundle savedInstanceState) {
-        view.post(() -> {
-            // Get panel height
-            RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
-            Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
+        view.post(
+                () -> {
+                    // Get panel height
+                    RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
+                    Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
 
-            // Set panel anchor point
-            slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
+                    // Set panel anchor point
+                    slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
 
-            // Set panel height
-            slidingPanel.setPanelHeight(detailsHead.getHeight());
+                    // Set panel height
+                    slidingPanel.setPanelHeight(detailsHead.getHeight());
 
-            // Show
-            if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
-                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
-        });
+                    // Show
+                    if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
+                        slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+        );
 
         // Set recycler is scrollable
         slidingPanel.setScrollableView(view.findViewById(R.id.details_description_scroll));

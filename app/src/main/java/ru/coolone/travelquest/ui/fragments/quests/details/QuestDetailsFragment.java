@@ -347,9 +347,7 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     private void refreshDescription() {
-
         if (placeId != null) {
-
             FirebaseFirestore db = FirebaseFirestore
                     .getInstance();
 
@@ -373,7 +371,9 @@ public class QuestDetailsFragment extends Fragment {
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse description
-                            parse(doc, 0, (RecyclerView) viewArr.get(R.id.details_description_recycler));
+                            parse(doc,
+                                    0,
+                                    (RecyclerView) viewArr.get(R.id.details_description_recycler));
                         } else descriptionError("Get document task not successful");
                     })
                     .addOnFailureListener(this::descriptionError);
@@ -406,8 +406,6 @@ public class QuestDetailsFragment extends Fragment {
 
         // Get sub collections count
         if (doc.exists()) {
-            Log.d(TAG, "Collection count: " + doc.getLong("count"));
-
             for (int mCollectionId = 0; mCollectionId < doc.getLong("count"); mCollectionId++) {
                 // Get collection (wait get task)
                 doc
@@ -451,16 +449,16 @@ public class QuestDetailsFragment extends Fragment {
                                         setText((String) mNextDoc.get("text"));
                                     }};
                                 } else {
+                                    // Create recycler view
+                                    RecyclerView itemRecyclerView = new RecyclerView(getActivity());
+                                    recyclerView.setNestedScrollingEnabled(true);
+                                    setDescriptionRecyclerView(itemRecyclerView);
+
+                                    // Parse recycler view
+                                    parse(mNextDoc, step + 1, itemRecyclerView);
+
                                     // Recycler
                                     item = new QuestDetailsItemRecycler() {{
-                                        // Create recycler view
-                                        RecyclerView itemRecyclerView = new RecyclerView(getActivity());
-                                        setDescriptionRecyclerView(itemRecyclerView);
-
-                                        // Parse recycler view
-                                        parse(mNextDoc, step + 1, itemRecyclerView);
-
-                                        // Set recycler view
                                         setRecyclerView(itemRecyclerView);
                                     }};
                                 }

@@ -90,14 +90,6 @@ public class MainActivity extends AppCompatActivity
     // Preferences
     public static SharedPreferences settings;
 
-    public static void setDefaultSettings(Context context) {
-        // Map style
-        settings.edit()
-                .putString(context.getResources().getString(R.string.settings_map_style_key),
-                        context.getResources().getStringArray(R.array.settings_map_style_values)[0])
-                .apply();
-    }
-
     // Drawer layout
     DrawerLayout drawer;
 
