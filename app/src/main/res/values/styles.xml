@@ -1,5 +1,10 @@
 <resources>
 
+    <style name="ThemeOverlay.AppCompat.navTheme">
+        <item name="colorPrimary">@color/primary_text_inverse</item>
+        <item name="colorControlHighlight">@color/colorAccent</item>
+    </style>
+
     <!-- Splash theme -->
     <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/splash_background</item>
