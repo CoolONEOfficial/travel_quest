@@ -97,7 +97,8 @@ public class QuestsFragment extends Fragment
 
         // Autocomplete filter
         AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_ADDRESS)
+                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
+                .setCountry("RU")
                 .build();
         autocompleteFragment.setFilter(typeFilter);
         autocompleteFragment.setOnPlaceSelectedListener(this);
@@ -275,8 +276,8 @@ public class QuestsFragment extends Fragment
     public void onResume() {
         super.onResume();
 
-        // Hide quest panel
-        if (slidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.HIDDEN)
+        // Hide quest panel if empty
+        if (slidingLayout == null || slidingLayout.getChildCount() == 0)
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
         // Get toolbar layout
