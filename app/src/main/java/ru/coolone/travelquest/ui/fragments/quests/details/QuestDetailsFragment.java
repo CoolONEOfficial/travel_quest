@@ -29,7 +29,6 @@ import com.google.android.gms.location.places.Places;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -67,7 +66,7 @@ public class QuestDetailsFragment extends Fragment {
         }
     }
 
-    private SlidingUpPanelLayout panel;
+    private OnCreateViewListener onCreateViewListener;
 
     private String title;
     private String placeId;
@@ -122,7 +121,7 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     public static QuestDetailsFragment newInstance(Place place) {
-        QuestDetailsFragment ret = newInstance(
+        return newInstance(
                 place.getName().toString(),
                 place.getPhoneNumber().toString(),
                 place.getWebsiteUri(),
@@ -130,7 +129,6 @@ public class QuestDetailsFragment extends Fragment {
                 place.getPlaceTypes().get(0),
                 place.getId()
         );
-        return ret;
     }
 
     @Override
@@ -764,13 +762,7 @@ public class QuestDetailsFragment extends Fragment {
                                       Bundle savedInstanceState);
     }
 
-    private OnCreateViewListener onCreateViewListener;
-
-    public void setOnCreateViewListener(OnCreateViewListener listener) {
-        onCreateViewListener = listener;
-    }
-
-    public OnCreateViewListener getOnCreateViewListener() {
-        return onCreateViewListener;
+    public void setOnCreateViewListener(OnCreateViewListener onCreateViewListener) {
+        this.onCreateViewListener = onCreateViewListener;
     }
 }

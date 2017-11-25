@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -31,29 +30,16 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
 import ru.coolone.travelquest.ui.fragments.quests.QuestsFragment;
 import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, GoogleApiClient.OnConnectionFailedListener {
+        implements
+        NavigationView.OnNavigationItemSelectedListener,
+        GoogleApiClient.OnConnectionFailedListener {
 
     static final String TAG = MainActivity.class.getSimpleName();
-
-    // Arguments
-    enum ArgKeys {
-        TITLE("user");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return val;
-        }
-    }
 
     public MainActivity() {
     }
@@ -71,21 +57,13 @@ public class MainActivity extends AppCompatActivity
     // Fragments id
     enum FragmentId {
         ABOUT,
-        ACHIEVEMENTS,
-        FRIENDS,
-        MESSAGES,
-        PROFILE,
         QUESTS,
         SETTINGS
     }
 
-    static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
-
     // Fragments array
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
-
-    // Default fragment
-    static final FragmentId FRAGMENT_DEFAULT = FragmentId.QUESTS;
+    static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
 
     // Preferences
     public static SharedPreferences settings;
@@ -105,7 +83,6 @@ public class MainActivity extends AppCompatActivity
                         .Builder()
                         .detectAll()
                         .penaltyLog()
-//                        .penaltyDeath()
                         .build());
         StrictMode.setVmPolicy(
                 new StrictMode.VmPolicy
@@ -113,25 +90,33 @@ public class MainActivity extends AppCompatActivity
                         .detectLeakedSqlLiteObjects()
                         .detectLeakedClosableObjects()
                         .penaltyLog()
-//                        .penaltyDeath()
                         .build());
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Get / Check user
         user = FirebaseAuth.getInstance().getCurrentUser();
-
-        // User not authenticated?
         if (user == null) {
-            // Go to login
+            // Authentication
             Intent intent = new Intent(this, LoginActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
         }
 
-        // Init task
-        InitTask initTask = new InitTask(this, this);
-        initTask.execute();
+        // Google api client
+        apiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+
+        // Get settings
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Session key
+        user = FirebaseAuth.getInstance().getCurrentUser();
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -154,39 +139,7 @@ public class MainActivity extends AppCompatActivity
         // Fragments array
         fragmentArr.put(FragmentId.QUESTS.ordinal(), QuestsFragment.newInstance());
         fragmentArr.put(FragmentId.SETTINGS.ordinal(), SettingsFragment.newInstance());
-    }
-
-    private class InitTask extends AsyncTask<Void, Void, Void> {
-
-        AppCompatActivity parent;
-        GoogleApiClient.OnConnectionFailedListener connectionFailedListener;
-
-        InitTask(
-                AppCompatActivity parent,
-                GoogleApiClient.OnConnectionFailedListener connectionFailedListener
-        ) {
-            this.parent = parent;
-            this.connectionFailedListener = connectionFailedListener;
-        }
-
-        @Override
-        protected Void doInBackground(Void... voids) {
-            // Google api client
-            apiClient = new GoogleApiClient
-                    .Builder(parent)
-                    .addApi(Places.GEO_DATA_API)
-                    .addApi(Places.PLACE_DETECTION_API)
-                    .enableAutoManage(parent, connectionFailedListener)
-                    .build();
-
-            // Get settings
-            settings = PreferenceManager.getDefaultSharedPreferences(parent);
-
-            // Session key
-            user = FirebaseAuth.getInstance().getCurrentUser();
-
-            return null;
-        }
+        fragmentArr.put(FragmentId.ABOUT.ordinal(), AboutFragment.newInstance());
     }
 
     @Override
@@ -212,28 +165,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
         // To fragment
         FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
-        FragmentId fragId = FRAGMENT_DEFAULT;
+        FragmentId fragId = FRAGMENT_DEFAULT_ID;
         switch (id) {
             case R.id.nav_quests:
                 fragId = FragmentId.QUESTS;
+                fragmentArr.get(fragId.ordinal()).onResume();
                 break;
             case R.id.nav_settings:
                 fragId = FragmentId.SETTINGS;
+                break;
+            case R.id.nav_about:
+                fragId = FragmentId.ABOUT;
                 break;
         }
         fragTrans.replace(R.id.fragment_container,

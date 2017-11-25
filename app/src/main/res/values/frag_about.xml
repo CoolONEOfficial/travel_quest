@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="about_title" translatable="false">Travel Quest</string>
+    <string name="about_logo_description">Application logo</string>
+    <string name="about_subtitle">by CoolONEOfficial</string>
+</resources>
