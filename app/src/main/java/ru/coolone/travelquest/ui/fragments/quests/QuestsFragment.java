@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.Status;
@@ -321,26 +320,35 @@ public class QuestsFragment extends Fragment
                 / MainActivity.getAppHeightWithoutBar(activity);
     }
 
-
     @Override
     public void onQuestDetailsCreateView(
             @NonNull View view,
             ViewGroup container, Bundle savedInstanceState) {
+        // Set on view sizes initialized
         view.post(
                 () -> {
-                    // Get panel height
-                    RelativeLayout detailsHead = view.findViewById(R.id.layout_details_header);
-                    Log.d(TAG, "Sliding layout height:" + String.valueOf(detailsHead.getHeight()));
-
                     // Set panel anchor point
                     slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
 
                     // Set panel height
-                    slidingPanel.setPanelHeight(detailsHead.getHeight());
+                    slidingPanel.setPanelHeight(
+                            view.findViewById(R.id.layout_details_header)
+                                    .getHeight());
 
-                    // Show
+                    // Show if hidden
                     if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.HIDDEN)
                         slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                }
+        );
+
+        // Set on click header
+        view.findViewById(R.id.layout_details_header).setOnClickListener(
+                v -> {
+                    slidingPanel.setMinimumHeight(view.findViewById(R.id.layout_details_header)
+                            .getHeight());
+
+                    // Click header event
+                    slidingLayout.callOnClick();
                 }
         );
 
