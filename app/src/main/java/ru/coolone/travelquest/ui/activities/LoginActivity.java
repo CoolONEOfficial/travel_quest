@@ -35,7 +35,7 @@ public class LoginActivity
         authFormView = findViewById(R.id.login_form);
 
         // Progress
-        progressView = findViewById(R.id.login_progress);
+        progressView = findViewById(R.id.login_progress_layout);
 
         // Signin text view
         TextView signinTextView = findViewById(R.id.login_text_view_signin);

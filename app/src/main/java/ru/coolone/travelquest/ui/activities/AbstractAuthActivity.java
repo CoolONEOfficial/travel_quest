@@ -123,7 +123,7 @@ abstract public class AbstractAuthActivity
         if (!initViewsCalled)
             Log.e(TAG, "Views not initialized! Use initViews() function.");
 
-        if(context == null)
+        if (context == null)
             Log.e(TAG, "Context is null!");
     }
 
@@ -136,15 +136,15 @@ abstract public class AbstractAuthActivity
         mail = mail.trim();
 
         // Empty
-        if(mail.isEmpty())
+        if (mail.isEmpty())
             error = InputError.EMPTY;
-        // Small
+            // Small
         else if (mail.length() < context.getResources().getInteger(R.integer.mail_len_min))
             error = InputError.SMALL;
-        // Long
+            // Long
         else if (mail.length() > context.getResources().getInteger(R.integer.mail_len_max))
             error = InputError.LONG;
-        // Mail
+            // Mail
         else if (!mail.contains("@"))
             error = InputError.INCORRECT;
 
@@ -156,7 +156,7 @@ abstract public class AbstractAuthActivity
         InputError error = checkMailStr(mailView.getText().toString());
 
         // Handle error
-        if(error != InputError.NONE)
+        if (error != InputError.NONE)
             inputError(mailView, error);
 
         return error;
@@ -171,12 +171,12 @@ abstract public class AbstractAuthActivity
         password = password.trim();
 
         // Empty
-        if(password.isEmpty())
+        if (password.isEmpty())
             error = InputError.EMPTY;
-        // Small
+            // Small
         else if (password.length() < context.getResources().getInteger(R.integer.password_len_min))
             error = InputError.SMALL;
-        // Long
+            // Long
         else if (password.length() > context.getResources().getInteger(R.integer.password_len_max))
             error = InputError.LONG;
 
@@ -188,7 +188,7 @@ abstract public class AbstractAuthActivity
         InputError error = checkPasswordStr(passwordView.getText().toString());
 
         // Handle error
-        if(error != InputError.NONE)
+        if (error != InputError.NONE)
             inputError(passwordView, error);
 
         return error;
@@ -198,49 +198,60 @@ abstract public class AbstractAuthActivity
      * Shows / hides the progress UI and hides / shows the login form.
      */
     protected void setProgressVisibility(final boolean visibility) {
-        int shortAnimTime = context.getResources().getInteger(android.R.integer.config_shortAnimTime);
+        runOnUiThread(() -> {
+            final int shortAnimTime = context
+                    .getResources()
+                    .getInteger(android.R.integer.config_shortAnimTime);
 
-        // Show login form
-        authFormView.setVisibility(
-                visibility
-                        ? View.GONE
-                        : View.VISIBLE
-        );
-        authFormView.animate().setDuration(shortAnimTime).alpha(
-                visibility
-                        ? 0
-                        : 1
-        ).setListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                authFormView.setVisibility(
-                        visibility
-                                ? View.GONE
-                                : View.VISIBLE
-                );
-            }
+            // Show login form
+            authFormView.setVisibility(
+                    visibility
+                            ? View.GONE
+                            : View.VISIBLE
+            );
+            authFormView
+                    .animate()
+                    .setDuration(shortAnimTime)
+                    .alpha(
+                            visibility
+                                    ? 0
+                                    : 1
+                    ).setListener(
+                    new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            authFormView.setVisibility(
+                                    visibility
+                                            ? View.GONE
+                                            : View.VISIBLE
+                            );
+                        }
+                    });
+
+            // Show progress view
+            progressView.setVisibility(
+                    visibility
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+            progressView
+                    .animate()
+                    .setDuration(shortAnimTime)
+                    .alpha(
+                            visibility
+                                    ? 1
+                                    : 0
+                    ).setListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    progressView.setVisibility(
+                            visibility
+                                    ? View.VISIBLE
+                                    : View.GONE
+                    );
+                }
+            });
         });
-
-        // Show progress view
-        progressView.setVisibility(
-                visibility
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-        progressView.animate().setDuration(shortAnimTime).alpha(
-                visibility
-                        ? 1
-                        : 0)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        progressView.setVisibility(
-                                visibility
-                                        ? View.VISIBLE
-                                        : View.GONE
-                        );
-                    }
-                });
     }
 
     /**
@@ -354,8 +365,11 @@ abstract public class AbstractAuthActivity
         mailView.setError(null);
         passwordView.setError(null);
 
+        // Loader
+        setProgressVisibility(true);
+
         // Check input
-        if(checkInput())
+        if (checkInput())
             onAuth();
     }
 
@@ -396,8 +410,8 @@ abstract public class AbstractAuthActivity
 
         // Check input
         return (
-                checkMail()     == InputError.NONE &&
-                checkPassword() == InputError.NONE
+                checkMail() == InputError.NONE &&
+                        checkPassword() == InputError.NONE
         );
     }
 
@@ -412,6 +426,8 @@ abstract public class AbstractAuthActivity
     }
 
     final protected void onAuthComplete(Task<AuthResult> task) {
+        setProgressVisibility(false);
+
         if (task.isSuccessful()) {
             Log.d(TAG, "SignInWithEmail success!");
             onAuthSuccess();
@@ -436,7 +452,8 @@ abstract public class AbstractAuthActivity
 
         // Show error
         Toast.makeText(context,
-                context.getResources().getString(R.string.error_auth),
+                context.getResources().getString(R.string.error_auth)
+                        + '\n' + exception.getLocalizedMessage(),
                 Toast.LENGTH_SHORT).show();
     }
 }

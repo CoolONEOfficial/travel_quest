@@ -31,7 +31,7 @@ public class SigninActivity extends AbstractAuthActivity {
         authFormView = findViewById(R.id.signin_form);
 
         // Progress
-        progressView = findViewById(R.id.signin_progress);
+        progressView = findViewById(R.id.signin_progress_layout);
 
         // Login text view
         TextView textViewLogin = findViewById(R.id.signin_text_view_login);
