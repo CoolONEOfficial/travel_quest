@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
-        android:text="Travel Quest"
+        android:text="@string/menu_bar_title"
         android:textSize="28sp"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
@@ -32,6 +32,6 @@
         android:id="@+id/menu_bar_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="" />
+        android:text="@string/menu_bar_subtitle" />
 
 </LinearLayout>

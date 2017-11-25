@@ -276,16 +276,28 @@ public class QuestsFragment extends Fragment
     public void onResume() {
         super.onResume();
 
+        // Hide quest panel
+        if (slidingPanel.getPanelState() != SlidingUpPanelLayout.PanelState.HIDDEN)
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
         // Get toolbar layout
-        LinearLayout toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
+        LinearLayout toolbarContainer;
+        try {
+            toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
+        } catch (NullPointerException e) {
+            toolbarContainer = null;
+            e.printStackTrace();
+        }
 
-        // Delete old toolbar search
-        ViewParent toolbarViewParent = toolbarView.getParent();
-        if (toolbarViewParent != null)
-            ((ViewGroup) toolbarViewParent).removeView(toolbarView);
+        if (toolbarContainer != null) {
+            // Delete old toolbar search
+            ViewParent toolbarViewParent = toolbarView.getParent();
+            if (toolbarViewParent != null)
+                ((ViewGroup) toolbarViewParent).removeView(toolbarView);
 
-        // Add toolbar search
-        toolbarContainer.addView(toolbarView);
+            // Add toolbar search
+            toolbarContainer.addView(toolbarView);
+        }
 
         // Update map
         if (map != null) {

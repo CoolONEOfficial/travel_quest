@@ -2,7 +2,6 @@ package ru.coolone.travelquest.ui.activities;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -97,12 +96,6 @@ public class MainActivity extends AppCompatActivity
 
         // Get / Check user
         user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) {
-            // Authentication
-            Intent intent = new Intent(this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(intent);
-        }
 
         // Google api client
         apiClient = new GoogleApiClient
@@ -174,7 +167,6 @@ public class MainActivity extends AppCompatActivity
         switch (id) {
             case R.id.nav_quests:
                 fragId = FragmentId.QUESTS;
-                fragmentArr.get(fragId.ordinal()).onResume();
                 break;
             case R.id.nav_settings:
                 fragId = FragmentId.SETTINGS;
