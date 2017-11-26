@@ -8,7 +8,5 @@
 
     <!-- Fragment titles -->
     <string name="title_frag_settings">Settings</string>
-
-    <!-- Preferences filename -->
-    <string name="file_preferences" translatable="false">preferences</string>
+    <string name="title_frag_about">About</string>
 </resources>

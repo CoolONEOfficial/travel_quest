@@ -22,6 +22,10 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
+    applicationVariants.all { variant ->
+        variant.resValue "string", "versionNameFloat", variant.versionName
+        variant.resValue "string", "versionNameStr", "v" + variant.versionName
+    }
 }
 
 dependencies {
@@ -47,7 +51,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
-
-
 
 apply plugin: 'com.google.gms.google-services'

@@ -3,7 +3,9 @@
     <!-- Activity titles -->
     <string name="title_activity_login">Вход</string>
     <string name="title_activity_signin">Регистрация</string>
+    <string name="title_activity_confirm_mail">Подтверждение почты</string>
 
     <!-- Fragment titles -->
     <string name="title_frag_settings">Настройки</string>
+    <string name="title_frag_about">О приложении</string>
 </resources>

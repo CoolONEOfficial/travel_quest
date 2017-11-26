@@ -6,7 +6,7 @@
     android:orientation="vertical"
     android:paddingBottom="@dimen/content_inset"
     android:paddingEnd="0dp"
-    android:paddingLeft="@dimen/content_inset"
+    android:paddingLeft="@dimen/details_description_tab"
     android:paddingRight="0dp"
     android:paddingStart="@dimen/content_inset"
     android:paddingTop="@dimen/content_inset">

@@ -2,6 +2,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/content_inset"
+    android:background="@color/primary_dark"
     tools:context="ru.coolone.travelquest.ui.fragments.about.AboutFragment">
 
     <LinearLayout
@@ -14,7 +16,7 @@
         <ImageView
             android:id="@+id/about_logo"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:src="@mipmap/ic_launcher"
             android:contentDescription="@string/about_logo_description" />
 
@@ -24,13 +26,23 @@
             android:layout_height="wrap_content"
             android:paddingTop="@dimen/content_inset"
             android:text="@string/about_title"
-            android:textColor="@color/colorPrimary"
+            android:textColor="@color/colorAccent"
             android:textSize="30sp" />
 
         <TextView
             android:id="@+id/about_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/about_subtitle" />
+            android:text="@string/about_subtitle"
+            android:textColor="@color/primary_light" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/primary"
+        android:text="@string/versionNameStr" />
 </RelativeLayout>

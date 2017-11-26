@@ -369,7 +369,7 @@ public class QuestDetailsFragment extends Fragment {
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse description
-                            parse(doc,
+                            parseDescription(doc,
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_description_recycler));
                         } else descriptionError("Get document task not successful");
@@ -397,7 +397,7 @@ public class QuestDetailsFragment extends Fragment {
                 .setVisibility(errorVisibility);
     }
 
-    private void parse(DocumentSnapshot doc, int step, RecyclerView recyclerView) {
+    private void parseDescription(DocumentSnapshot doc, int step, RecyclerView recyclerView) {
         Log.d(TAG, "Parse step: " + step);
 
         QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
@@ -453,7 +453,7 @@ public class QuestDetailsFragment extends Fragment {
                                     setDescriptionRecyclerView(itemRecyclerView);
 
                                     // Parse recycler view
-                                    parse(mNextDoc, step + 1, itemRecyclerView);
+                                    parseDescription(mNextDoc, step + 1, itemRecyclerView);
 
                                     // Recycler
                                     item = new QuestDetailsItemRecycler() {{
@@ -462,7 +462,8 @@ public class QuestDetailsFragment extends Fragment {
                                 }
 
                                 // Add section
-                                if (mNextDoc.contains("first")) {
+                                if (mNextDoc.contains("first") &&
+                                        mNextDoc.getBoolean("first").equals(Boolean.TRUE)) {
                                     Log.d(TAG, "Adding at first");
                                     adapter.addSection(
                                             0,
