@@ -2,6 +2,7 @@ package ru.coolone.travelquest.ui.activities;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -161,31 +162,43 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
 
-        // To fragment
-        FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
-        FragmentId fragId = FRAGMENT_DEFAULT_ID;
-        switch (id) {
-            case R.id.nav_quests:
-                fragId = FragmentId.QUESTS;
-                break;
-            case R.id.nav_settings:
-                fragId = FragmentId.SETTINGS;
-                break;
-            case R.id.nav_about:
-                fragId = FragmentId.ABOUT;
-                break;
-        }
-        fragTrans.replace(R.id.fragment_container,
-                fragmentArr.get(fragId.ordinal()))
-                .commit();
+        if (id == R.id.nav_logout) {
+            // Logout
+            FirebaseAuth.getInstance().signOut();
 
-        switch (id) {
-            case R.id.nav_settings:
-                setTitle(getResources().getString(R.string.title_frag_settings));
-                break;
+            // To login activity
+            Intent loginIntent = new Intent(this, LoginActivity.class);
+            loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(loginIntent);
+            finish();
+        } else {
+            // To fragment
+            FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
+            FragmentId fragId = FRAGMENT_DEFAULT_ID;
+            switch (id) {
+                case R.id.nav_quests:
+                    fragId = FragmentId.QUESTS;
+                    break;
+                case R.id.nav_settings:
+                    fragId = FragmentId.SETTINGS;
+                    break;
+                case R.id.nav_about:
+                    fragId = FragmentId.ABOUT;
+                    break;
+            }
+            fragTrans.replace(R.id.fragment_container,
+                    fragmentArr.get(fragId.ordinal()))
+                    .commit();
+
+            switch (id) {
+                case R.id.nav_settings:
+                    setTitle(getResources().getString(R.string.title_frag_settings));
+                    break;
+            }
+
+            drawer.closeDrawer(GravityCompat.START);
         }
 
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
