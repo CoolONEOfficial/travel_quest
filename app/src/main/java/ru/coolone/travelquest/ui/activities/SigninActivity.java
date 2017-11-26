@@ -4,6 +4,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseUser;
+
 import ru.coolone.travelquest.R;
 
 public class SigninActivity extends AbstractAuthActivity {
@@ -18,23 +20,14 @@ public class SigninActivity extends AbstractAuthActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
 
-        // Mail
+        // Views
         mailView = findViewById(R.id.signin_text_mail);
-
-        // Password
         passwordView = findViewById(R.id.signin_text_password);
-
-        // Login button
         authButton = findViewById(R.id.signin_button_signin);
-
-        // Auth form
         authFormView = findViewById(R.id.signin_form);
-
-        // Progress
         progressView = findViewById(R.id.signin_progress_layout);
-
-        // Login text view
         TextView textViewLogin = findViewById(R.id.signin_text_view_login);
+
         textViewLogin.setOnClickListener(view -> {
             // To login activity
             Intent intent = new Intent(SigninActivity.this, LoginActivity.class);
@@ -52,5 +45,16 @@ public class SigninActivity extends AbstractAuthActivity {
                 mailView.getText().toString(),
                 passwordView.getText().toString()
         ).addOnCompleteListener(this, this::onAuthComplete);
+    }
+
+    @Override
+    protected void onAuthSuccess(FirebaseUser user) {
+        // Send verification letter
+        user.sendEmailVerification();
+
+        // To mail verification
+        Intent intent = new Intent(this, ConfirmMailActivity.class);
+        startActivity(intent);
+        finish();
     }
 }

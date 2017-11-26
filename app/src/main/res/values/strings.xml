@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name" translatable="false">TravelQuest</string>
+    <string name="app_name" translatable="false">Travel Quest</string>
 
     <!-- Activity titles -->
     <string name="title_activity_login">Log in</string>
     <string name="title_activity_signin">Sign in</string>
+    <string name="title_activity_confirm_mail">Confirm mail</string>
 
     <!-- Fragment titles -->
     <string name="title_frag_settings">Settings</string>

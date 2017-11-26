@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="confirm_mail_button">Check</string>
+    <string name="confirm_mail_subtitle">Follow to the link in the letter sent to your email, and click on the button</string>
+    <string name="confirm_mail_title">Mail confirmation</string>
+    <string name="confirm_mail_error">Check failed</string>
+    <string name="confirm_mail_progress">Checking&#8230;</string>
+</resources>

@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Login button -->
     <string name="login_button_login">Вход</string>
-
-    <!-- To signin textView -->
     <string name="login_text_view_signin">Не зарегистрированы?</string>
+    <string name="login_progress">Входим&#8230;</string>
 </resources>

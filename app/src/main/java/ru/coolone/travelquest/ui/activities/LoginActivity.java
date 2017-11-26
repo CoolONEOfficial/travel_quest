@@ -22,23 +22,15 @@ public class LoginActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Mail
+        // Views
         mailView = findViewById(R.id.login_text_mail);
-
-        // Password
         passwordView = findViewById(R.id.login_text_password);
-
-        // Login button
         authButton = findViewById(R.id.login_button_login);
-
-        // Login form
         authFormView = findViewById(R.id.login_form);
-
-        // Progress
         progressView = findViewById(R.id.login_progress_layout);
+        TextView signinTextView = findViewById(R.id.login_text_view_signin);
 
         // Signin text view
-        TextView signinTextView = findViewById(R.id.login_text_view_signin);
         signinTextView.setOnClickListener(view -> {
             // To signin activity
             Intent intent = new Intent(LoginActivity.this, SigninActivity.class);

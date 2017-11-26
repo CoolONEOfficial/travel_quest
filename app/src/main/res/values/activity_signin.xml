@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Signin button -->
     <string name="signin_button_signin">Signin</string>
-
-    <!-- To login textView -->
     <string name="signin_text_view_login">Signed?</string>
+    <string name="signin_progress">Signing&#8230;</string>
 </resources>

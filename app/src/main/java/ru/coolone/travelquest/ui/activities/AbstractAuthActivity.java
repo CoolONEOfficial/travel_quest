@@ -30,6 +30,7 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,7 +198,7 @@ abstract public class AbstractAuthActivity
     /**
      * Shows / hides the progress UI and hides / shows the login form.
      */
-    protected void setProgressVisibility(final boolean visibility) {
+    private void setProgressVisibility(final boolean visibility) {
         runOnUiThread(() -> {
             final int shortAnimTime = context
                     .getResources()
@@ -252,6 +253,14 @@ abstract public class AbstractAuthActivity
                 }
             });
         });
+    }
+
+    protected void showProgress() {
+        setProgressVisibility(true);
+    }
+
+    protected void hideProgress() {
+        setProgressVisibility(false);
     }
 
     /**
@@ -366,7 +375,7 @@ abstract public class AbstractAuthActivity
         passwordView.setError(null);
 
         // Loader
-        setProgressVisibility(true);
+        showProgress();
 
         // Check input
         if (checkInput())
@@ -416,33 +425,46 @@ abstract public class AbstractAuthActivity
     }
 
     final protected void authError(int strErrIdAuth) {
-        // Hide progress
-        setProgressVisibility(false);
-
         // Show toast
         Toast.makeText(getParent(),
                 context.getResources().getString(strErrIdAuth),
                 Toast.LENGTH_LONG).show();
     }
 
-    final protected void onAuthComplete(Task<AuthResult> task) {
-        setProgressVisibility(false);
+    protected void onAuthComplete(Task<AuthResult> authTask) {
+        hideProgress();
 
-        if (task.isSuccessful()) {
+        if (authTask.isSuccessful()) {
             Log.d(TAG, "SignInWithEmail success!");
-            onAuthSuccess();
+            authTask.addOnCompleteListener(
+                    task -> {
+                        if (task.isSuccessful()) {
+                            AuthResult authResult = task.getResult();
+                            FirebaseUser user = authResult.getUser();
+
+                            onAuthSuccess(task.getResult().getUser());
+                        }
+                    }
+            );
         } else {
-            Log.w(TAG, "SignInWithEmail error!", task.getException());
-            onAuthError(task.getException());
+            Log.w(TAG, "SignInWithEmail error!", authTask.getException());
+            onAuthError(authTask.getException());
         }
     }
 
-    protected void onAuthSuccess() {
+    protected void onAuthSuccess(FirebaseUser user) {
         Log.d(TAG, "Auth success!");
 
-        // To main activity
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        // Go...
+        Intent intent;
+        if (user.isEmailVerified()) {
+            // ...to main activity
+            intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        } else {
+            // ...to confirm mail activity
+            intent = new Intent(this, ConfirmMailActivity.class);
+        }
         startActivity(intent);
         finish();
     }
