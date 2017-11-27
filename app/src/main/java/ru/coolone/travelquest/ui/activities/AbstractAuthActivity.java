@@ -24,6 +24,8 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,7 +70,9 @@ abstract public class AbstractAuthActivity
     protected View authFormView;
 
     // Progress
-    protected View progressView;
+    protected RelativeLayout progressLayout;
+    protected ProgressBar progressBar;
+    protected TextView progressTitle;
 
     // Mail
     protected AutoCompleteTextView mailView;
@@ -230,12 +234,12 @@ abstract public class AbstractAuthActivity
                     });
 
             // Show progress view
-            progressView.setVisibility(
+            progressLayout.setVisibility(
                     visibility
                             ? View.VISIBLE
                             : View.GONE
             );
-            progressView
+            progressLayout
                     .animate()
                     .setDuration(shortAnimTime)
                     .alpha(
@@ -245,7 +249,7 @@ abstract public class AbstractAuthActivity
                     ).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    progressView.setVisibility(
+                    progressLayout.setVisibility(
                             visibility
                                     ? View.VISIBLE
                                     : View.GONE
@@ -432,8 +436,6 @@ abstract public class AbstractAuthActivity
     }
 
     protected void onAuthComplete(Task<AuthResult> authTask) {
-        hideProgress();
-
         if (authTask.isSuccessful()) {
             Log.d(TAG, "SignInWithEmail success!");
             authTask.addOnCompleteListener(
@@ -447,6 +449,7 @@ abstract public class AbstractAuthActivity
                     }
             );
         } else {
+            hideProgress();
             Log.w(TAG, "SignInWithEmail error!", authTask.getException());
             onAuthError(authTask.getException());
         }

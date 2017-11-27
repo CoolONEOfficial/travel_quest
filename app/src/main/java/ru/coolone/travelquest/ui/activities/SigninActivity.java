@@ -2,7 +2,10 @@ package ru.coolone.travelquest.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
 
@@ -25,7 +28,9 @@ public class SigninActivity extends AbstractAuthActivity {
         passwordView = findViewById(R.id.signin_text_password);
         authButton = findViewById(R.id.signin_button_signin);
         authFormView = findViewById(R.id.signin_form);
-        progressView = findViewById(R.id.signin_progress_layout);
+        progressLayout = findViewById(R.id.signin_progress_layout);
+        progressBar = findViewById(R.id.signin_progress_bar);
+        progressTitle = findViewById(R.id.signin_progress_title);
         TextView textViewLogin = findViewById(R.id.signin_text_view_login);
 
         textViewLogin.setOnClickListener(view -> {
@@ -41,6 +46,7 @@ public class SigninActivity extends AbstractAuthActivity {
     @Override
     void onAuth() {
         // Signin
+        progressTitle.setText(getResources().getString(R.string.signin_progress));
         auth.createUserWithEmailAndPassword(
                 mailView.getText().toString(),
                 passwordView.getText().toString()
@@ -50,11 +56,30 @@ public class SigninActivity extends AbstractAuthActivity {
     @Override
     protected void onAuthSuccess(FirebaseUser user) {
         // Send verification letter
-        user.sendEmailVerification();
 
-        // To mail verification
-        Intent intent = new Intent(this, ConfirmMailActivity.class);
-        startActivity(intent);
-        finish();
+        progressTitle.setText(getResources().getString(R.string.signin_progress_confirmation));
+        progressLayout.setVisibility(View.VISIBLE);
+
+        Log.d(TAG, "Sending verification letter to ");
+        user.sendEmailVerification().addOnSuccessListener(
+                aVoid -> {
+                    // To mail verification
+                    Intent intent = new Intent(this, ConfirmMailActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+        ).addOnFailureListener(
+                e -> {
+                    // Show error
+                    Toast.makeText(
+                            this,
+                            getResources().getString(R.string.signin_confirmation_error),
+                            Toast.LENGTH_SHORT
+                    ).show();
+
+                    // Delete account
+                    user.delete();
+                }
+        );
     }
 }

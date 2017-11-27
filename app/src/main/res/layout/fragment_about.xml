@@ -16,7 +16,7 @@
         <ImageView
             android:id="@+id/about_logo"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="70dp"
             android:src="@mipmap/ic_launcher"
             android:contentDescription="@string/about_logo_description" />
 

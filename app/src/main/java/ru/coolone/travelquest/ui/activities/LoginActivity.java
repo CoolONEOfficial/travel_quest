@@ -27,7 +27,9 @@ public class LoginActivity
         passwordView = findViewById(R.id.login_text_password);
         authButton = findViewById(R.id.login_button_login);
         authFormView = findViewById(R.id.login_form);
-        progressView = findViewById(R.id.login_progress_layout);
+        progressLayout = findViewById(R.id.login_progress_layout);
+        progressBar = findViewById(R.id.login_progress_bar);
+        progressTitle = findViewById(R.id.login_progress_title);
         TextView signinTextView = findViewById(R.id.login_text_view_signin);
 
         // Signin text view

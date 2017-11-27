@@ -3,4 +3,6 @@
     <string name="signin_button_signin">Регистрация</string>
     <string name="signin_text_view_login">Зарегистрированы?</string>
     <string name="signin_progress">Регистрируемся&#8230;</string>
+    <string name="signin_progress_confirmation">Отправляем письмо подтверждения&#8230;</string>
+    <string name="signin_confirmation_error">Ошибка при отправке письма подтверждения!</string>
 </resources>
