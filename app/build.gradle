@@ -7,8 +7,8 @@ android {
         applicationId "ru.coolone.travelquest"
         minSdkVersion 16
         targetSdkVersion 27
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
         manifestPlaceholders = [googleMapApiKey: GOOGLE_MAPS_API_KEY]
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
