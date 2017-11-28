@@ -21,14 +21,12 @@ import ru.coolone.travelquest.R;
 
 public class ConfirmMailActivity extends AppCompatActivity {
 
-    RelativeLayout progressLayout;
-    LinearLayout confirmLayout;
-
-    Button checkButton;
-
     final FirebaseUser user = FirebaseAuth
             .getInstance()
             .getCurrentUser();
+    RelativeLayout progressLayout;
+    LinearLayout confirmLayout;
+    Button checkButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +49,41 @@ public class ConfirmMailActivity extends AppCompatActivity {
                 view -> {
                     CheckConfirmTask task = new CheckConfirmTask(this);
                     task.execute();
+                }
+        );
+    }
+
+    private void onSuccess() {
+        // To main activity
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("auth_type", AbstractAuthActivity.AuthTypes.FIREBASE.ordinal());
+        startActivity(intent);
+        finish();
+    }
+
+    private void onFailure() {
+        Toast.makeText(
+                this,
+                getResources().getString(R.string.confirm_mail_error),
+                Toast.LENGTH_LONG
+        ).show();
+    }
+
+    private void showProgress() {
+        runOnUiThread(
+                () -> {
+                    progressLayout.setVisibility(View.VISIBLE);
+                    confirmLayout.setVisibility(View.GONE);
+                }
+        );
+    }
+
+    private void hideProgress() {
+        runOnUiThread(
+                () -> {
+                    progressLayout.setVisibility(View.GONE);
+                    confirmLayout.setVisibility(View.VISIBLE);
                 }
         );
     }
@@ -94,39 +127,5 @@ public class ConfirmMailActivity extends AppCompatActivity {
                 parent.get().onFailure();
             }
         }
-    }
-
-    private void onSuccess() {
-        // To main activity
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private void onFailure() {
-        Toast.makeText(
-                this,
-                getResources().getString(R.string.confirm_mail_error),
-                Toast.LENGTH_LONG
-        ).show();
-    }
-
-    private void showProgress() {
-        runOnUiThread(
-                () -> {
-                    progressLayout.setVisibility(View.VISIBLE);
-                    confirmLayout.setVisibility(View.GONE);
-                }
-        );
-    }
-
-    private void hideProgress() {
-        runOnUiThread(
-                () -> {
-                    progressLayout.setVisibility(View.GONE);
-                    confirmLayout.setVisibility(View.VISIBLE);
-                }
-        );
     }
 }

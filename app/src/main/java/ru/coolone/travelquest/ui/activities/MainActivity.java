@@ -22,12 +22,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
@@ -39,37 +41,78 @@ public class MainActivity extends AppCompatActivity
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener {
 
+    public static final String[] supportLangs = {
+            "US",
+            "RU"
+    };
     static final String TAG = MainActivity.class.getSimpleName();
-
-    public MainActivity() {
-    }
-
-    // Api client
-    private static GoogleApiClient apiClient;
-
-    // Firebase user
-    public FirebaseUser user;
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
-
-    // Fragments id
-    enum FragmentId {
-        ABOUT,
-        QUESTS,
-        SETTINGS
-    }
-
-    // Fragments array
-    SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
     static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
 
     // Preferences
     public static SharedPreferences settings;
 
+    // Api client
+    private static GoogleApiClient apiClient;
+
+    // Fragments array
+    SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
+
     // Drawer layout
     DrawerLayout drawer;
+
+    // Auth type (for logout)
+    int authType;
+
+    public MainActivity() {
+    }
+
+    static public int getAppHeight(Activity activity) {
+        return activity.findViewById(R.id.fragment_container).getHeight();
+    }
+
+    static public int getAppHeightWithoutBar(Activity activity) {
+        return getAppHeight(activity) - getHeightBar(activity);
+    }
+
+    static public int getHeightBar(Activity activity) {
+        return activity.findViewById(R.id.toolbar).getHeight();
+    }
+
+    public static String getLocaleStr(Context context) {
+        // Get locale
+        String localeStr;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
+            localeStr = context.getResources().getConfiguration().getLocales().get(0).getCountry();
+        else
+            localeStr = context.getResources().getConfiguration().locale.getCountry();
+
+        // Check support
+        for (String mLocale : supportLangs) {
+            Log.d(TAG, "Current locale: " + localeStr
+                    + "\n\tmLocale: " + mLocale);
+            if (localeStr.equals(mLocale)) {
+                Log.d(TAG, "Locale is supported!");
+                return localeStr;
+            }
+        }
+
+        return supportLangs[0];
+    }
+
+    public static GoogleApiClient getApiClient() {
+        return apiClient;
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        Toast.makeText(
+                this,
+                getResources().getString(R.string.error_google_api)
+                        + '\n' + connectionResult.getErrorMessage(),
+                Toast.LENGTH_LONG
+        ).show();
+        finishAffinity();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,11 +135,12 @@ public class MainActivity extends AppCompatActivity
                         .penaltyLog()
                         .build());
 
+        // Get auth for logout
+        Intent intent = getIntent();
+        authType = intent.getIntExtra("auth_type", -1);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Get / Check user
-        user = FirebaseAuth.getInstance().getCurrentUser();
 
         // Google api client
         apiClient = new GoogleApiClient
@@ -108,9 +152,6 @@ public class MainActivity extends AppCompatActivity
 
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Session key
-        user = FirebaseAuth.getInstance().getCurrentUser();
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -164,7 +205,16 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_logout) {
             // Logout
-            FirebaseAuth.getInstance().signOut();
+            if (authType == AbstractAuthActivity.AuthTypes.OAUTH_GOOGLE.ordinal()) {
+                GoogleSignIn.getClient(
+                        this,
+                        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                                .requestEmail()
+                                .build()
+                ).signOut();
+            } else if (authType == AbstractAuthActivity.AuthTypes.FIREBASE.ordinal())
+                FirebaseAuth.getInstance().signOut();
+            else Log.e(TAG, "Logout error! Wrong auth type!");
 
             // To login activity
             Intent loginIntent = new Intent(this, LoginActivity.class);
@@ -202,45 +252,10 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    public static final String[] supportLangs = {
-            "US",
-            "RU"
-    };
-
-    static public int getAppHeight(Activity activity) {
-        return activity.findViewById(R.id.fragment_container).getHeight();
-    }
-
-    static public int getAppHeightWithoutBar(Activity activity) {
-        return getAppHeight(activity) - getHeightBar(activity);
-    }
-
-    static public int getHeightBar(Activity activity) {
-        return activity.findViewById(R.id.toolbar).getHeight();
-    }
-
-    public static String getLocaleStr(Context context) {
-        // Get locale
-        String localeStr;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
-            localeStr = context.getResources().getConfiguration().getLocales().get(0).getCountry();
-        else
-            localeStr = context.getResources().getConfiguration().locale.getCountry();
-
-        // Check support
-        for (String mLocale : supportLangs) {
-            Log.d(TAG, "Current locale: " + localeStr
-                    + "\n\tmLocale: " + mLocale);
-            if (localeStr.equals(mLocale)) {
-                Log.d(TAG, "Locale is supported!");
-                return localeStr;
-            }
-        }
-
-        return supportLangs[0];
-    }
-
-    public static GoogleApiClient getApiClient() {
-        return apiClient;
+    // Fragments id
+    enum FragmentId {
+        ABOUT,
+        QUESTS,
+        SETTINGS
     }
 }

@@ -10,5 +10,6 @@
     <string name="error_field_long">Это поле слишком длинное</string>
     <string name="error_field_small">Это поле слишком короткое</string>
     <string name="error_permission_rationale">Контакты нужны для автодополнения эл. почты</string>
-    <string name="error_auth">Чтото пошло не так</string>
+    <string name="error_auth">Ошибка аутентификации</string>
+    <string name="error_oauth_google">Ошибка аутентификации с помощью Google</string>
 </resources>

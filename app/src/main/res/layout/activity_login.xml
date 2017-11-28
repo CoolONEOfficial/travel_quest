@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone">
+
         <ProgressBar
             android:id="@+id/login_progress_bar"
             style="?android:attr/progressBarStyleLarge"
@@ -27,10 +28,10 @@
             android:id="@+id/login_progress_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/login_progress"
             android:layout_below="@id/login_progress_bar"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/content_inset" />
+            android:layout_marginTop="@dimen/content_inset"
+            android:text="@string/login_progress" />
     </RelativeLayout>
 
     <LinearLayout
@@ -47,13 +48,13 @@
                 android:id="@+id/login_text_mail"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:cursorVisible="false"
                 android:hint="@string/prompt_mail"
-                android:inputType="textEmailAddress"
-                android:maxLines="1"
                 android:imeActionId="1"
                 android:imeOptions="actionNext"
-                android:singleLine="true"
-                android:cursorVisible="false" />
+                android:inputType="textEmailAddress"
+                android:maxLines="1"
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -65,13 +66,13 @@
                 android:id="@+id/login_text_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:cursorVisible="false"
                 android:hint="@string/prompt_password"
                 android:imeActionId="2"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true"
-                android:cursorVisible="false" />
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -90,5 +91,20 @@
             android:layout_height="wrap_content"
             android:text="@string/login_text_view_signin" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/login_oauth_title"
+            android:textSize="28sp" />
+
+        <ImageButton
+            android:id="@+id/login_oauth_google"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="@dimen/content_inset"
+            android:src="@drawable/ic_auth_google"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 </LinearLayout>

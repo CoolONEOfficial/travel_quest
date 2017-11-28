@@ -26,10 +26,10 @@
         android:id="@+id/menu_bar_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:maxWidth="220dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@id/menu_bar_title"
+        android:maxWidth="220dp"
         android:text="@string/menu_bar_subtitle" />
 
 </RelativeLayout>

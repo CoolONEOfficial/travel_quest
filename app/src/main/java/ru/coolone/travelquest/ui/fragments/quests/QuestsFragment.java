@@ -55,6 +55,8 @@ public class QuestsFragment extends Fragment
 
     // Sliding panel
     SlidingUpPanelLayout slidingPanel;
+    // Toolbar view with search
+    View toolbarView;
 
     public QuestsFragment() {
         // Required empty public constructor
@@ -63,6 +65,11 @@ public class QuestsFragment extends Fragment
     public static QuestsFragment newInstance() {
         // Create fragment
         return new QuestsFragment();
+    }
+
+    static public float getPanelAnchoredOffset(Activity activity) {
+        return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
+                / MainActivity.getAppHeightWithoutBar(activity);
     }
 
     @Override
@@ -269,9 +276,6 @@ public class QuestsFragment extends Fragment
                 Toast.LENGTH_LONG).show();
     }
 
-    // Toolbar view with search
-    View toolbarView;
-
     @Override
     public void onResume() {
         super.onResume();
@@ -314,11 +318,6 @@ public class QuestsFragment extends Fragment
 
         // Remove toolbar search
         toolbarContainer.removeView(toolbarView);
-    }
-
-    static public float getPanelAnchoredOffset(Activity activity) {
-        return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
-                / MainActivity.getAppHeightWithoutBar(activity);
     }
 
     @Override

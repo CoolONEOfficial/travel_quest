@@ -3,16 +3,16 @@
     android:id="@+id/layout_details"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@android:color/background_light"
+    android:orientation="vertical"
     tools:context=".ui.fragments.quests.details.QuestDetailsFragment">
 
     <ScrollView
         android:id="@+id/details_description_scroll"
-        android:layout_alignParentTop="true"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/details_delimiter">
+        android:layout_above="@id/details_delimiter"
+        android:layout_alignParentTop="true">
 
         <LinearLayout
             android:id="@+id/details_description"
@@ -104,9 +104,9 @@
 
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/details_description_recycler"
-                    android:layout_below="@id/details_photos_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
+                    android:layout_below="@id/details_photos_scroll"
                     android:paddingLeft="@dimen/content_inset"
                     android:paddingRight="@dimen/content_inset"
                     android:scrollbars="none" />

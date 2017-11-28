@@ -3,4 +3,5 @@
     <string name="login_button_login">Вход</string>
     <string name="login_text_view_signin">Не зарегистрированы?</string>
     <string name="login_progress">Входим&#8230;</string>
+    <string name="login_oauth_title">Или войдите с помощью&#8230;</string>
 </resources>

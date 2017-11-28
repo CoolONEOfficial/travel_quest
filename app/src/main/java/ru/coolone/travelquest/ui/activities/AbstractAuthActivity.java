@@ -24,11 +24,17 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -46,39 +52,36 @@ abstract public class AbstractAuthActivity
         extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    // Context
-    Context context;
-
+    public static final boolean AUTH_TOKEN_FORCE_REFRESH = false;
     static final String TAG = LoginActivity.class.getSimpleName();
 
     /**
      * Id to identity READ_CONTACTS permission request.
      */
     private static final int REQUEST_READ_CONTACTS = 0;
-
-    public static final boolean AUTH_TOKEN_FORCE_REFRESH = false;
-
     // Firebase onAuth
     protected FirebaseAuth auth;
-
-    // --- Ui references ---
-
     // Auth button
     protected Button authButton;
 
+    // --- Ui references ---
     // Auth form
     protected View authFormView;
-
     // Progress
     protected RelativeLayout progressLayout;
     protected ProgressBar progressBar;
     protected TextView progressTitle;
-
     // Mail
     protected AutoCompleteTextView mailView;
-
     // Password
     protected EditText passwordView;
+    // OAuth
+    protected ImageButton oauthGoogleView;
+    protected GoogleSignInOptions oauthGoogleOptions;
+    protected GoogleSignInClient oauthGoogleClient;
+    // Context
+    Context context;
+    private boolean initViewsCalled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,12 +89,15 @@ abstract public class AbstractAuthActivity
 
         // Auth
         auth = FirebaseAuth.getInstance();
+        oauthGoogleOptions =
+                new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestEmail()
+                        .build();
+        oauthGoogleClient = GoogleSignIn.getClient(this, oauthGoogleOptions);
 
         // Populate autocomplete
         populateAutoComplete();
     }
-
-    private boolean initViewsCalled = false;
 
     protected void initViews() {
         // --- Set listeners ---
@@ -115,6 +121,10 @@ abstract public class AbstractAuthActivity
         // After click button
         authButton.setOnClickListener(
                 view -> startAuth()
+        );
+
+        oauthGoogleView.setOnClickListener(
+                view -> onOAuthGoogle()
         );
 
         // Activate called flag
@@ -323,16 +333,6 @@ abstract public class AbstractAuthActivity
         mailView.setAdapter(adapter);
     }
 
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
     private void populateAutoComplete() {
         if (!mayRequestContacts()) {
             return;
@@ -411,14 +411,6 @@ abstract public class AbstractAuthActivity
         textView.setError(context.getResources().getString(errStrResId));
     }
 
-    enum InputError {
-        NONE,
-        LONG,
-        SMALL,
-        INCORRECT,
-        EMPTY
-    }
-
     protected boolean checkInput() {
 
         // Check input
@@ -441,9 +433,6 @@ abstract public class AbstractAuthActivity
             authTask.addOnCompleteListener(
                     task -> {
                         if (task.isSuccessful()) {
-                            AuthResult authResult = task.getResult();
-                            FirebaseUser user = authResult.getUser();
-
                             onAuthSuccess(task.getResult().getUser());
                         }
                     }
@@ -464,6 +453,7 @@ abstract public class AbstractAuthActivity
             // ...to main activity
             intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            intent.putExtra("auth_type", AuthTypes.FIREBASE.ordinal());
         } else {
             // ...to confirm mail activity
             intent = new Intent(this, ConfirmMailActivity.class);
@@ -472,13 +462,84 @@ abstract public class AbstractAuthActivity
         finish();
     }
 
-    protected void onAuthError(Exception exception) {
-        Log.w(TAG, "Auth error!", exception);
+    protected void onAuthError(Exception e) {
+        Log.w(TAG, "Auth error!", e);
 
         // Show error
         Toast.makeText(context,
                 context.getResources().getString(R.string.error_auth)
-                        + '\n' + exception.getLocalizedMessage(),
+                        + '\n' + e.getLocalizedMessage(),
                 Toast.LENGTH_SHORT).show();
+    }
+
+    protected void onOAuthGoogle() {
+        Log.d(TAG, "Starting google oauth...");
+        Intent signInIntent = oauthGoogleClient.getSignInIntent();
+        startActivityForResult(signInIntent, ResultCodes.OAUTH_GOOGLE.ordinal());
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == SigninActivity.ResultCodes.OAUTH_GOOGLE.ordinal()) {
+            // Get google oauth result
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                onOAuthGoogleSuccess();
+            } catch (ApiException e) {
+                onOAuthGoogleError(e);
+            }
+        }
+    }
+
+    enum AuthTypes {
+        FIREBASE,
+        OAUTH_GOOGLE
+    }
+
+    protected void onOAuthGoogleSuccess() {
+        Log.d(TAG, "Google OAuth success");
+
+        // To main activity
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.putExtra("auth_type", AuthTypes.OAUTH_GOOGLE.ordinal());
+        startActivity(intent);
+        finish();
+    }
+
+    protected void onOAuthGoogleError(Exception e) {
+        Log.w(TAG, "Google OAuth error!", e);
+
+        // Show error
+        Toast.makeText(context,
+                context.getResources().getString(R.string.error_auth)
+                        + '\n' + e.getLocalizedMessage(),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    enum InputError {
+        NONE,
+        LONG,
+        SMALL,
+        INCORRECT,
+        EMPTY
+    }
+
+    protected enum ResultCodes {
+        OAUTH_GOOGLE
+    }
+
+    private interface ProfileQuery {
+        String[] PROJECTION = {
+                ContactsContract.CommonDataKinds.Email.ADDRESS,
+                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
+        };
+
+        int ADDRESS = 0;
+        int IS_PRIMARY = 1;
     }
 }

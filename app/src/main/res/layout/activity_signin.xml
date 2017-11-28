@@ -28,10 +28,10 @@
             android:id="@+id/signin_progress_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/signin_progress"
             android:layout_below="@id/signin_progress_bar"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="@dimen/content_inset" />
+            android:layout_marginTop="@dimen/content_inset"
+            android:text="@string/signin_progress" />
     </RelativeLayout>
 
     <LinearLayout
@@ -49,9 +49,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_mail"
-                android:inputType="textEmailAddress"
                 android:imeActionId="2"
                 android:imeOptions="actionNext"
+                android:inputType="textEmailAddress"
                 android:maxLines="1"
                 android:singleLine="true" />
 
@@ -65,13 +65,13 @@
                 android:id="@+id/signin_text_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:cursorVisible="false"
                 android:hint="@string/prompt_password"
                 android:imeActionId="2"
                 android:imeOptions="actionDone"
                 android:inputType="textPassword"
                 android:maxLines="1"
-                android:singleLine="true"
-                android:cursorVisible="false" />
+                android:singleLine="true" />
 
         </android.support.design.widget.TextInputLayout>
 
@@ -90,5 +90,18 @@
             android:layout_height="wrap_content"
             android:text="@string/signin_text_view_login" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="@string/signin_oauth_title"
+            android:textSize="28sp" />
+
+        <ImageButton
+            android:id="@+id/signin_oauth_google"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:layout_marginTop="@dimen/content_inset"
+            android:src="@drawable/ic_auth_google" />
     </LinearLayout>
 </LinearLayout>

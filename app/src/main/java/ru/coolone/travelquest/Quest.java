@@ -10,6 +10,16 @@ import java.util.List;
 
 public class Quest implements Serializable {
 
+    // Types
+    private List<Integer> types;
+    // Name
+    private String name;
+    // Description
+    private String description;
+    private LatLng coord;
+    // Photos
+    private PlacePhotoMetadataResult photos;
+
     Quest(LatLng coord,
           String name,
           List<Integer> types,
@@ -24,9 +34,6 @@ public class Quest implements Serializable {
         this.description = description;
     }
 
-    // Types
-    private List<Integer> types;
-
     public List<Integer> getTypes() {
         return types;
     }
@@ -34,9 +41,6 @@ public class Quest implements Serializable {
     public void setTypes(List<Integer> types) {
         this.types = types;
     }
-
-    // Name
-    private String name;
 
     public String getName() {
         return name;
@@ -46,8 +50,7 @@ public class Quest implements Serializable {
         this.name = name;
     }
 
-    // Description
-    private String description;
+    // Coordinate
 
     public String getDescription() {
         return description;
@@ -57,10 +60,6 @@ public class Quest implements Serializable {
         this.description = description;
     }
 
-    // Coordinate
-
-    private LatLng coord;
-
     public LatLng getCoord() {
         return coord;
     }
@@ -68,9 +67,6 @@ public class Quest implements Serializable {
     public void setCoord(LatLng coord) {
         this.coord = coord;
     }
-
-    // Photos
-    private PlacePhotoMetadataResult photos;
 
     public PlacePhotoMetadataResult getPhotos() {
         return photos;

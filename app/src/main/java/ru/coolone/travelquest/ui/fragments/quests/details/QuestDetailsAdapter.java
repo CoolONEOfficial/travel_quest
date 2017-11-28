@@ -23,17 +23,6 @@ public class QuestDetailsAdapter
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
 
     private static final String TAG = QuestDetailsFragment.class.getSimpleName();
-
-    public interface ListItem {
-        enum Id {
-            HEADER_TEXT,
-            ITEM_TEXT,
-            ITEM_RECYCLER
-        }
-
-        int getListItemId();
-    }
-
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
     private OnClickListener<BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder> headerClickListener;
 
@@ -42,15 +31,15 @@ public class QuestDetailsAdapter
         Log.d(TAG, "Vh type: " + String.valueOf(viewType));
 
         // Header
-        if(viewType == ListItem.Id.HEADER_TEXT.ordinal())
+        if (viewType == ListItem.Id.HEADER_TEXT.ordinal())
             return new HeaderHolder(inflateLayout(parent, R.layout.details_description_header));
-        
-        // Item
+
+            // Item
         else if (viewType == ListItem.Id.ITEM_TEXT.ordinal())
             return new ItemHolderText(inflateLayout(parent, R.layout.details_description_item_text));
         else if (viewType == ListItem.Id.ITEM_RECYCLER.ordinal())
             return new ItemHolderRecycler(inflateLayout(parent, R.layout.details_description_item_recycler), parent.getContext());
-        else if(viewType == VIEW_TYPE_HEADER)
+        else if (viewType == VIEW_TYPE_HEADER)
             return new HeaderHolder(inflateLayout(parent, R.layout.details_description_header));
 
         Log.e(TAG, "Create vh wrong type: " + String.valueOf(viewType));
@@ -88,6 +77,21 @@ public class QuestDetailsAdapter
 
     public void setItemClickListener(OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener) {
         this.itemClickListener = itemClickListener;
+    }
+
+    @Override
+    public int getItemViewType(int section, int relativePosition, int absolutePosition) {
+        return getItem(section, relativePosition).getListItemId();
+    }
+
+    public interface ListItem {
+        int getListItemId();
+
+        enum Id {
+            HEADER_TEXT,
+            ITEM_TEXT,
+            ITEM_RECYCLER
+        }
     }
 
     class HeaderHolder
@@ -134,11 +138,6 @@ public class QuestDetailsAdapter
             }
             return false;
         }
-    }
-
-    @Override
-    public int getItemViewType(int section, int relativePosition, int absolutePosition) {
-        return getItem(section, relativePosition).getListItemId();
     }
 
     public class ItemHolderText

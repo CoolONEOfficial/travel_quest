@@ -4,8 +4,8 @@
     <item>
         <bitmap
             android:gravity="fill"
-            android:tileMode="repeat"
-            android:src="@drawable/pattern" />
+            android:src="@drawable/pattern"
+            android:tileMode="repeat" />
     </item>
 
     <item>

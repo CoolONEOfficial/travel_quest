@@ -44,38 +44,15 @@ import ru.coolone.travelquest.ui.views.adapters.BaseSectionedHeader;
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
-
-    // Arguments
-    enum ArgKeys {
-        TITLE("title"),
-        PHONE("phone"),
-        URL("url"),
-        RATING("rating"),
-        TYPE_ID("type_id"),
-        PLACE_ID("place_id");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return val;
-        }
-    }
-
+    RecyclerView descriptionRecyclerView;
     private OnCreateViewListener onCreateViewListener;
 
     private String title;
     private String placeId;
-    RecyclerView descriptionRecyclerView;
     private String phone;
     private Uri url;
     private float rating;
     private int typeId;
-
     private SparseArray<View> viewArr = new SparseArray<>();
 
     public QuestDetailsFragment() {
@@ -129,6 +106,72 @@ public class QuestDetailsFragment extends Fragment {
                 place.getPlaceTypes().get(0),
                 place.getId()
         );
+    }
+
+    private static String placeTypeIdToString(Context parent, Integer placeTypeId) {
+        // Get place type resource id
+        int placeTypeResId = -1;
+        switch (placeTypeId) {
+            case Place.TYPE_MUSEUM:
+                placeTypeResId = R.string.TYPE_MUSEUM;
+                break;
+            case Place.TYPE_PARK:
+                placeTypeResId = R.string.TYPE_PARK;
+                break;
+            case Place.TYPE_RESTAURANT:
+                placeTypeResId = R.string.TYPE_RESTAURANT;
+                break;
+            case Place.TYPE_SCHOOL:
+                placeTypeResId = R.string.TYPE_SCHOOL;
+                break;
+            case Place.TYPE_STADIUM:
+                placeTypeResId = R.string.TYPE_STADIUM;
+                break;
+            case Place.TYPE_STORE:
+                placeTypeResId = R.string.TYPE_STORE;
+                break;
+            case Place.TYPE_TRAIN_STATION:
+                placeTypeResId = R.string.TYPE_TRAIN_STATION;
+                break;
+            case Place.TYPE_UNIVERSITY:
+                placeTypeResId = R.string.TYPE_UNIVERSITY;
+                break;
+            case Place.TYPE_ZOO:
+                placeTypeResId = R.string.TYPE_ZOO;
+                break;
+            case Place.TYPE_PLACE_OF_WORSHIP:
+                placeTypeResId = R.string.TYPE_PLACE_OF_WORSHIP;
+                break;
+            case Place.TYPE_GYM:
+                placeTypeResId = R.string.TYPE_GYM;
+                break;
+            case Place.TYPE_CASINO:
+                placeTypeResId = R.string.TYPE_CASINO;
+                break;
+            case Place.TYPE_ART_GALLERY:
+                placeTypeResId = R.string.TYPE_ART_GALLERY;
+                break;
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_1:
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_2:
+            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_3:
+                placeTypeResId = R.string.TYPE_ADMINISTRATIVE_AREA;
+                break;
+            case Place.TYPE_AMUSEMENT_PARK:
+                placeTypeResId = R.string.TYPE_AMUSEMENT_PARK;
+                break;
+            case Place.TYPE_AQUARIUM:
+                placeTypeResId = R.string.TYPE_AQUARIUM;
+                break;
+        }
+
+        // Get resource string
+        String placeTypeStr;
+        if (placeTypeResId != -1)
+            placeTypeStr = parent.getResources().getString(placeTypeResId);
+        else
+            placeTypeStr = null;
+
+        return placeTypeStr;
     }
 
     @Override
@@ -512,6 +555,127 @@ public class QuestDetailsFragment extends Fragment {
         new PhotoTask(this).execute(placeId);
     }
 
+    private void setDescriptionPhotoImageView(ImageView imageView) {
+        // Set photo image view
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                (int) getResources().getDimension(R.dimen.details_photos_size_anchored),
+                (int) getResources().getDimension(R.dimen.details_photos_size_anchored)
+        );
+        imageView.setLayoutParams(layoutParams);
+        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+    }
+
+    private void setPhotosVisibility(int visibility) {
+        viewArr.get(R.id.details_photos_layout).setVisibility(visibility);
+        viewArr.get(R.id.details_photos_scroll).setVisibility(visibility);
+    }
+
+    private void refresh() {
+        // Refresh all
+        refreshTitle();
+        refreshPhone();
+        refreshUrl();
+        refreshRating();
+        refreshTypes();
+        refreshDescription();
+        refreshPhotos();
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+        refreshTitle();
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+        refreshPhone();
+    }
+
+    public Uri getUrl() {
+        return url;
+    }
+
+    public void setUrl(Uri url) {
+        this.url = url;
+        refreshUrl();
+    }
+
+    public float getRating() {
+        return rating;
+    }
+
+    public void setRating(float rating) {
+        this.rating = rating;
+        refreshRating();
+    }
+
+    public String getPlaceId() {
+        return placeId;
+    }
+
+    public void setPlaceId(String placeId) {
+        this.placeId = placeId;
+        refreshDescription();
+        refreshPhotos();
+    }
+
+    public int getType() {
+        return typeId;
+    }
+
+    public void setTypes(int typeId) {
+        this.typeId = typeId;
+        refreshTypes();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (onCreateViewListener == null) {
+            throw new ClassCastException(
+                    "Parent activity must implements OnCreateViewListener"
+            );
+        }
+    }
+
+    public void setOnCreateViewListener(OnCreateViewListener onCreateViewListener) {
+        this.onCreateViewListener = onCreateViewListener;
+    }
+
+    // Arguments
+    enum ArgKeys {
+        TITLE("title"),
+        PHONE("phone"),
+        URL("url"),
+        RATING("rating"),
+        TYPE_ID("type_id"),
+        PLACE_ID("place_id");
+
+        private final String val;
+
+        ArgKeys(String val) {
+            this.val = val;
+        }
+
+        @Override
+        public String toString() {
+            return val;
+        }
+    }
+
+    public interface OnCreateViewListener {
+        void onQuestDetailsCreateView(@NonNull View view, ViewGroup container,
+                                      Bundle savedInstanceState);
+    }
+
     static private class PhotoTask extends AsyncTask<String, Void, PhotoTask.AttributedPhoto[]> {
 
         QuestDetailsFragment parent;
@@ -599,171 +763,5 @@ public class QuestDetailsFragment extends Fragment {
                 this.bitmap = bitmap;
             }
         }
-    }
-
-    private void setDescriptionPhotoImageView(ImageView imageView) {
-        // Set photo image view
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
-                (int) getResources().getDimension(R.dimen.details_photos_size_anchored),
-                (int) getResources().getDimension(R.dimen.details_photos_size_anchored)
-        );
-        imageView.setLayoutParams(layoutParams);
-        imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-    }
-
-    private void setPhotosVisibility(int visibility) {
-        viewArr.get(R.id.details_photos_layout).setVisibility(visibility);
-        viewArr.get(R.id.details_photos_scroll).setVisibility(visibility);
-    }
-
-    private void refresh() {
-        // Refresh all
-        refreshTitle();
-        refreshPhone();
-        refreshUrl();
-        refreshRating();
-        refreshTypes();
-        refreshDescription();
-        refreshPhotos();
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-        refreshTitle();
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-        refreshPhone();
-    }
-
-    public Uri getUrl() {
-        return url;
-    }
-
-    public void setUrl(Uri url) {
-        this.url = url;
-        refreshUrl();
-    }
-
-    public float getRating() {
-        return rating;
-    }
-
-    public void setRating(float rating) {
-        this.rating = rating;
-        refreshRating();
-    }
-
-    public String getPlaceId() {
-        return placeId;
-    }
-
-    public void setPlaceId(String placeId) {
-        this.placeId = placeId;
-        refreshDescription();
-        refreshPhotos();
-    }
-
-    public int getType() {
-        return typeId;
-    }
-
-    public void setTypes(int typeId) {
-        this.typeId = typeId;
-        refreshTypes();
-    }
-
-    private static String placeTypeIdToString(Context parent, Integer placeTypeId) {
-        // Get place type resource id
-        int placeTypeResId = -1;
-        switch (placeTypeId) {
-            case Place.TYPE_MUSEUM:
-                placeTypeResId = R.string.TYPE_MUSEUM;
-                break;
-            case Place.TYPE_PARK:
-                placeTypeResId = R.string.TYPE_PARK;
-                break;
-            case Place.TYPE_RESTAURANT:
-                placeTypeResId = R.string.TYPE_RESTAURANT;
-                break;
-            case Place.TYPE_SCHOOL:
-                placeTypeResId = R.string.TYPE_SCHOOL;
-                break;
-            case Place.TYPE_STADIUM:
-                placeTypeResId = R.string.TYPE_STADIUM;
-                break;
-            case Place.TYPE_STORE:
-                placeTypeResId = R.string.TYPE_STORE;
-                break;
-            case Place.TYPE_TRAIN_STATION:
-                placeTypeResId = R.string.TYPE_TRAIN_STATION;
-                break;
-            case Place.TYPE_UNIVERSITY:
-                placeTypeResId = R.string.TYPE_UNIVERSITY;
-                break;
-            case Place.TYPE_ZOO:
-                placeTypeResId = R.string.TYPE_ZOO;
-                break;
-            case Place.TYPE_PLACE_OF_WORSHIP:
-                placeTypeResId = R.string.TYPE_PLACE_OF_WORSHIP;
-                break;
-            case Place.TYPE_GYM:
-                placeTypeResId = R.string.TYPE_GYM;
-                break;
-            case Place.TYPE_CASINO:
-                placeTypeResId = R.string.TYPE_CASINO;
-                break;
-            case Place.TYPE_ART_GALLERY:
-                placeTypeResId = R.string.TYPE_ART_GALLERY;
-                break;
-            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_1:
-            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_2:
-            case Place.TYPE_ADMINISTRATIVE_AREA_LEVEL_3:
-                placeTypeResId = R.string.TYPE_ADMINISTRATIVE_AREA;
-                break;
-            case Place.TYPE_AMUSEMENT_PARK:
-                placeTypeResId = R.string.TYPE_AMUSEMENT_PARK;
-                break;
-            case Place.TYPE_AQUARIUM:
-                placeTypeResId = R.string.TYPE_AQUARIUM;
-                break;
-        }
-
-        // Get resource string
-        String placeTypeStr;
-        if (placeTypeResId != -1)
-            placeTypeStr = parent.getResources().getString(placeTypeResId);
-        else
-            placeTypeStr = null;
-
-        return placeTypeStr;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (onCreateViewListener == null) {
-            throw new ClassCastException(
-                    "Parent activity must implements OnCreateViewListener"
-            );
-        }
-    }
-
-    public interface OnCreateViewListener {
-        void onQuestDetailsCreateView(@NonNull View view, ViewGroup container,
-                                      Bundle savedInstanceState);
-    }
-
-    public void setOnCreateViewListener(OnCreateViewListener onCreateViewListener) {
-        this.onCreateViewListener = onCreateViewListener;
     }
 }
