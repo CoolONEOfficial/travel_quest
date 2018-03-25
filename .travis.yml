@@ -31,3 +31,6 @@ android:
 
   before_install:
     - yes | sdkmanager "platforms;android-27"
+
+  script:
+    - ./gradlew clean build connectedCheck -Pbuild=dev
