@@ -7,6 +7,7 @@ buildscript {
         maven {
             url "https://maven.google.com"
         }
+        google()
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.0.1'
@@ -24,6 +25,7 @@ allprojects {
         maven {
             url "https://maven.google.com"
         }
+        google()
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:deprecation"

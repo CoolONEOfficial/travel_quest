@@ -4,37 +4,45 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class SplashActivity extends AppCompatActivity {
 
+    private static final String TAG = SplashActivity.class.getSimpleName();
+
+    private FirebaseAuth auth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Intent intent = new Intent();
+        auth = FirebaseAuth.getInstance();
+    }
 
-        // Set intent target activity
+    @Override
+    protected void onStart() {
+        super.onStart();
+
         Class<?> intentClass;
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        // Switch last login method
+        FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
-            if (user.getProviderId().equals("firebase") // check firebase auth
-                    && !user.isEmailVerified())
+            if (!user.isEmailVerified())
+                // To confirm mail screen
                 intentClass = ConfirmMailActivity.class;
             else {
                 intentClass = MainActivity.class;
-                intent.putExtra("auth_type", AbstractAuthActivity.AuthTypes.FIREBASE.ordinal());
             }
-        } else if (GoogleSignIn.getLastSignedInAccount(this) != null) { // check google oauth
-            intentClass = MainActivity.class;
-            intent.putExtra("auth_type", AbstractAuthActivity.AuthTypes.OAUTH_GOOGLE.ordinal());
         } else
             intentClass = LoginActivity.class;
 
-        // Go to target activity
+        // Set intent
+        Intent intent = new Intent();
         intent.setClass(this, intentClass);
+
+        // Go to target activity
         startActivity(intent);
         finish();
     }

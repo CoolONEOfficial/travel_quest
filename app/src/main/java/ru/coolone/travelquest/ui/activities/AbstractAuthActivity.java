@@ -36,9 +36,11 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +54,6 @@ abstract public class AbstractAuthActivity
         extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    public static final boolean AUTH_TOKEN_FORCE_REFRESH = false;
     static final String TAG = LoginActivity.class.getSimpleName();
 
     /**
@@ -91,8 +92,10 @@ abstract public class AbstractAuthActivity
         auth = FirebaseAuth.getInstance();
         oauthGoogleOptions =
                 new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(getString(R.string.default_web_client_id))
                         .requestEmail()
                         .build();
+
         oauthGoogleClient = GoogleSignIn.getClient(this, oauthGoogleOptions);
 
         // Populate autocomplete
@@ -420,13 +423,6 @@ abstract public class AbstractAuthActivity
         );
     }
 
-    final protected void authError(int strErrIdAuth) {
-        // Show toast
-        Toast.makeText(getParent(),
-                context.getResources().getString(strErrIdAuth),
-                Toast.LENGTH_LONG).show();
-    }
-
     protected void onAuthComplete(Task<AuthResult> authTask) {
         if (authTask.isSuccessful()) {
             Log.d(TAG, "SignInWithEmail success!");
@@ -453,7 +449,6 @@ abstract public class AbstractAuthActivity
             // ...to main activity
             intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            intent.putExtra("auth_type", AuthTypes.FIREBASE.ordinal());
         } else {
             // ...to confirm mail activity
             intent = new Intent(this, ConfirmMailActivity.class);
@@ -475,29 +470,46 @@ abstract public class AbstractAuthActivity
     protected void onOAuthGoogle() {
         Log.d(TAG, "Starting google oauth...");
         Intent signInIntent = oauthGoogleClient.getSignInIntent();
-        startActivityForResult(signInIntent, ResultCodes.OAUTH_GOOGLE.ordinal());
+        startActivityForResult(signInIntent, ActivityResult.OAUTH_GOOGLE.ordinal());
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == SigninActivity.ResultCodes.OAUTH_GOOGLE.ordinal()) {
+        if (requestCode == ActivityResult.OAUTH_GOOGLE.ordinal()) {
             // Get google oauth result
             Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
             try {
                 // Google Sign In was successful, authenticate with Firebase
-                GoogleSignInAccount account = task.getResult(ApiException.class);
-                onOAuthGoogleSuccess();
+                firebaseAuthWithGoogle(task.getResult(ApiException.class));
             } catch (ApiException e) {
-                onOAuthGoogleError(e);
+                // Show error
+                Toast.makeText(context,
+                        context.getResources().getString(R.string.error_auth)
+                                + '\n' + e.getLocalizedMessage(),
+                        Toast.LENGTH_SHORT).show();
             }
         }
     }
 
-    enum AuthTypes {
-        FIREBASE,
-        OAUTH_GOOGLE
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Sign in success, update UI with the signed-in user's information
+                        onOAuthGoogleSuccess();
+                    } else {
+                        // Show error
+                        Toast.makeText(context,
+                                context.getResources().getString(R.string.error_auth)
+                                        + '\n' + task.getException().getLocalizedMessage(),
+                                Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     protected void onOAuthGoogleSuccess() {
@@ -506,19 +518,8 @@ abstract public class AbstractAuthActivity
         // To main activity
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        intent.putExtra("auth_type", AuthTypes.OAUTH_GOOGLE.ordinal());
         startActivity(intent);
         finish();
-    }
-
-    protected void onOAuthGoogleError(Exception e) {
-        Log.w(TAG, "Google OAuth error!", e);
-
-        // Show error
-        Toast.makeText(context,
-                context.getResources().getString(R.string.error_auth)
-                        + '\n' + e.getLocalizedMessage(),
-                Toast.LENGTH_SHORT).show();
     }
 
     enum InputError {
@@ -529,7 +530,7 @@ abstract public class AbstractAuthActivity
         EMPTY
     }
 
-    protected enum ResultCodes {
+    protected enum ActivityResult {
         OAUTH_GOOGLE
     }
 

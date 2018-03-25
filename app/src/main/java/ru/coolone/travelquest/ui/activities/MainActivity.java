@@ -24,8 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
@@ -59,9 +57,6 @@ public class MainActivity extends AppCompatActivity
 
     // Drawer layout
     DrawerLayout drawer;
-
-    // Auth type (for logout)
-    int authType;
 
     public MainActivity() {
     }
@@ -135,10 +130,6 @@ public class MainActivity extends AppCompatActivity
                         .penaltyLog()
                         .build());
 
-        // Get auth for logout
-        Intent intent = getIntent();
-        authType = intent.getIntExtra("auth_type", -1);
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -205,16 +196,11 @@ public class MainActivity extends AppCompatActivity
 
         if (id == R.id.nav_logout) {
             // Logout
-            if (authType == AbstractAuthActivity.AuthTypes.OAUTH_GOOGLE.ordinal()) {
-                GoogleSignIn.getClient(
-                        this,
-                        new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                                .requestEmail()
-                                .build()
-                ).signOut();
-            } else if (authType == AbstractAuthActivity.AuthTypes.FIREBASE.ordinal())
-                FirebaseAuth.getInstance().signOut();
-            else Log.e(TAG, "Logout error! Wrong auth type!");
+            FirebaseAuth.getInstance().signOut();
+
+            if (FirebaseAuth.getInstance().getCurrentUser() != null)
+                Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
+            else Log.d(TAG, "Signout user is null!");
 
             // To login activity
             Intent loginIntent = new Intent(this, LoginActivity.class);

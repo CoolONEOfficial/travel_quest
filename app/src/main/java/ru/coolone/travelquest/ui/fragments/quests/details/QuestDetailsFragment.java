@@ -402,9 +402,8 @@ public class QuestDetailsFragment extends Fragment {
             // Parse description
 
             // Get doc
-            docRef
-                    .get()
-                    .addOnCompleteListener(task -> {
+            docRef.get().addOnCompleteListener(
+                    task -> {
                         if (task.isSuccessful()) {
                             DocumentSnapshot doc = task.getResult();
 
@@ -676,7 +675,7 @@ public class QuestDetailsFragment extends Fragment {
                                       Bundle savedInstanceState);
     }
 
-    static private class PhotoTask extends AsyncTask<String, Void, PhotoTask.AttributedPhoto[]> {
+    static private class PhotoTask extends AsyncTask<String, Void, Bitmap[]> {
 
         QuestDetailsFragment parent;
 
@@ -685,12 +684,12 @@ public class QuestDetailsFragment extends Fragment {
         }
 
         @Override
-        protected AttributedPhoto[] doInBackground(String... params) {
+        protected Bitmap[] doInBackground(String... params) {
             if (params.length != 1) {
                 return null;
             }
             final String placeId = params[0];
-            AttributedPhoto[] attributedPhotoArr = null;
+            Bitmap[] attributedPhotoArr = null;
 
             // Get photos result
             PlacePhotoMetadataResult result = Places.GeoDataApi
@@ -704,7 +703,7 @@ public class QuestDetailsFragment extends Fragment {
 
                 // Parse photos buffer
                 if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
-                    attributedPhotoArr = new AttributedPhoto[photoMetadataBuffer.getCount()];
+                    attributedPhotoArr = new Bitmap[photoMetadataBuffer.getCount()];
 
                     for (int mAttributedPhotoId = 0;
                          mAttributedPhotoId < photoMetadataBuffer.getCount();
@@ -716,14 +715,11 @@ public class QuestDetailsFragment extends Fragment {
                                 .freeze();
 
                         // Load a scaled bitmap for this photo
-                        Bitmap image = photo
+                        attributedPhotoArr[mAttributedPhotoId] = photo
                                 .freeze()
                                 .getPhoto(MainActivity.getApiClient())
                                 .await()
                                 .getBitmap();
-
-                        attributedPhotoArr[mAttributedPhotoId] =
-                                new AttributedPhoto(image);
                     }
                 }
 
@@ -734,33 +730,22 @@ public class QuestDetailsFragment extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(AttributedPhoto[] attributedPhotoArr) {
+        protected void onPostExecute(Bitmap[] attributedPhotoArr) {
             if (attributedPhotoArr != null && attributedPhotoArr.length != 0) {
-                for (AttributedPhoto mAttributedPhoto : attributedPhotoArr) {
+                for (Bitmap mAttributedPhoto : attributedPhotoArr) {
                     // Create image view
                     ImageView mPhotoView = new ImageView(parent.getActivity());
                     parent.setDescriptionPhotoImageView(mPhotoView);
-                    mPhotoView.setImageBitmap(mAttributedPhoto.bitmap);
+                    mPhotoView.setImageBitmap(mAttributedPhoto);
 
                     // Add view
-                    ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout)).addView(mPhotoView);
+                    ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout))
+                            .addView(mPhotoView);
                 }
 
             } else {
                 // Hide photos
                 parent.setPhotosVisibility(View.GONE);
-            }
-        }
-
-        /**
-         * Holder for an image and its attribution
-         */
-        class AttributedPhoto {
-
-            public final Bitmap bitmap;
-
-            public AttributedPhoto(Bitmap bitmap) {
-                this.bitmap = bitmap;
             }
         }
     }
