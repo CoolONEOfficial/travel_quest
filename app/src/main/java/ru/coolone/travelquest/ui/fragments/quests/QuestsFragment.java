@@ -40,23 +40,24 @@ import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment;
 public class QuestsFragment extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
-        PlaceSelectionListener,
         QuestDetailsFragment.OnCreateViewListener {
 
     static final String TAG = QuestsFragment.class.getSimpleName();
 
     // Map
-    GoogleMap map;
-    MapView mapView;
-    View view;
+    private GoogleMap map;
 
     // Sliding layout
-    FrameLayout slidingLayout;
+    private FrameLayout slidingLayout;
 
     // Sliding panel
-    SlidingUpPanelLayout slidingPanel;
+    private SlidingUpPanelLayout slidingPanel;
+
     // Toolbar view with search
-    View toolbarView;
+    private View toolbarView;
+
+    // Search places fragment
+    private PlaceAutocompleteFragment autocompleteFragment;
 
     public QuestsFragment() {
         // Required empty public constructor
@@ -81,7 +82,7 @@ public class QuestsFragment extends Fragment
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate layout
-        view = inflater.inflate(R.layout.fragment_quests, container, false);
+        View view = inflater.inflate(R.layout.fragment_quests, container, false);
 
         // Create toolbar
         if (toolbarView != null) {
@@ -99,7 +100,7 @@ public class QuestsFragment extends Fragment
         }
 
         // Autocomplete fragment
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
+        autocompleteFragment = (PlaceAutocompleteFragment)
                 getActivity().getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
         // Autocomplete filter
@@ -108,7 +109,21 @@ public class QuestsFragment extends Fragment
                 .setCountry("RU")
                 .build();
         autocompleteFragment.setFilter(typeFilter);
-        autocompleteFragment.setOnPlaceSelectedListener(this);
+        autocompleteFragment.setOnPlaceSelectedListener(
+                new PlaceSelectionListener() {
+                    @Override
+                    public void onPlaceSelected(Place place) {
+                        QuestsFragment.this.onPlaceSelected(place, false);
+                    }
+
+                    @Override
+                    public void onError(Status status) {
+                        Toast.makeText(getActivity(),
+                                "Error place select: " + status.getStatusMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
 
         // Sliding layout
         slidingLayout = view.findViewById(R.id.sliding_container);
@@ -147,6 +162,34 @@ public class QuestsFragment extends Fragment
         return view;
     }
 
+    void onPlaceSelected(Place place, boolean showDetails) {
+        Log.d(TAG, "Place selected:\nname: " + place.getName() + "\nunical id: " + place.getId());
+
+        // Go to place
+        float currentZoom = map.getCameraPosition().zoom;
+        float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                place.getLatLng(),
+                (currentZoom < defaultZoom)
+                        ? defaultZoom
+                        : currentZoom
+        ));
+
+        // - Show details -
+
+        if (showDetails) {
+            // Create details fragment
+            QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(place);
+            detailsFragment.setOnCreateViewListener(QuestsFragment.this);
+
+            // Set
+            FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
+            fragTrans.replace(R.id.sliding_container,
+                    detailsFragment);
+            fragTrans.commit();
+        }
+    }
+
     private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
         float anchoredOffset = getPanelAnchoredOffset(getActivity());
         if (slideOffset > anchoredOffset) {
@@ -165,7 +208,7 @@ public class QuestsFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
 
         // Map view
-        mapView = view.findViewById(R.id.quests_map);
+        MapView mapView = view.findViewById(R.id.quests_map);
         mapView.onCreate(null);
         mapView.onResume();
         mapView.getMapAsync(this);
@@ -237,43 +280,9 @@ public class QuestsFragment extends Fragment
                     if (places.getStatus().isSuccess() &&
                             places.getCount() > 0) {
                         // Select place
-                        onPlaceSelected(places.get(0));
+                        onPlaceSelected(places.get(0), true);
                     }
                 });
-    }
-
-    @Override
-    public void onPlaceSelected(Place place) {
-        Log.d(TAG, "Place selected:\nname: " + place.getName() + "\nunical id: " + place.getId());
-
-        // Go to place
-        float currentZoom = map.getCameraPosition().zoom;
-        float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                place.getLatLng(),
-                (currentZoom < defaultZoom)
-                        ? defaultZoom
-                        : currentZoom
-        ));
-
-        // - Show details -
-
-        // Create details fragment
-        QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(place);
-        detailsFragment.setOnCreateViewListener(this);
-
-        // Set
-        FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
-        fragTrans.replace(R.id.sliding_container,
-                detailsFragment);
-        fragTrans.commit();
-    }
-
-    @Override
-    public void onError(Status status) {
-        Toast.makeText(getActivity(),
-                "Error place select: " + status.getStatusMessage(),
-                Toast.LENGTH_LONG).show();
     }
 
     @Override
