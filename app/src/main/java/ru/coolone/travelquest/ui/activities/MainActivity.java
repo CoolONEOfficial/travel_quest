@@ -226,8 +226,8 @@ public class MainActivity extends AppCompatActivity
                 Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
             else Log.d(TAG, "Signout user is null!");
 
-            // To login activity
-            Intent loginIntent = new Intent(this, LoginActivity.class);
+            // Restart app
+            Intent loginIntent = new Intent(this, SplashActivity.class);
             loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(loginIntent);
             finish();
