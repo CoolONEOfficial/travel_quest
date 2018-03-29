@@ -13,4 +13,8 @@
     <!-- Navigation drawer -->
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+
+    <!-- Greeting -->
+    <string name="alert_greetings_title" translatable="true">Greetings</string>
+    <string name="alert_greetings_text" translatable="true">Welcome to Travel Quest - an application for exploring Nizhny Novgorod! Here you can find out the description of any historical object, its history, facts about it, and other interesting information. For information about the object, find it on the map, or use the search that is on top, and click on the object. Good luck!</string>
 </resources>

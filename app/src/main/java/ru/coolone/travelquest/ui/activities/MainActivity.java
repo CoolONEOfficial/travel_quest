@@ -17,6 +17,7 @@ import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -57,6 +58,9 @@ public class MainActivity extends AppCompatActivity
 
     // Drawer layout
     DrawerLayout drawer;
+
+    // Preferences
+    SharedPreferences prefs = null;
 
     public MainActivity() {
     }
@@ -110,6 +114,24 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (prefs.getBoolean("firstrun", true)) {
+            prefs.edit().putBoolean("firstrun", false).apply();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(getString(R.string.alert_greetings_title))
+                    .setMessage(getString(R.string.alert_greetings_text))
+                    .setCancelable(false)
+                    .setNegativeButton("OK",
+                            (dialog, id) -> dialog.cancel());
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         Log.d(TAG, "Current locale: "
@@ -132,6 +154,8 @@ public class MainActivity extends AppCompatActivity
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        prefs = getSharedPreferences("ru.coolone.travelquest", MODE_PRIVATE);
 
         // Google api client
         apiClient = new GoogleApiClient

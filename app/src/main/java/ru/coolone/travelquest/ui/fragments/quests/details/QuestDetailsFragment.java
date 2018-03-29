@@ -2,7 +2,7 @@ package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -675,7 +675,7 @@ public class QuestDetailsFragment extends Fragment {
                                       Bundle savedInstanceState);
     }
 
-    static private class PhotoTask extends AsyncTask<String, Void, Bitmap[]> {
+    static private class PhotoTask extends AsyncTask<String, Integer, Void> {
 
         QuestDetailsFragment parent;
 
@@ -684,12 +684,11 @@ public class QuestDetailsFragment extends Fragment {
         }
 
         @Override
-        protected Bitmap[] doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
             if (params.length != 1) {
                 return null;
             }
             final String placeId = params[0];
-            Bitmap[] attributedPhotoArr = null;
 
             // Get photos result
             PlacePhotoMetadataResult result = Places.GeoDataApi
@@ -703,49 +702,62 @@ public class QuestDetailsFragment extends Fragment {
 
                 // Parse photos buffer
                 if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
-                    attributedPhotoArr = new Bitmap[photoMetadataBuffer.getCount()];
+                    publishProgress(photoMetadataBuffer.getCount());
 
                     for (int mAttributedPhotoId = 0;
                          mAttributedPhotoId < photoMetadataBuffer.getCount();
                          mAttributedPhotoId++) {
+                        final int mAttributedPhotoIdFinal = mAttributedPhotoId;
 
-                        // Get the first bitmap and its attributions
+                        // Get the first bitmap
                         PlacePhotoMetadata photo = photoMetadataBuffer
                                 .get(mAttributedPhotoId)
                                 .freeze();
 
                         // Load a scaled bitmap for this photo
-                        attributedPhotoArr[mAttributedPhotoId] = photo
+                        photo
                                 .freeze()
                                 .getPhoto(MainActivity.getApiClient())
-                                .await()
-                                .getBitmap();
+                                .setResultCallback(
+                                        placePhotoResult -> {
+                                            ((ImageView)
+                                                    ((LinearLayout)
+                                                            parent.viewArr.get(R.id.details_photos_layout)
+                                                    ).getChildAt(mAttributedPhotoIdFinal)
+                                            ).setImageBitmap(placePhotoResult.getBitmap());
+                                        }
+                                );
                     }
+                } else {
+                    // Hide photos
+                    parent.setPhotosVisibility(View.GONE);
                 }
 
                 // Release the photos buffer
                 photoMetadataBuffer.release();
             }
-            return attributedPhotoArr;
+            return null;
         }
 
         @Override
-        protected void onPostExecute(Bitmap[] attributedPhotoArr) {
-            if (attributedPhotoArr != null && attributedPhotoArr.length != 0) {
-                for (Bitmap mAttributedPhoto : attributedPhotoArr) {
-                    // Create image view
-                    ImageView mPhotoView = new ImageView(parent.getActivity());
-                    parent.setDescriptionPhotoImageView(mPhotoView);
-                    mPhotoView.setImageBitmap(mAttributedPhoto);
+        protected void onProgressUpdate(Integer... values) {
+            // Create holders image views
+            for (int mAttributedPhotoId = 0;
+                 mAttributedPhotoId < values[0];
+                 mAttributedPhotoId++) {
+                // Create image view
+                ImageView mPhotoView = new ImageView(parent.getActivity());
+                parent.setDescriptionPhotoImageView(mPhotoView);
+                mPhotoView.setImageBitmap(
+                        BitmapFactory.decodeResource(
+                                parent.getResources(),
+                                R.drawable.pattern
+                        )
+                );
 
-                    // Add view
-                    ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout))
-                            .addView(mPhotoView);
-                }
-
-            } else {
-                // Hide photos
-                parent.setPhotosVisibility(View.GONE);
+                // Add view
+                ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout))
+                        .addView(mPhotoView);
             }
         }
     }
