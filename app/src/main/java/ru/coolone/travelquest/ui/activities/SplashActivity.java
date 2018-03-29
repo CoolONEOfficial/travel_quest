@@ -42,7 +42,7 @@ public class SplashActivity extends AppCompatActivity {
         // Switch last login method
         FirebaseUser user = auth.getCurrentUser();
         if (user != null) {
-            if (!user.isEmailVerified())
+            if (!user.isEmailVerified() && !user.isAnonymous())
                 // To confirm mail screen
                 toActivity(ConfirmMailActivity.class);
             else {
