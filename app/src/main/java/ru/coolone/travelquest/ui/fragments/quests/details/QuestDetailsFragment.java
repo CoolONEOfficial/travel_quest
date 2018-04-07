@@ -17,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
@@ -207,7 +206,7 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.layout_details,
                 R.id.details_title,
                 R.id.details_description_recycler,
-                R.id.details_description_add_button,
+                //R.id.details_description_add_button,
                 R.id.details_description_unknown_text,
                 R.id.details_description_unknown_text_primary,
                 R.id.details_description_unknown_text_smile,
@@ -232,7 +231,7 @@ public class QuestDetailsFragment extends Fragment {
         setDescriptionRecyclerView(descriptionRecyclerView);
 
         // Add description button
-        descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
+        //descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
 
         // Refresh views
         refresh();
