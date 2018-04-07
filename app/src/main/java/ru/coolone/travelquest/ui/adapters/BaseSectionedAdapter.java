@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.views.adapters;
+package ru.coolone.travelquest.ui.adapters;
 
 import android.support.annotation.LayoutRes;
 import android.util.Pair;

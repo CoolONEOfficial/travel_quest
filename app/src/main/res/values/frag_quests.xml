@@ -2,11 +2,12 @@
 <resources>
     <!-- Unknown -->
     <string name="details_title_unknown">Unknown title</string>
-    <string name="details_description_unknown">Description is not available\nor has not been added yet</string>
+    <string name="details_unknown">Description is not available\nor has not been added yet</string>
+    <string name="details_add_details">Add/Change description</string>
 
-    <string name="details_description_head_caret_description">Button, that open\'s subtitle</string>
+    <string name="details_head_caret_description">Button, that open\'s subtitle</string>
 
-    <dimen name="details_description_tab">10dp</dimen>
+    <dimen name="details_tab">10dp</dimen>
 
     <!-- Photos line height -->
     <dimen name="details_photos_size_anchored">200dp</dimen>

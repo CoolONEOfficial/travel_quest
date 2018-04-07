@@ -10,12 +10,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
-import ru.coolone.travelquest.ui.views.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.views.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.views.adapters.BaseSectionedViewHolder;
 
 public class QuestDetailsAdapter
         extends BaseSectionedAdapter<
@@ -32,15 +32,15 @@ public class QuestDetailsAdapter
 
         // Header
         if (viewType == ListItem.Id.HEADER_TEXT.ordinal())
-            return new HeaderHolder(inflateLayout(parent, R.layout.details_description_header));
+            return new HeaderHolder(inflateLayout(parent, R.layout.details_header));
 
             // Item
         else if (viewType == ListItem.Id.ITEM_TEXT.ordinal())
-            return new ItemHolderText(inflateLayout(parent, R.layout.details_description_item_text));
+            return new ItemHolderText(inflateLayout(parent, R.layout.details_item_text));
         else if (viewType == ListItem.Id.ITEM_RECYCLER.ordinal())
-            return new ItemHolderRecycler(inflateLayout(parent, R.layout.details_description_item_recycler), parent.getContext());
+            return new ItemHolderRecycler(inflateLayout(parent, R.layout.details_item_recycler), parent.getContext());
         else if (viewType == VIEW_TYPE_HEADER)
-            return new HeaderHolder(inflateLayout(parent, R.layout.details_description_header));
+            return new HeaderHolder(inflateLayout(parent, R.layout.details_header));
 
         Log.e(TAG, "Create vh wrong type: " + String.valueOf(viewType));
         return null;
@@ -102,8 +102,8 @@ public class QuestDetailsAdapter
 
         public HeaderHolder(View v) {
             super(v);
-            title = v.findViewById(R.id.details_description_head_text);
-            caret = v.findViewById(R.id.details_description_head_caret);
+            title = v.findViewById(R.id.details_head_text);
+            caret = v.findViewById(R.id.details_head_caret);
 
             // Handle clicks
             v.setOnClickListener(this);
@@ -147,7 +147,7 @@ public class QuestDetailsAdapter
         ItemHolderText(View v) {
             super(v);
 
-            this.text = v.findViewById(R.id.details_description_item_text);
+            this.text = v.findViewById(R.id.details_item_text);
 
             // Handle clicks
             v.setOnClickListener(this);
@@ -193,7 +193,7 @@ public class QuestDetailsAdapter
         ItemHolderRecycler(View v, Context context) {
             super(v);
 
-            this.recyclerView = v.findViewById(R.id.details_description_item_recycler);
+            this.recyclerView = v.findViewById(R.id.details_item_recycler);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
             // Handle clicks

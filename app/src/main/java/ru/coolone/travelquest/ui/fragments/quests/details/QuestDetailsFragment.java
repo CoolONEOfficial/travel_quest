@@ -1,11 +1,9 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -16,6 +14,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -35,17 +34,18 @@ import java.util.ArrayList;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
-import ru.coolone.travelquest.ui.views.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.views.adapters.BaseSectionedHeader;
 
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
     RecyclerView descriptionRecyclerView;
-    private OnCreateViewListener onCreateViewListener;
+    Button descriptionAddButton;
+    private FragmentListener fragmentListener;
 
     private String title;
     private String placeId;
@@ -207,6 +207,7 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.layout_details,
                 R.id.details_title,
                 R.id.details_description_recycler,
+                R.id.details_description_add_button,
                 R.id.details_description_unknown_text,
                 R.id.details_description_unknown_text_primary,
                 R.id.details_description_unknown_text_smile,
@@ -217,7 +218,8 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.details_rating_star,
                 R.id.details_photos_layout,
                 R.id.details_photos_scroll,
-                R.id.details_delimiter
+                R.id.details_bottom,
+                R.id.details_bottom_delimiter
         };
         for (int mViewId : viewIdArr) {
             viewArr.put(mViewId,
@@ -229,11 +231,14 @@ public class QuestDetailsFragment extends Fragment {
         descriptionRecyclerView.setNestedScrollingEnabled(false);
         setDescriptionRecyclerView(descriptionRecyclerView);
 
+        // Add description button
+        descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
+
         // Refresh views
         refresh();
 
         // Call listener
-        onCreateViewListener.onQuestDetailsCreateView(view, container, savedInstanceState);
+        fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
     }
@@ -259,17 +264,21 @@ public class QuestDetailsFragment extends Fragment {
         );
 
         // Set delimiter visibility
-        boolean delimVisibility = visibility ||
-                viewArr.get(R.id.details_url).getVisibility() == View.VISIBLE;
-        viewArr.get(R.id.details_delimiter).setVisibility(
-                delimVisibility
+        refreshBottomInfoVisibility();
+    }
+
+    private void refreshBottomInfoVisibility() {
+        setBottomInfoVisibility(
+                (((TextView) viewArr.get(R.id.details_url)).getText().length() > 0 ||
+                        ((TextView) viewArr.get(R.id.details_phone)).getText().length() > 0)
                         ? View.VISIBLE
                         : View.GONE
         );
-        if (visibility)
-            ((RelativeLayout.LayoutParams) viewArr.get(R.id.details_delimiter).getLayoutParams())
-                    .addRule(RelativeLayout.ABOVE,
-                            R.id.details_phone);
+    }
+
+    private void setBottomInfoVisibility(int visibility) {
+        viewArr.get(R.id.details_bottom).setVisibility(visibility);
+        viewArr.get(R.id.details_bottom_delimiter).setVisibility(visibility);
     }
 
     private void refreshTypes() {
@@ -303,17 +312,7 @@ public class QuestDetailsFragment extends Fragment {
         );
 
         // Set delimiter visibility
-        boolean delimVisibility = visibility ||
-                viewArr.get(R.id.details_phone).getVisibility() == View.VISIBLE;
-        viewArr.get(R.id.details_delimiter).setVisibility(
-                delimVisibility
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-        if (visibility)
-            ((RelativeLayout.LayoutParams) viewArr.get(R.id.details_delimiter).getLayoutParams())
-                    .addRule(RelativeLayout.ABOVE,
-                            R.id.details_url);
+        refreshBottomInfoVisibility();
     }
 
     private void refreshRating() {
@@ -334,23 +333,6 @@ public class QuestDetailsFragment extends Fragment {
     private void setRatingVisibility(int visibility) {
         viewArr.get(R.id.details_rating).setVisibility(visibility);
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
-    }
-
-    private int getResourcesColor(int id) {
-        // Get theme
-        Resources.Theme theme = null;
-        try {
-            theme = getActivity().getTheme();
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-
-        // Get color from resources
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-                theme != null)
-            return getResources().getColor(id, theme);
-        else
-            return getResources().getColor(id);
     }
 
     private void setDescriptionRecyclerView(RecyclerView recyclerView) {
@@ -414,6 +396,11 @@ public class QuestDetailsFragment extends Fragment {
                             parseDescription(doc,
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_description_recycler));
+
+                            // Show add description button
+                            descriptionAddButton.setVisibility(
+                                    View.VISIBLE
+                            );
                         } else descriptionError("Get document task not successful");
                     })
                     .addOnFailureListener(this::descriptionError);
@@ -544,6 +531,11 @@ public class QuestDetailsFragment extends Fragment {
         // Set error text
         ((TextView) viewArr.get(R.id.details_description_unknown_text_primary))
                 .setText(errStr);
+
+        // Show add description button
+        descriptionAddButton.setVisibility(
+                View.VISIBLE
+        );
     }
 
     private void descriptionError(Exception e) {
@@ -638,15 +630,15 @@ public class QuestDetailsFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (onCreateViewListener == null) {
+        if (fragmentListener == null) {
             throw new ClassCastException(
-                    "Parent activity must implements OnCreateViewListener"
+                    "Parent activity must implements FragmentListener"
             );
         }
     }
 
-    public void setOnCreateViewListener(OnCreateViewListener onCreateViewListener) {
-        this.onCreateViewListener = onCreateViewListener;
+    public void setFragmentListener(FragmentListener fragmentListener) {
+        this.fragmentListener = fragmentListener;
     }
 
     // Arguments
@@ -670,9 +662,11 @@ public class QuestDetailsFragment extends Fragment {
         }
     }
 
-    public interface OnCreateViewListener {
+    public interface FragmentListener {
         void onQuestDetailsCreateView(@NonNull View view, ViewGroup container,
                                       Bundle savedInstanceState);
+
+        void onPhotosLoadingStarted();
     }
 
     static private class PhotoTask extends AsyncTask<String, Integer, Void> {
@@ -702,6 +696,8 @@ public class QuestDetailsFragment extends Fragment {
 
                 // Parse photos buffer
                 if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
+                    parent.fragmentListener.onPhotosLoadingStarted();
+
                     publishProgress(photoMetadataBuffer.getCount());
 
                     for (int mAttributedPhotoId = 0;

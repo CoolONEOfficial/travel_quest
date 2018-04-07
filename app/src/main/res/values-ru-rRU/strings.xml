@@ -4,6 +4,7 @@
     <string name="title_activity_login">Вход</string>
     <string name="title_activity_signin">Регистрация</string>
     <string name="title_activity_confirm_mail">Подтверждение почты</string>
+    <string name="title_activity_add_place">Добавить описание места</string>
 
     <!-- Fragment titles -->
     <string name="title_frag_settings">Настройки</string>

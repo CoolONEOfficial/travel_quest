@@ -4,15 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -23,6 +27,8 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -131,8 +137,18 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    public int getStatusBarHeight() {
+        int result = 0;
+        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = getResources().getDimensionPixelSize(resourceId);
+        }
+        return result;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 
         Log.d(TAG, "Current locale: "
                 + getLocaleStr(this));
@@ -167,6 +183,7 @@ public class MainActivity extends AppCompatActivity
 
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
+
 
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -232,6 +249,60 @@ public class MainActivity extends AppCompatActivity
             startActivity(loginIntent);
             finish();
         } else {
+            // Change toolbar
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Toolbar toolbar = findViewById(R.id.toolbar);
+                AppBarLayout appBarLayout = findViewById(R.id.toolbar_layout);
+                Drawable navIcon = toolbar.getNavigationIcon();
+                switch (id) {
+                    case R.id.nav_quests:
+                        toolbar.setElevation(0);
+                        toolbar.setFitsSystemWindows(true);
+                        appBarLayout.setElevation(0);
+                        appBarLayout.setFitsSystemWindows(true);
+                        appBarLayout.setBackgroundColor(ContextCompat.getColor(
+                                this,
+                                android.R.color.transparent)
+                        );
+                        toolbar.setBackgroundColor(
+                                ContextCompat.getColor(
+                                this,
+                                android.R.color.transparent)
+                        );
+                        if (navIcon != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                navIcon.setColorFilter(getResources().getColor(
+                                        android.R.color.black, getTheme()
+                                ), PorterDuff.Mode.SRC_IN);
+                            }
+                        }
+                        break;
+                    default:
+                        appBarLayout.setBackgroundColor(
+                                ContextCompat.getColor(
+                                        this,
+                                        R.color.colorPrimary
+                                )
+                        );
+                        toolbar.setFitsSystemWindows(false);
+                        appBarLayout.setFitsSystemWindows(false);
+                        toolbar.setBackgroundColor(
+                                ContextCompat.getColor(
+                                        this,
+                                        R.color.colorPrimary
+                                )
+                        );
+                        if (navIcon != null) {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                navIcon.setColorFilter(
+                                        getResources().getColor(
+                                                android.R.color.white, getTheme()
+                                        ), PorterDuff.Mode.SRC_IN);
+                            }
+                        }
+                }
+            }
+
             // To fragment
             FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
             FragmentId fragId = FRAGMENT_DEFAULT_ID;

@@ -20,6 +20,9 @@
         <item name="android:textColorSecondaryInverse">@color/secondary_text_inverse</item>
         <item name="android:textColorPrimaryInverse">@color/primary_text_inverse</item>
 
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
         <!-- For preferences -->
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
 
@@ -28,6 +31,7 @@
     </style>
 
     <style name="AppTheme.NoActionBar">
+        <item name="windowActionBarOverlay">true</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>

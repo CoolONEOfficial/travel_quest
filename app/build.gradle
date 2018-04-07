@@ -39,30 +39,32 @@ dependencies {
     repositories {
         mavenCentral()
     }
+    ext {
+        support = "27.1.0"
+        ps = "12.0.1"
+    }
+
     implementation fileTree(include: ['*.jar'], dir: 'libs')
+
     //noinspection GradleCompatible
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.android.support:design:27.1.0'
-    implementation 'com.android.support:support-v4:27.1.0'
-    implementation 'com.android.support:cardview-v7:27.1.0'
+    implementation "com.android.support:appcompat-v7:${support}"
+    implementation "com.android.support:design:${support}"
+    implementation "com.android.support:support-v4:${support}"
+    implementation "com.android.support:cardview-v7:${support}"
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 
-    implementation 'com.google.android.gms:play-services-maps:12.0.0'
-    implementation 'com.google.android.gms:play-services-places:12.0.0'
-    implementation 'com.google.android.gms:play-services-auth:12.0.0'
+    implementation "com.google.android.gms:play-services-maps:${ps}"
+    implementation "com.google.android.gms:play-services-places:${ps}"
+    implementation "com.google.android.gms:play-services-auth:${ps}"
 
-    implementation 'com.google.firebase:firebase-auth:12.0.0'
-    implementation 'com.google.firebase:firebase-firestore:12.0.0'
-    implementation 'com.google.firebase:firebase-appindexing:12.0.0'
+    implementation "com.google.firebase:firebase-auth:${ps}"
+    implementation "com.google.firebase:firebase-firestore:${ps}"
+    implementation "com.google.firebase:firebase-appindexing:${ps}"
 
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.afollestad:sectioned-recyclerview:0.5.0'
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
     implementation 'com.takisoft.fix:preference-v7:27.0.0.0'
-
-//    testImplementation 'junit:junit:4.12'
-//    androidTestImplementation 'com.android.support.test:runner:1.0.1'
-//    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

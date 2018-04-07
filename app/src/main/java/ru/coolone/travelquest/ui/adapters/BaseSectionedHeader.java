@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.views.adapters;
+package ru.coolone.travelquest.ui.adapters;
 
 /**
  * Created by coolone on 15.11.17.

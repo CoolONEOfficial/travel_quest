@@ -40,7 +40,7 @@ import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment;
 public class QuestsFragment extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
-        QuestDetailsFragment.OnCreateViewListener {
+        QuestDetailsFragment.FragmentListener {
 
     static final String TAG = QuestsFragment.class.getSimpleName();
 
@@ -55,9 +55,6 @@ public class QuestsFragment extends Fragment
 
     // Toolbar view with search
     private View toolbarView;
-
-    // Search places fragment
-    private PlaceAutocompleteFragment autocompleteFragment;
 
     public QuestsFragment() {
         // Required empty public constructor
@@ -100,7 +97,7 @@ public class QuestsFragment extends Fragment
         }
 
         // Autocomplete fragment
-        autocompleteFragment = (PlaceAutocompleteFragment)
+        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getActivity().getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
         // Autocomplete filter
@@ -180,7 +177,7 @@ public class QuestsFragment extends Fragment
         if (showDetails) {
             // Create details fragment
             QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(place);
-            detailsFragment.setOnCreateViewListener(QuestsFragment.this);
+            detailsFragment.setFragmentListener(QuestsFragment.this);
 
             // Set
             FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
@@ -336,9 +333,6 @@ public class QuestsFragment extends Fragment
         // Set on view sizes initialized
         view.post(
                 () -> {
-                    // Set panel anchor point
-                    slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
-
                     // Set panel height
                     slidingPanel.setPanelHeight(
                             view.findViewById(R.id.layout_details_header)
@@ -363,5 +357,21 @@ public class QuestsFragment extends Fragment
 
         // Set recycler is scrollable
         slidingPanel.setScrollableView(view.findViewById(R.id.details_description_scroll));
+
+        // Set panel anchor point
+        slidingPanel.setAnchorPoint(1f);
+    }
+
+    private void setPanelOffset() {
+        // Set panel anchor point
+        slidingPanel.setAnchorPoint(getPanelAnchoredOffset(getActivity()));
+    }
+
+    @Override
+    public void onPhotosLoadingStarted() {
+        if (slidingLayout.isActivated())
+            setPanelOffset();
+        else
+            slidingLayout.post(this::setPanelOffset);
     }
 }

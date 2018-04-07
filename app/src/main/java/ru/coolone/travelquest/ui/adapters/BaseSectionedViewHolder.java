@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.views.adapters;
+package ru.coolone.travelquest.ui.adapters;
 
 import android.view.View;
 
@@ -21,7 +21,6 @@ public class BaseSectionedViewHolder<T>
         v.setOnClickListener(this);
         v.setOnLongClickListener(this);
     }
-
 
     public void bind(T item, int section, int relativePosition, int absolutePosition) {
     }
