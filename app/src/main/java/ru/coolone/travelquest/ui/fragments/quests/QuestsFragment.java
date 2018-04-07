@@ -6,13 +6,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.InflateException;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -53,16 +51,8 @@ public class QuestsFragment extends Fragment
     // Sliding panel
     private SlidingUpPanelLayout slidingPanel;
 
-    // Toolbar view with search
-    private View toolbarView;
-
     public QuestsFragment() {
         // Required empty public constructor
-    }
-
-    public static QuestsFragment newInstance() {
-        // Create fragment
-        return new QuestsFragment();
     }
 
     static public float getPanelAnchoredOffset(Activity activity) {
@@ -75,26 +65,52 @@ public class QuestsFragment extends Fragment
         super.onCreate(savedInstanceState);
     }
 
+    private int getActionBarHeight() {
+        TypedValue tv = new TypedValue();
+        if (getActivity().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+            return TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+        return 0;
+    }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate layout
         View view = inflater.inflate(R.layout.fragment_quests, container, false);
 
-        // Create toolbar
-        if (toolbarView != null) {
-            ViewGroup parent = (ViewGroup) toolbarView.getParent();
-            if (parent != null)
-                parent.removeView(toolbarView);
-        }
-        try {
-            Toolbar toolbar = getActivity().findViewById(R.id.toolbar);
-            toolbarView = getActivity().getLayoutInflater().inflate(R.layout.fragment_quests_toolbar,
-                    toolbar.findViewById(R.id.toolbar_container),
-                    false);
-        } catch (InflateException e) {
-            e.printStackTrace();
-        }
+        // Sliding layout
+        slidingLayout = view.findViewById(R.id.sliding_container);
+
+        // Sliding panel
+        slidingPanel = view.findViewById(R.id.sliding_panel);
+        slidingPanel.addPanelSlideListener((SlidingUpPanelLayout.PanelSlideListener) getActivity());
+        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
+            @Override
+            public void onPanelSlide(View panel, float slideOffset) {
+                // Refresh photos size
+                refreshPhotosSize(
+                        panel.findViewById(R.id.details_photos_layout),
+                        slideOffset
+                );
+            }
+
+            @Override
+            public void onPanelStateChanged(View panel,
+                                            SlidingUpPanelLayout.PanelState previousState,
+                                            SlidingUpPanelLayout.PanelState newState) {
+                // Set map padding
+                switch (newState) {
+                    case HIDDEN:
+                        map.setPadding(0, getActionBarHeight(),
+                                0, 0);
+                        break;
+                    case COLLAPSED:
+                        map.setPadding(0, getActionBarHeight(),
+                                0, panel.findViewById(R.id.layout_details_header)
+                                        .getHeight());
+                        break;
+                }
+            }
+        });
 
         // Autocomplete fragment
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
@@ -121,40 +137,6 @@ public class QuestsFragment extends Fragment
                     }
                 }
         );
-
-        // Sliding layout
-        slidingLayout = view.findViewById(R.id.sliding_container);
-
-        // Sliding panel
-        slidingPanel = view.findViewById(R.id.sliding_panel);
-        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-                // Refresh photos size
-                refreshPhotosSize(
-                        panel.findViewById(R.id.details_photos_layout),
-                        slideOffset
-                );
-            }
-
-            @Override
-            public void onPanelStateChanged(View panel,
-                                            SlidingUpPanelLayout.PanelState previousState,
-                                            SlidingUpPanelLayout.PanelState newState) {
-                // Set map padding
-                switch (newState) {
-                    case HIDDEN:
-                        map.setPadding(0, 0,
-                                0, 0);
-                        break;
-                    case COLLAPSED:
-                        map.setPadding(0, 0,
-                                0, panel.findViewById(R.id.layout_details_header)
-                                        .getHeight());
-                        break;
-                }
-            }
-        });
 
         return view;
     }
@@ -219,6 +201,10 @@ public class QuestsFragment extends Fragment
 
         // Type
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
+        // Padding
+        map.setPadding(0, getActionBarHeight(),
+                0, 0);
 
         // Style
         updateMapStyle();
@@ -290,40 +276,10 @@ public class QuestsFragment extends Fragment
         if (slidingLayout == null || slidingLayout.getChildCount() == 0)
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
-        // Get toolbar layout
-        LinearLayout toolbarContainer;
-        try {
-            toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
-        } catch (NullPointerException e) {
-            toolbarContainer = null;
-            e.printStackTrace();
-        }
-
-        if (toolbarContainer != null) {
-            // Delete old toolbar search
-            ViewParent toolbarViewParent = toolbarView.getParent();
-            if (toolbarViewParent != null)
-                ((ViewGroup) toolbarViewParent).removeView(toolbarView);
-
-            // Add toolbar search
-            toolbarContainer.addView(toolbarView);
-        }
-
         // Update map
         if (map != null) {
             updateMapStyle();
         }
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-
-        // Get toolbar and toolbar view
-        LinearLayout toolbarContainer = getActivity().findViewById(R.id.toolbar_container);
-
-        // Remove toolbar search
-        toolbarContainer.removeView(toolbarView);
     }
 
     @Override

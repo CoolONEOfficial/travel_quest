@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_place_tab_russian_title" translatable="true">Русский</string>
+    <string name="add_place_tab_english_title" translatable="true">Английский</string>
+
+    <string name="add_place_description_hint" translatable="true">Описание</string>
+
+    <string name="add_place_send" translatable="true">Отправить</string>
+</resources>

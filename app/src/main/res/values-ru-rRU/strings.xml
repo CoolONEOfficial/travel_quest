@@ -7,7 +7,5 @@
     <string name="title_activity_add_place">Добавить описание места</string>
 
     <!-- Fragment titles -->
-    <string name="title_frag_settings">Настройки</string>
-    <string name="title_frag_about">О приложении</string>
     <string name="error_google_api">Ошибка соединения с Google API</string>
 </resources>

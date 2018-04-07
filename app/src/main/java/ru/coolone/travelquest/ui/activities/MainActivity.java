@@ -1,22 +1,19 @@
 package ru.coolone.travelquest.ui.activities;
 
+import android.animation.ObjectAnimator;
+import android.animation.StateListAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -27,31 +24,33 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
+import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
 import ru.coolone.travelquest.ui.fragments.quests.QuestsFragment;
 import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 
-public class MainActivity extends AppCompatActivity
-        implements
+public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        SlidingUpPanelLayout.PanelSlideListener {
 
     public static final String[] supportLangs = {
             "US",
             "RU"
     };
     static final String TAG = MainActivity.class.getSimpleName();
-    static final FragmentId FRAGMENT_DEFAULT_ID = FragmentId.QUESTS;
+    static final int NAV_MENU_DEFAULT_ID = R.id.nav_quests;
 
     // Preferences
     public static SharedPreferences settings;
@@ -67,6 +66,10 @@ public class MainActivity extends AppCompatActivity
 
     // Preferences
     SharedPreferences prefs = null;
+
+    // Toolbar
+    Toolbar toolbar;
+    View toolbarLayout;
 
     public MainActivity() {
     }
@@ -137,15 +140,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public int getStatusBarHeight() {
-        int result = 0;
-        int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            result = getResources().getDimensionPixelSize(resourceId);
-        }
-        return result;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
@@ -184,10 +178,10 @@ public class MainActivity extends AppCompatActivity
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
-
         // Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        toolbarLayout = findViewById(R.id.toolbar_layout);
 
         // Drawer layout
         drawer = findViewById(R.id.drawer_layout);
@@ -202,11 +196,6 @@ public class MainActivity extends AppCompatActivity
         // Navigation view
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-
-        // Fragments array
-        fragmentArr.put(FragmentId.QUESTS.ordinal(), QuestsFragment.newInstance());
-        fragmentArr.put(FragmentId.SETTINGS.ordinal(), SettingsFragment.newInstance());
-        fragmentArr.put(FragmentId.ABOUT.ordinal(), AboutFragment.newInstance());
     }
 
     @Override
@@ -218,23 +207,74 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    Fragment getFragmentById(FragmentId fragmentId) {
+        Fragment fragment = fragmentArr.get(fragmentId.ordinal());
+
+        if (fragment == null) {
+            switch (fragmentId) {
+                case ABOUT:
+                    fragment = new AboutFragment();
+                    break;
+                case QUESTS:
+                    fragment = new QuestsFragment();
+                    break;
+                case SETTINGS:
+                    fragment = new SettingsFragment();
+                    break;
+            }
+            if (fragment != null)
+                fragmentArr.put(fragmentId.ordinal(), fragment);
+            else
+                Log.e(TAG, "Unknown fragment id: " + fragmentId);
+        }
+
+        return fragment;
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
 
-        // Set default fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, fragmentArr.get(FRAGMENT_DEFAULT_ID.ordinal()))
-                .commit();
+        // Open default navigation item
+        onNavigationItemSelected(NAV_MENU_DEFAULT_ID);
+
         return true;
     }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
+    private void setToolbarTransparent(boolean transparent, boolean fragmentMargin) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            // Transparent
+            toolbarLayout.getBackground().setAlpha(
+                    transparent
+                            ? 0
+                            : 255
+            );
 
+            // Elevation
+            StateListAnimator stateListAnimator = new StateListAnimator();
+            stateListAnimator.addState(
+                    new int[0],
+                    ObjectAnimator.ofFloat(
+                            toolbarLayout,
+                            "elevation",
+                            transparent
+                                    ? 0.1f
+                                    : 10.0f
+
+                    )
+            );
+            toolbarLayout.setStateListAnimator(stateListAnimator);
+
+            // Margin
+            ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
+                    .topMargin = fragmentMargin
+                    ? toolbar.getHeight()
+                    : 0;
+        }
+    }
+
+    public void onNavigationItemSelected(int id) {
         if (id == R.id.nav_logout) {
             // Logout
             FirebaseAuth.getInstance().signOut();
@@ -249,63 +289,20 @@ public class MainActivity extends AppCompatActivity
             startActivity(loginIntent);
             finish();
         } else {
-            // Change toolbar
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                Toolbar toolbar = findViewById(R.id.toolbar);
-                AppBarLayout appBarLayout = findViewById(R.id.toolbar_layout);
-                Drawable navIcon = toolbar.getNavigationIcon();
-                switch (id) {
-                    case R.id.nav_quests:
-                        toolbar.setElevation(0);
-                        toolbar.setFitsSystemWindows(true);
-                        appBarLayout.setElevation(0);
-                        appBarLayout.setFitsSystemWindows(true);
-                        appBarLayout.setBackgroundColor(ContextCompat.getColor(
-                                this,
-                                android.R.color.transparent)
-                        );
-                        toolbar.setBackgroundColor(
-                                ContextCompat.getColor(
-                                this,
-                                android.R.color.transparent)
-                        );
-                        if (navIcon != null) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                navIcon.setColorFilter(getResources().getColor(
-                                        android.R.color.black, getTheme()
-                                ), PorterDuff.Mode.SRC_IN);
-                            }
-                        }
-                        break;
-                    default:
-                        appBarLayout.setBackgroundColor(
-                                ContextCompat.getColor(
-                                        this,
-                                        R.color.colorPrimary
-                                )
-                        );
-                        toolbar.setFitsSystemWindows(false);
-                        appBarLayout.setFitsSystemWindows(false);
-                        toolbar.setBackgroundColor(
-                                ContextCompat.getColor(
-                                        this,
-                                        R.color.colorPrimary
-                                )
-                        );
-                        if (navIcon != null) {
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                navIcon.setColorFilter(
-                                        getResources().getColor(
-                                                android.R.color.white, getTheme()
-                                        ), PorterDuff.Mode.SRC_IN);
-                            }
-                        }
-                }
-            }
+            findViewById(R.id.toolbar_autocomplete_container).setVisibility(
+                    id == R.id.nav_quests
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+
+            setToolbarTransparent(
+                    id == R.id.nav_quests,
+                    id != R.id.nav_quests
+            );
 
             // To fragment
             FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
-            FragmentId fragId = FRAGMENT_DEFAULT_ID;
+            FragmentId fragId = null;
             switch (id) {
                 case R.id.nav_quests:
                     fragId = FragmentId.QUESTS;
@@ -318,19 +315,44 @@ public class MainActivity extends AppCompatActivity
                     break;
             }
             fragTrans.replace(R.id.fragment_container,
-                    fragmentArr.get(fragId.ordinal()))
+                    getFragmentById(fragId))
                     .commit();
 
+            // Update title
+            int titleId = 0;
             switch (id) {
                 case R.id.nav_settings:
-                    setTitle(getResources().getString(R.string.title_frag_settings));
+                    titleId = R.string.nav_settings;
                     break;
+                case R.id.nav_about:
+                    titleId = R.string.nav_about;
             }
+            if (titleId != 0)
+                setTitle(getResources().getString(titleId));
+            else
+                setTitle("");
 
             drawer.closeDrawer(GravityCompat.START);
         }
+    }
+
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        onNavigationItemSelected(item.getItemId());
 
         return true;
+    }
+
+    @Override
+    public void onPanelSlide(View panel, float slideOffset) {
+        if (slideOffset > 0)
+            toolbarLayout.getBackground().setAlpha(
+                    (int) (slideOffset * 255)
+            );
+    }
+
+    @Override
+    public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
     }
 
     // Fragments id

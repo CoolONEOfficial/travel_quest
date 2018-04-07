@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?selectableItemBackground"
+    android:padding="@dimen/content_inset">
+
+    <EditText
+        android:id="@+id/add_details_head_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_toLeftOf="@+id/add_details_head_remove"
+        android:layout_toStartOf="@+id/add_details_head_remove"
+        android:textColor="@color/colorAccent"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        tools:ignore="UnusedAttribute"
+        tools:mText="Section 1" />
+
+    <ImageView
+        android:id="@+id/add_details_head_add"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="@dimen/content_inset"
+        android:layout_marginStart="@dimen/content_inset"
+        android:src="@drawable/ic_add" />
+
+    <ImageView
+        android:id="@+id/add_details_head_remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/content_inset"
+        android:layout_marginRight="@dimen/content_inset"
+        android:layout_toLeftOf="@+id/add_details_head_add"
+        android:layout_toStartOf="@+id/add_details_head_add"
+        android:src="@drawable/ic_remove" />
+
+</RelativeLayout>

@@ -40,7 +40,7 @@ dependencies {
         mavenCentral()
     }
     ext {
-        support = "27.1.0"
+        support = "27.1.1"
         ps = "12.0.1"
     }
 

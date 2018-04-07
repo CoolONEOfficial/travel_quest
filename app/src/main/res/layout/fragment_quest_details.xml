@@ -146,13 +146,13 @@
                     android:textSize="18sp"
                     android:visibility="gone" />
 
-                <Button
-                    android:id="@+id/details_description_add_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:text="@string/details_add_details"
-                    android:visibility="gone" />
+                <!--<Button-->
+                    <!--android:id="@+id/details_description_add_button"-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:layout_height="wrap_content"-->
+                    <!--android:layout_alignParentBottom="true"-->
+                    <!--android:text="@string/details_add_details"-->
+                    <!--android:visibility="gone" />-->
 
             </RelativeLayout>
 

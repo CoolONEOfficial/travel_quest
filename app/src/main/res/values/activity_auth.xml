@@ -13,4 +13,18 @@
     <string name="error_permission_rationale">"Contacts permissions are needed for providing mail completions"</string>
     <string name="error_auth">Authentication error</string>
     <string name="error_oauth_google">Authentication with google error</string>
+
+    <!-- Length -->
+
+    <!-- Login -->
+    <integer name="login_len_min">4</integer>
+    <integer name="login_len_max">32</integer>
+
+    <!-- Mail -->
+    <integer name="mail_len_min">5</integer>
+    <integer name="mail_len_max">64</integer>
+
+    <!-- Password -->
+    <integer name="password_len_min">8</integer>
+    <integer name="password_len_max">255</integer>
 </resources>
