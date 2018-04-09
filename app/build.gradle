@@ -8,10 +8,10 @@ android {
     }
     defaultConfig {
         applicationId "ru.coolone.travelquest"
-        minSdkVersion 16
+        minSdkVersion 19
         targetSdkVersion 27
-        versionCode 6
-        versionName "1.5"
+        versionCode 7
+        versionName "1.6"
         manifestPlaceholders = [googleMapApiKey: GOOGLE_MAPS_API_KEY]
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

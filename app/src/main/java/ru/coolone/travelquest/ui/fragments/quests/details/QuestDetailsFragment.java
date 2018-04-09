@@ -43,7 +43,6 @@ public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
     RecyclerView descriptionRecyclerView;
-    Button descriptionAddButton;
     private FragmentListener fragmentListener;
 
     private String title;
@@ -395,11 +394,6 @@ public class QuestDetailsFragment extends Fragment {
                             parseDescription(doc,
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_description_recycler));
-
-                            // Show add description button
-                            descriptionAddButton.setVisibility(
-                                    View.VISIBLE
-                            );
                         } else descriptionError("Get document task not successful");
                     })
                     .addOnFailureListener(this::descriptionError);
@@ -530,11 +524,6 @@ public class QuestDetailsFragment extends Fragment {
         // Set error text
         ((TextView) viewArr.get(R.id.details_description_unknown_text_primary))
                 .setText(errStr);
-
-        // Show add description button
-        descriptionAddButton.setVisibility(
-                View.VISIBLE
-        );
     }
 
     private void descriptionError(Exception e) {
