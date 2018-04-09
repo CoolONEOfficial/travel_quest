@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
-    private void setToolbarTransparent(boolean transparent, boolean fragmentMargin) {
+    public void setToolbarTransparent(boolean transparent, boolean fragmentMargin) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Transparent
             toolbarLayout.getBackground().setAlpha(
@@ -338,9 +338,11 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        onNavigationItemSelected(item.getItemId());
+        int id = item.getItemId();
 
-        return true;
+        onNavigationItemSelected(id);
+
+        return id != R.id.nav_logout;
     }
 
     @Override

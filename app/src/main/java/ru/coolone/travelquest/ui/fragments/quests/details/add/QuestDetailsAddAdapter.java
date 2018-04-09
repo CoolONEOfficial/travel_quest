@@ -21,7 +21,7 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItem
  * @author coolone
  * @since 06.04.18
  */
-class QuestDetailsAddAdapter extends BaseSectionedAdapter<
+public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
 
@@ -97,7 +97,7 @@ class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         }
     }
 
-    class HeaderHolder
+    public class HeaderHolder
             extends BaseSectionedViewHolder<BaseSectionedHeader>
             implements View.OnClickListener, View.OnLongClickListener {
         ImageView caret;

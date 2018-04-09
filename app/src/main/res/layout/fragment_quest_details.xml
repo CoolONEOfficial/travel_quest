@@ -12,7 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/details_bottom_delimiter"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:scrollbars="none">
 
         <LinearLayout
             android:id="@+id/details_description"
@@ -104,8 +105,7 @@
                     android:layout_height="match_parent"
                     android:layout_below="@id/details_photos_scroll"
                     android:paddingLeft="@dimen/content_inset"
-                    android:paddingRight="@dimen/content_inset"
-                    android:scrollbars="none" />
+                    android:paddingRight="@dimen/content_inset" />
 
                 <ImageView
                     android:id="@+id/details_description_unknown_text_smile"
@@ -141,13 +141,12 @@
                     android:textSize="18sp"
                     android:visibility="gone" />
 
-                <!--<Button-->
-                    <!--android:id="@+id/details_description_add_button"-->
-                    <!--android:layout_width="match_parent"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_alignParentBottom="true"-->
-                    <!--android:text="@string/details_add_details"-->
-                    <!--android:visibility="gone" />-->
+                <Button
+                    android:id="@+id/details_description_add_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:text="@string/details_add_details" />
 
             </RelativeLayout>
 

@@ -11,6 +11,8 @@ import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
+
 /**
  * Created by radiationx on 14.09.17.
  */

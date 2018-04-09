@@ -9,4 +9,5 @@
 
     <!-- Fragment titles -->
     <string name="error_google_api">Connection to Google API failed</string>
+    <string name="title_activity_test">TestActivity</string>
 </resources>

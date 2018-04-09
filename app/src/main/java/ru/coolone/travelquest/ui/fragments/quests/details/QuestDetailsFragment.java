@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -32,6 +33,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.activities.AddPlaceActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
@@ -43,6 +45,7 @@ public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
     RecyclerView descriptionRecyclerView;
+    Button descriptionAddButton;
     private FragmentListener fragmentListener;
 
     private String title;
@@ -199,13 +202,13 @@ public class QuestDetailsFragment extends Fragment {
                 false);
 
         // Get views
-        final int[] viewIdArr = new int[]{
+        for (int mViewId : new int[]{
                 R.id.layout_details_header,
                 R.id.layout_details_body,
                 R.id.layout_details,
                 R.id.details_title,
                 R.id.details_description_recycler,
-                //R.id.details_description_add_button,
+                R.id.details_description_add_button,
                 R.id.details_description_unknown_text,
                 R.id.details_description_unknown_text_primary,
                 R.id.details_description_unknown_text_smile,
@@ -218,8 +221,7 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.details_photos_scroll,
                 R.id.details_bottom,
                 R.id.details_bottom_delimiter
-        };
-        for (int mViewId : viewIdArr) {
+        }) {
             viewArr.put(mViewId,
                     view.findViewById(mViewId));
         }
@@ -230,7 +232,14 @@ public class QuestDetailsFragment extends Fragment {
         setDescriptionRecyclerView(descriptionRecyclerView);
 
         // Add description button
-        //descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
+        descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
+        descriptionAddButton.setOnClickListener(
+                v -> {
+                    Intent intent = new Intent(getActivity(), AddPlaceActivity.class);
+                    intent.putExtra(AddPlaceActivity.ArgKeys.PLACE_ID.toString(), placeId);
+                    startActivity(intent);
+                }
+        );
 
         // Refresh views
         refresh();
@@ -630,7 +639,7 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     // Arguments
-    enum ArgKeys {
+    public enum ArgKeys {
         TITLE("title"),
         PHONE("phone"),
         URL("url"),

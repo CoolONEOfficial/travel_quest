@@ -25,7 +25,7 @@ public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
     }
 
     @Override public int getCount() {
-        return tabTitles.length;
+        return 2;
     }
 
     @Override public Fragment getItem(int position) {
