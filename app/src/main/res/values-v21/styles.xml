@@ -1,30 +1,9 @@
 <resources>
 
-    <!-- Splash theme -->
-    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-    </style>
-
     <!-- Base application theme -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+    <style name="AppTheme" parent="BaseAppTheme">
         <item name="android:navigationBarColor">@color/primary_dark</item>
-        <item name="android:textColorSecondary">@color/secondary_text</item>
-        <item name="android:textColorPrimary">@color/primary_text</item>
         <item name="android:statusBarColor">@color/primary_dark</item>
-        <item name="android:textColorSecondaryInverse">@color/secondary_text_inverse</item>
-        <item name="android:textColorPrimaryInverse">@color/primary_text_inverse</item>
-
-        <!-- For preferences -->
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-    </style>
-
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBarOverlay">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
     </style>
 
 </resources>

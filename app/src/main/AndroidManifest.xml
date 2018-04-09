@@ -24,29 +24,25 @@
 
         <activity
             android:name=".ui.activities.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".ui.activities.LoginActivity"
-            android:theme="@style/AppTheme"
-            android:label="@string/title_activity_login" />
-        <activity
-            android:name=".ui.activities.SigninActivity"
-            android:theme="@style/AppTheme"
-            android:label="@string/title_activity_signin" />
-        <activity
-            android:name=".ui.activities.AddPlaceActivity"
-            android:theme="@style/AppTheme"
-            android:label="@string/title_activity_add_place">
-        </activity>
-        <activity
-            android:name=".ui.activities.SplashActivity"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/AppTheme.NoActionBar.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:label="@string/title_activity_login"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.activities.SigninActivity"
+            android:label="@string/title_activity_signin"
+            android:theme="@style/AppTheme" />
+        <activity
+            android:name=".ui.activities.AddPlaceActivity"
+            android:label="@string/title_activity_add_place"
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.activities.ConfirmMailActivity"
             android:label="@string/title_activity_confirm_mail" />

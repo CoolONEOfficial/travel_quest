@@ -36,6 +36,7 @@ public class LoginActivity
         signinTextView.setOnClickListener(view -> {
             // To signin activity
             Intent intent = new Intent(LoginActivity.this, SigninActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         });
 

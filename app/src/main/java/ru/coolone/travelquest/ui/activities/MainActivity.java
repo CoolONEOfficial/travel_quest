@@ -3,7 +3,9 @@ package ru.coolone.travelquest.ui.activities;
 import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -17,6 +19,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +28,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -33,6 +35,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
@@ -69,7 +72,42 @@ public class MainActivity extends AppCompatActivity implements
 
     // Toolbar
     Toolbar toolbar;
+    ActionBar oldToolbar;
     View toolbarLayout;
+
+    private void showAuthDialog() {
+        AlertDialog.Builder ad = new AlertDialog.Builder(this);
+        ad.setCancelable(false);
+        ad.setTitle(getString(R.string.alert_splash_title));
+        ad.setMessage(getString(R.string.alert_splash_text));
+        ad.setPositiveButton(getString(R.string.alert_splash_button_auth),
+                (dialog, which) -> toActivity(LoginActivity.class)
+        );
+        ad.setNegativeButton(getString(R.string.alert_splash_button_anonymous),
+                (dialog, which) -> {
+                    final ProgressDialog progress = new ProgressDialog(this);
+                    progress.setTitle(getString(R.string.login_progress));
+                    progress.setCancelable(true);
+                    progress.setOnCancelListener(
+                            dialog1 -> toActivity(MainActivity.class)
+                    );
+                    progress.show();
+
+                    FirebaseAuth.getInstance().signInAnonymously()
+                            .addOnCompleteListener(this, task -> {
+                                if (task.isSuccessful()) {
+                                    Log.d(TAG, "signInAnonymously:success");
+                                } else {
+                                    Log.w(TAG, "signInAnonymously:failure", task.getException());
+                                    Toast.makeText(this, "Authentication failed.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                                progress.dismiss();
+                            });
+                }
+        );
+        ad.show();
+    }
 
     public MainActivity() {
     }
@@ -140,9 +178,18 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    private void toActivity(Class<? extends Activity> activity) {
+        // Set intent
+        Intent intent = new Intent(this, activity);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        // Go to target activity
+        startActivity(intent);
+        finish();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        getWindow().requestFeature(Window.FEATURE_ACTION_BAR_OVERLAY);
 
         Log.d(TAG, "Current locale: "
                 + getLocaleStr(this));
@@ -162,9 +209,23 @@ public class MainActivity extends AppCompatActivity implements
                         .penaltyLog()
                         .build());
 
+
+        // Switch last login method
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            if (!user.isEmailVerified() && !user.isAnonymous())
+                // To confirm mail screen
+                toActivity(ConfirmMailActivity.class);
+        } else {
+            showAuthDialog();
+        }
+
+        setTheme(R.style.AppTheme_NoActionBar);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Preferences
         prefs = getSharedPreferences("ru.coolone.travelquest", MODE_PRIVATE);
 
         // Google api client
@@ -180,6 +241,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Toolbar
         toolbar = findViewById(R.id.toolbar);
+        oldToolbar = getSupportActionBar();
         setSupportActionBar(toolbar);
         toolbarLayout = findViewById(R.id.toolbar_layout);
 
@@ -283,11 +345,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
             else Log.d(TAG, "Signout user is null!");
 
-            // Restart app
-            Intent loginIntent = new Intent(this, SplashActivity.class);
-            loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(loginIntent);
-            finish();
+            showAuthDialog();
         } else {
             findViewById(R.id.toolbar_autocomplete_container).setVisibility(
                     id == R.id.nav_quests

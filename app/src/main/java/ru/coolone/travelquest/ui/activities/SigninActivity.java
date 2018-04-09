@@ -37,6 +37,7 @@ public class SigninActivity extends AbstractAuthActivity {
         textViewLogin.setOnClickListener(view -> {
             // To login activity
             Intent intent = new Intent(SigninActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         });
 

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.os.IBinder;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -103,6 +105,16 @@ abstract public class AbstractAuthActivity
     }
 
     protected void initViews() {
+//        // Fix action bar color
+//        getSupportActionBar().setBackgroundDrawable(
+//                new ColorDrawable(
+//                        ContextCompat.getColor(
+//                                this,
+//                                R.color.colorPrimary
+//                        )
+//                )
+//        );
+
         // --- Set listeners ---
 
         // After input password
