@@ -27,6 +27,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
@@ -79,9 +80,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // Drawer layout
     DrawerLayout drawer;
-
-    // Preferences
-    SharedPreferences prefs = null;
 
     // Toolbar
     Toolbar toolbar;
@@ -181,8 +179,8 @@ public class MainActivity extends AppCompatActivity implements
     protected void onResume() {
         super.onResume();
 
-        if (prefs.getBoolean("firstrun", true)) {
-            prefs.edit().putBoolean("firstrun", false).apply();
+        if (settings.getBoolean("firstrun", true)) {
+            settings.edit().putBoolean("firstrun", false).apply();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle(getString(R.string.alert_greetings_title))
@@ -241,9 +239,6 @@ public class MainActivity extends AppCompatActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Preferences
-        prefs = getSharedPreferences("ru.coolone.travelquest", MODE_PRIVATE);
-
         // Google api client
         apiClient = new GoogleApiClient
                 .Builder(this)
@@ -291,6 +286,8 @@ public class MainActivity extends AppCompatActivity implements
         targetLocation.setLongitude(44.005986);
         autocompleteTextView.setCurrentLocation(targetLocation);
         autocompleteTextView.setLocationBiasEnabled(true);
+        autocompleteTextView.setInputType(InputType.TYPE_CLASS_TEXT);
+        autocompleteTextView.setMaxLines(1);
         autocompleteTextView.addTextChangedListener(
                 new TextWatcher() {
                     @Override
@@ -448,7 +445,7 @@ public class MainActivity extends AppCompatActivity implements
             );
 
             // Colors
-            final String mapStyle = prefs.getString("mapstyle", null);
+            final String mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
             final boolean mapBlack = "night".equalsIgnoreCase(mapStyle)
                     || "solarized".equalsIgnoreCase(mapStyle);
             setToolbarColors(

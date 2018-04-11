@@ -168,7 +168,7 @@ public class QuestsFragment extends Fragment
 
     private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
         float anchoredOffset = getPanelAnchoredOffset(getActivity());
-        if (slideOffset > anchoredOffset) {
+        if (slideOffset > anchoredOffset && slideOffset < 1.0f) {
             // Change photos height
             for (int mPhotoId = 0; mPhotoId < photosLayout.getChildCount(); mPhotoId++) {
                 photosLayout.getChildAt(mPhotoId).getLayoutParams().height =
