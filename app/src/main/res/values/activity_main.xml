@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Place autocomplete -->
+    <string name="place_autocomplete_hint">Search</string>
+
     <!-- Navigation menu -->
     <string name="nav_quests">Quests</string>
     <string name="nav_settings">Settings</string>

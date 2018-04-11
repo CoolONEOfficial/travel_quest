@@ -8,19 +8,16 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
-import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -29,6 +26,9 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MapStyleOptions;
 import com.google.android.gms.maps.model.PointOfInterest;
+import com.seatgeek.placesautocomplete.DetailsCallback;
+import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
+import com.seatgeek.placesautocomplete.model.PlaceDetails;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
@@ -43,7 +43,7 @@ public class QuestsFragment extends Fragment
     static final String TAG = QuestsFragment.class.getSimpleName();
 
     // Map
-    private GoogleMap map;
+    public GoogleMap map;
 
     // Sliding layout
     private FrameLayout slidingLayout;
@@ -68,7 +68,7 @@ public class QuestsFragment extends Fragment
     private int getActionBarHeight() {
         TypedValue tv = new TypedValue();
         if (getActivity().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-            return TypedValue.complexToDimensionPixelSize(tv.data,getResources().getDisplayMetrics());
+            return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
         return 0;
     }
 
@@ -82,7 +82,6 @@ public class QuestsFragment extends Fragment
 
         // Sliding panel
         slidingPanel = view.findViewById(R.id.sliding_panel);
-        slidingPanel.addPanelSlideListener((SlidingUpPanelLayout.PanelSlideListener) getActivity());
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -91,6 +90,10 @@ public class QuestsFragment extends Fragment
                         panel.findViewById(R.id.details_photos_layout),
                         slideOffset
                 );
+
+                // Notify parent
+                ((SlidingUpPanelListener)getActivity())
+                        .onPanelSlide(slidingPanel, slideOffset);
             }
 
             @Override
@@ -113,60 +116,54 @@ public class QuestsFragment extends Fragment
         });
 
         // Autocomplete fragment
-        PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
-                getActivity().getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+        PlacesAutocompleteTextView autocompleteTextView = ((AutocompleteTextViewGetter) getActivity())
+                .getAutocompleteTextView();
+        autocompleteTextView.setOnPlaceSelectedListener(
+                place -> {
+                    ProgressBar progressBar = new ProgressBar(
+                            getContext(),
+                            null,
+                            android.R.attr.progressBarStyleLarge
+                    );
+                    progressBar.setIndeterminate(true);
+                    progressBar.setVisibility(View.VISIBLE);
+                    FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(100, 100);
+                    params.gravity = Gravity.CENTER;
 
-        // Autocomplete filter
-        AutocompleteFilter typeFilter = new AutocompleteFilter.Builder()
-                .setTypeFilter(AutocompleteFilter.TYPE_FILTER_GEOCODE)
-                .setCountry("RU")
-                .build();
-        autocompleteFragment.setFilter(typeFilter);
-        autocompleteFragment.setOnPlaceSelectedListener(
-                new PlaceSelectionListener() {
-                    @Override
-                    public void onPlaceSelected(Place place) {
-                        QuestsFragment.this.onPlaceSelected(place, false);
-                    }
+                    final MapView mapView = getView().findViewById(R.id.quests_map);
+                    mapView.addView(progressBar, params);
 
-                    @Override
-                    public void onError(Status status) {
-                        Toast.makeText(getActivity(),
-                                "Error place select: " + status.getStatusMessage(),
-                                Toast.LENGTH_LONG).show();
-                    }
+                    autocompleteTextView.getDetailsFor(place,
+                            new DetailsCallback() {
+                                @Override
+                                public void onSuccess(PlaceDetails placeDetails) {
+                                    Log.d(TAG, "Place selected:\nname: " + place.description + "\nunical id: " + place.place_id);
+
+                                    // Go to place
+                                    float currentZoom = map.getCameraPosition().zoom;
+                                    float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
+                                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                            new LatLng(
+                                                    placeDetails.geometry.location.lat,
+                                                    placeDetails.geometry.location.lng
+                                            ),
+                                            (currentZoom < defaultZoom)
+                                                    ? defaultZoom
+                                                    : currentZoom
+                                    ));
+
+                                    mapView.removeView(progressBar);
+                                }
+
+                                @Override
+                                public void onFailure(Throwable throwable) {
+                                }
+                            }
+                    );
                 }
         );
 
         return view;
-    }
-
-    void onPlaceSelected(Place place, boolean showDetails) {
-        Log.d(TAG, "Place selected:\nname: " + place.getName() + "\nunical id: " + place.getId());
-
-        // Go to place
-        float currentZoom = map.getCameraPosition().zoom;
-        float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                place.getLatLng(),
-                (currentZoom < defaultZoom)
-                        ? defaultZoom
-                        : currentZoom
-        ));
-
-        // - Show details -
-
-        if (showDetails) {
-            // Create details fragment
-            QuestDetailsFragment detailsFragment = QuestDetailsFragment.newInstance(place);
-            detailsFragment.setFragmentListener(QuestsFragment.this);
-
-            // Set
-            FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
-            fragTrans.replace(R.id.sliding_container,
-                    detailsFragment);
-            fragTrans.commit();
-        }
     }
 
     private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
@@ -231,17 +228,14 @@ public class QuestsFragment extends Fragment
 
             // Set style
             try {
-                boolean styleValid = map.setMapStyle(
+                if (!map.setMapStyle(
                         MapStyleOptions.loadRawResourceStyle(
                                 getActivity().getApplicationContext(),
                                 getResources().getIdentifier(
                                         mapStyle,
                                         "raw",
                                         getActivity().getPackageName())
-                        )
-                );
-
-                if (!styleValid)
+                        )))
                     Log.e(TAG, "Parse style failed");
             } catch (Resources.NotFoundException e) {
                 Log.e(TAG, "Find style \"" + mapStyle + "\" failed", e);
@@ -263,7 +257,23 @@ public class QuestsFragment extends Fragment
                     if (places.getStatus().isSuccess() &&
                             places.getCount() > 0) {
                         // Select place
-                        onPlaceSelected(places.get(0), true);
+                        final Place place = places.get(0);
+                        Log.d(TAG,
+                                "Place selected:" + '\n' +
+                                        "name: " + place.getName() + '\n' +
+                                        "unical id: " + place.getId() + '\n' +
+                                        "types: " + place.getPlaceTypes()
+                        );
+
+                        // Create details fragment
+                        QuestDetailsFragment questDetailsFragment = QuestDetailsFragment.newInstance(place, getContext());
+                        questDetailsFragment.setFragmentListener(QuestsFragment.this);
+
+                        // Set
+                        FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
+                        fragTrans.replace(R.id.sliding_container,
+                                questDetailsFragment);
+                        fragTrans.commit();
                     }
                 });
     }
@@ -329,5 +339,13 @@ public class QuestsFragment extends Fragment
             setPanelOffset();
         else
             slidingLayout.post(this::setPanelOffset);
+    }
+
+    public interface AutocompleteTextViewGetter {
+        PlacesAutocompleteTextView getAutocompleteTextView();
+    }
+
+    public interface SlidingUpPanelListener {
+        void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset);
     }
 }

@@ -105,15 +105,15 @@ abstract public class AbstractAuthActivity
     }
 
     protected void initViews() {
-//        // Fix action bar color
-//        getSupportActionBar().setBackgroundDrawable(
-//                new ColorDrawable(
-//                        ContextCompat.getColor(
-//                                this,
-//                                R.color.colorPrimary
-//                        )
-//                )
-//        );
+        // Fix action bar color
+        getSupportActionBar().setBackgroundDrawable(
+                new ColorDrawable(
+                        ContextCompat.getColor(
+                                this,
+                                R.color.colorPrimary
+                        )
+                )
+        );
 
         // --- Set listeners ---
 

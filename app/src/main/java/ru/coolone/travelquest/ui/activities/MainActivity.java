@@ -5,9 +5,11 @@ import android.animation.StateListAnimator;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -18,17 +20,22 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -36,6 +43,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
+import com.seatgeek.placesautocomplete.model.AutocompleteResultType;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
@@ -46,7 +55,8 @@ import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
-        SlidingUpPanelLayout.PanelSlideListener {
+        QuestsFragment.SlidingUpPanelListener,
+        QuestsFragment.AutocompleteTextViewGetter {
 
     public static final String[] supportLangs = {
             "US",
@@ -61,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements
     // Api client
     private static GoogleApiClient apiClient;
 
+    // Action bar drawer toggle
+    ActionBarDrawerToggle toggle;
+
     // Fragments array
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
 
@@ -72,8 +85,12 @@ public class MainActivity extends AppCompatActivity implements
 
     // Toolbar
     Toolbar toolbar;
-    ActionBar oldToolbar;
-    View toolbarLayout;
+    View toolbarMain;
+    TextView toolbarTitle;
+    FrameLayout toolbarLayout;
+
+    // Autocomplete place
+    PlacesAutocompleteTextView autocompleteTextView;
 
     private void showAuthDialog() {
         AlertDialog.Builder ad = new AlertDialog.Builder(this);
@@ -121,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     static public int getHeightBar(Activity activity) {
-        return activity.findViewById(R.id.toolbar).getHeight();
+        return activity.findViewById(R.id.app_bar).getHeight();
     }
 
     public static String getLocaleStr(Context context) {
@@ -190,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         Log.d(TAG, "Current locale: "
                 + getLocaleStr(this));
 
@@ -240,14 +256,15 @@ public class MainActivity extends AppCompatActivity implements
         settings = PreferenceManager.getDefaultSharedPreferences(this);
 
         // Toolbar
-        toolbar = findViewById(R.id.toolbar);
-        oldToolbar = getSupportActionBar();
+        toolbar = findViewById(R.id.app_bar);
         setSupportActionBar(toolbar);
-        toolbarLayout = findViewById(R.id.toolbar_layout);
+        toolbarMain = findViewById(R.id.app_bar_main);
+        toolbarTitle = findViewById(R.id.app_bar_title);
+        toolbarLayout = findViewById(R.id.app_bar_layout);
 
         // Drawer layout
         drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+        toggle = new ActionBarDrawerToggle(
                 this,
                 drawer, toolbar,
                 R.string.navigation_drawer_open,
@@ -258,6 +275,50 @@ public class MainActivity extends AppCompatActivity implements
         // Navigation view
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        // Autocomplete place
+        autocompleteTextView = new PlacesAutocompleteTextView(
+                this,
+                getString(R.string.GOOGLE_MAPS_API_KEY)
+        );
+        autocompleteTextView.setLocationBiasEnabled(true);
+        autocompleteTextView.setRadiusMeters(10000L);
+        autocompleteTextView.setResultType(AutocompleteResultType.GEOCODE);
+        autocompleteTextView.setLanguageCode("ru");
+        autocompleteTextView.setHint(getString(R.string.place_autocomplete_hint));
+        Location targetLocation = new Location("");
+        targetLocation.setLatitude(56.326887);
+        targetLocation.setLongitude(44.005986);
+        autocompleteTextView.setCurrentLocation(targetLocation);
+        autocompleteTextView.setLocationBiasEnabled(true);
+        autocompleteTextView.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        autocompleteTextView.showClearButton(s.length() > 0);
+                    }
+                }
+        );
+    }
+
+    private void setToolbarColors(int color) {
+        // Autocomplete text view
+        autocompleteTextView.setTextColor(color);
+        ColorStateList colorStateList = ColorStateList.valueOf(color);
+        ViewCompat.setBackgroundTintList(autocompleteTextView, colorStateList);
+        autocompleteTextView.setHintTextColor(color);
+
+        // App bar
+        toggle.getDrawerArrowDrawable().setColor(color);
+        toolbarTitle.setTextColor(color);
     }
 
     @Override
@@ -307,7 +368,7 @@ public class MainActivity extends AppCompatActivity implements
     public void setToolbarTransparent(boolean transparent, boolean fragmentMargin) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             // Transparent
-            toolbarLayout.getBackground().setAlpha(
+            toolbarMain.getBackground().setAlpha(
                     transparent
                             ? 0
                             : 255
@@ -318,7 +379,7 @@ public class MainActivity extends AppCompatActivity implements
             stateListAnimator.addState(
                     new int[0],
                     ObjectAnimator.ofFloat(
-                            toolbarLayout,
+                            toolbarMain,
                             "elevation",
                             transparent
                                     ? 0.1f
@@ -326,7 +387,7 @@ public class MainActivity extends AppCompatActivity implements
 
                     )
             );
-            toolbarLayout.setStateListAnimator(stateListAnimator);
+            toolbarMain.setStateListAnimator(stateListAnimator);
 
             // Margin
             ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
@@ -336,7 +397,20 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
+    @Override
+    public void setTitle(int titleId) {
+        setTitle(getText(titleId));
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        toolbarTitle.setText(title);
+
+        super.setTitle(title);
+    }
+
     public void onNavigationItemSelected(int id) {
+
         if (id == R.id.nav_logout) {
             // Logout
             FirebaseAuth.getInstance().signOut();
@@ -347,17 +421,6 @@ public class MainActivity extends AppCompatActivity implements
 
             showAuthDialog();
         } else {
-            findViewById(R.id.toolbar_autocomplete_container).setVisibility(
-                    id == R.id.nav_quests
-                            ? View.VISIBLE
-                            : View.GONE
-            );
-
-            setToolbarTransparent(
-                    id == R.id.nav_quests,
-                    id != R.id.nav_quests
-            );
-
             // To fragment
             FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
             FragmentId fragId = null;
@@ -376,7 +439,29 @@ public class MainActivity extends AppCompatActivity implements
                     getFragmentById(fragId))
                     .commit();
 
-            // Update title
+            // --- Toolbar ---
+
+            // Transparency
+            setToolbarTransparent(
+                    id == R.id.nav_quests,
+                    id != R.id.nav_quests
+            );
+
+            // Colors
+            final String mapStyle = prefs.getString("mapstyle", null);
+            final boolean mapBlack = "night".equalsIgnoreCase(mapStyle)
+                    || "solarized".equalsIgnoreCase(mapStyle);
+            setToolbarColors(
+                    id == R.id.nav_quests
+                            ? (
+                            mapBlack
+                                    ? Color.WHITE
+                                    : Color.BLACK
+                    )
+                            : Color.WHITE
+            );
+
+            // Title
             int titleId = 0;
             switch (id) {
                 case R.id.nav_settings:
@@ -385,10 +470,26 @@ public class MainActivity extends AppCompatActivity implements
                 case R.id.nav_about:
                     titleId = R.string.nav_about;
             }
-            if (titleId != 0)
+            toolbarTitle.setVisibility(
+                    titleId != 0
+                            ? View.VISIBLE
+                            : View.GONE
+            );
+            if (titleId != 0) {
                 setTitle(getResources().getString(titleId));
-            else
-                setTitle("");
+            }
+
+            // Autocomplete place text
+            if (id == R.id.nav_quests) {
+                final FrameLayout.LayoutParams autocompleteTextViewParams = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                );
+                autocompleteTextViewParams.setMarginEnd((int) getResources().getDimension(R.dimen.content_inset));
+                toolbarLayout.addView(autocompleteTextView, autocompleteTextViewParams);
+            } else {
+                toolbarLayout.removeView(autocompleteTextView);
+            }
 
             drawer.closeDrawer(GravityCompat.START);
         }
@@ -404,15 +505,20 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPanelSlide(View panel, float slideOffset) {
-        if (slideOffset > 0)
-            toolbarLayout.getBackground().setAlpha(
-                    (int) (slideOffset * 255)
-            );
+    public void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset) {
+        if (slideOffset >= panel.getAnchorPoint() && slideOffset <= 0.5f) {
+            slideOffset -= panel.getAnchorPoint();
+            slideOffset /= 0.5f - panel.getAnchorPoint();
+            int alpha = (int) (255 - (slideOffset * 255));
+            float alphaF = 1.0f - slideOffset;
+            autocompleteTextView.setAlpha(alphaF);
+            toggle.getDrawerArrowDrawable().setAlpha(alpha);
+        }
     }
 
     @Override
-    public void onPanelStateChanged(View panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+    public PlacesAutocompleteTextView getAutocompleteTextView() {
+        return autocompleteTextView;
     }
 
     // Fragments id

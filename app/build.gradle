@@ -13,6 +13,8 @@ android {
         versionCode 7
         versionName "1.6"
         manifestPlaceholders = [googleMapApiKey: GOOGLE_MAPS_API_KEY]
+        resValue "string", "GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -38,6 +40,7 @@ android {
 dependencies {
     repositories {
         mavenCentral()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
     ext {
         support = "27.1.1"
@@ -65,6 +68,8 @@ dependencies {
     implementation 'com.afollestad:sectioned-recyclerview:0.5.0'
     implementation 'com.sothree.slidinguppanel:library:3.4.0'
     implementation 'com.takisoft.fix:preference-v7:27.0.0.0'
+    implementation 'com.seatgeek:placesautocomplete:0.3-SNAPSHOT'
+    implementation 'com.google.code.gson:gson:2.8.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

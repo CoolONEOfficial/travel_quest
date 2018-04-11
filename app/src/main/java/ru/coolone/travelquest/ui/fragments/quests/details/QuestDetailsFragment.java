@@ -3,13 +3,13 @@ package ru.coolone.travelquest.ui.fragments.quests.details;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -31,6 +31,8 @@ import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddPlaceActivity;
@@ -51,9 +53,9 @@ public class QuestDetailsFragment extends Fragment {
     private String title;
     private String placeId;
     private String phone;
-    private Uri url;
+    private String url;
     private float rating;
-    private int typeId;
+    private String[] types;
     private SparseArray<View> viewArr = new SparseArray<>();
 
     public QuestDetailsFragment() {
@@ -68,16 +70,16 @@ public class QuestDetailsFragment extends Fragment {
      * @param phone   Phone number.
      * @param url     Website url.
      * @param rating  Rating.
-     * @param typeId  Type id
+     * @param types   Types array
      * @param placeId Place id
      * @return A new instance of fragment QuestDetailsFragment.
      */
     public static QuestDetailsFragment newInstance(
             String title,
             String phone,
-            Uri url,
+            String url,
             float rating,
-            int typeId,
+            String[] types,
             String placeId) {
         // Create quest
         QuestDetailsFragment fragment = new QuestDetailsFragment();
@@ -87,24 +89,33 @@ public class QuestDetailsFragment extends Fragment {
         args.putString(ArgKeys.TITLE.toString(), title);
         args.putString(ArgKeys.PLACE_ID.toString(), placeId);
         args.putString(ArgKeys.PHONE.toString(), phone);
-        args.putString(ArgKeys.URL.toString(),
-                url != null
-                        ? url.toString()
-                        : null);
+        args.putString(ArgKeys.URL.toString(), url);
         args.putFloat(ArgKeys.RATING.toString(), rating);
-        args.putInt(ArgKeys.TYPE_ID.toString(), typeId);
+        args.putStringArray(ArgKeys.TYPES.toString(), types);
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    public static QuestDetailsFragment newInstance(Place place) {
+    public static QuestDetailsFragment newInstance(com.google.android.gms.location.places.Place place, Context context) {
+        // Convert List<Place types ids> to List<Place types>
+        List<Integer> placeTypeIds = place.getPlaceTypes();
+        ArrayList<String> placeTypes = new ArrayList<>();
+        for (int mPlaceTypeIdId = 0; mPlaceTypeIdId < placeTypeIds.size(); mPlaceTypeIdId++) {
+            Integer mPlaceId = place.getPlaceTypes().get(mPlaceTypeIdId);
+            String mPlaceType = placeTypeIdToString(context, mPlaceId);
+            if(mPlaceType != null)
+                placeTypes.add(mPlaceType);
+        }
+
         return newInstance(
                 place.getName().toString(),
                 place.getPhoneNumber().toString(),
-                place.getWebsiteUri(),
+                place.getWebsiteUri() != null
+                        ? place.getWebsiteUri().toString()
+                        : null,
                 place.getRating(),
-                place.getPlaceTypes().get(0),
+                placeTypes.toArray(new String[0]),
                 place.getId()
         );
     }
@@ -185,11 +196,9 @@ public class QuestDetailsFragment extends Fragment {
             title = args.getString(ArgKeys.TITLE.toString());
             placeId = args.getString(ArgKeys.PLACE_ID.toString());
             phone = args.getString(ArgKeys.PHONE.toString());
-            String urlStr = args.getString(ArgKeys.URL.toString());
-            if (urlStr != null)
-                url = Uri.parse(urlStr);
+            url = args.getString(ArgKeys.URL.toString());
             rating = args.getFloat(ArgKeys.RATING.toString());
-            typeId = args.getInt(ArgKeys.TYPE_ID.toString());
+            types = args.getStringArray(ArgKeys.TYPES.toString());
         }
     }
 
@@ -290,7 +299,7 @@ public class QuestDetailsFragment extends Fragment {
 
     private void refreshTypes() {
         // - Get type string -
-        String typeStr = placeTypeIdToString(getActivity(), typeId);
+        String typeStr = TextUtils.join(", ", types);
 
         // - Set type string -
 
@@ -306,9 +315,8 @@ public class QuestDetailsFragment extends Fragment {
 
     private void refreshUrl() {
         // Set url
-        if (url != null) {
-            ((TextView) viewArr.get(R.id.details_url)).setText(url.toString());
-        }
+        if (url != null)
+            ((TextView) viewArr.get(R.id.details_url)).setText(url);
 
         // Set url visibility
         boolean visibility = (url != null);
@@ -587,11 +595,11 @@ public class QuestDetailsFragment extends Fragment {
         refreshPhone();
     }
 
-    public Uri getUrl() {
+    public String getUrl() {
         return url;
     }
 
-    public void setUrl(Uri url) {
+    public void setUrl(String url) {
         this.url = url;
         refreshUrl();
     }
@@ -615,12 +623,12 @@ public class QuestDetailsFragment extends Fragment {
         refreshPhotos();
     }
 
-    public int getType() {
-        return typeId;
+    public String[] getTypes() {
+        return types;
     }
 
-    public void setTypes(int typeId) {
-        this.typeId = typeId;
+    public void setTypes(String[] types) {
+        this.types = types;
         refreshTypes();
     }
 
@@ -644,7 +652,7 @@ public class QuestDetailsFragment extends Fragment {
         PHONE("phone"),
         URL("url"),
         RATING("rating"),
-        TYPE_ID("type_id"),
+        TYPES("types"),
         PLACE_ID("place_id");
 
         private final String val;

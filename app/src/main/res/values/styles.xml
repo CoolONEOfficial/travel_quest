@@ -5,8 +5,7 @@
         <item name="colorControlHighlight">@color/colorAccent</item>
     </style>
 
-    <!-- Splash theme -->
-
+    <!-- Splash screen -->
     <style name="AppTheme.NoActionBar.Launcher">
         <item name="android:windowBackground">@drawable/splash_background</item>
     </style>
@@ -24,10 +23,6 @@
     </style>
 
     <style name="AppTheme.NoActionBar">
-        <!-- For preferences -->
-        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
-
-        <item name="windowActionBarOverlay">true</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
