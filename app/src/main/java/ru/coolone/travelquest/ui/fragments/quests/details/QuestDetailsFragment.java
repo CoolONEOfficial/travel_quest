@@ -25,13 +25,13 @@ import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
-import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import ru.coolone.travelquest.R;
@@ -104,7 +104,7 @@ public class QuestDetailsFragment extends Fragment {
         for (int mPlaceTypeIdId = 0; mPlaceTypeIdId < placeTypeIds.size(); mPlaceTypeIdId++) {
             Integer mPlaceId = place.getPlaceTypes().get(mPlaceTypeIdId);
             String mPlaceType = placeTypeIdToString(context, mPlaceId);
-            if(mPlaceType != null)
+            if (mPlaceType != null)
                 placeTypes.add(mPlaceType);
         }
 
@@ -389,26 +389,25 @@ public class QuestDetailsFragment extends Fragment {
             FirebaseFirestore db = FirebaseFirestore
                     .getInstance();
 
-            DocumentReference docRef =
+            CollectionReference collRef =
                     db
                             .collection(MainActivity.getLocaleStr(getContext()))
                             .document("quests")
-                            .collection(placeId)
-                            .document("doc");
+                            .collection(placeId);
 
             // Parse description
 
             // Get doc
-            docRef.get().addOnCompleteListener(
+            collRef.get().addOnCompleteListener(
                     task -> {
                         if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
+                            QuerySnapshot coll = task.getResult();
 
                             // Show description
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse description
-                            parseDescription(doc,
+                            parseDescription(coll,
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_description_recycler));
                         } else descriptionError("Get document task not successful");
@@ -436,95 +435,81 @@ public class QuestDetailsFragment extends Fragment {
                 .setVisibility(errorVisibility);
     }
 
-    private void parseDescription(DocumentSnapshot doc, int step, RecyclerView recyclerView) {
+    private void parseDescription(QuerySnapshot coll, int step, RecyclerView recyclerView) {
         Log.d(TAG, "Parse step: " + step);
 
         QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
 
-        // Get sub collections count
-        if (doc.exists()) {
-            for (int mCollectionId = 0; mCollectionId < doc.getLong("count"); mCollectionId++) {
-                // Get collection (wait get task)
-                doc
-                        .getReference()
-                        .collection(String.valueOf(mCollectionId))
-                        .get()
-                        .addOnSuccessListener(collection -> {
+        for (DocumentSnapshot mDoc : coll.getDocuments()) {
+            Log.d(TAG, "Next doc:"
+                    + "\n\ttitle: " +
+                    (mDoc.contains("title")
+                            ? mDoc.get("title")
+                            : "unknown")
+                    + "\n\ttext: " +
+                    (mDoc.contains("text")
+                            ? mDoc.get("text")
+                            : "unknown"));
 
-                            Log.d(TAG, "Collection:"
-                                    + "\n\tsize: " + collection.size());
+            if (mDoc.contains("title")) {
+                // Header
+                BaseSectionedHeader header = new BaseSectionedHeader();
+                header.setTitle((String) mDoc.get("title"));
 
-                            // Parse doc
-                            for (int mNextDocId = 0; mNextDocId < collection.size(); mNextDocId++) {
-                                DocumentSnapshot mNextDoc = collection
-                                        .getDocuments()
-                                        .get(mNextDocId);
+                if (mDoc.contains("text")) {
+                    // Text item
+                    BaseQuestDetailsItem item = new QuestDetailsItemText((String) mDoc.get("text"));
 
-                                Log.d(TAG, "Next doc:"
-                                        + "\n\ttitle: " +
-                                        (mNextDoc.contains("title")
-                                                ? mNextDoc.get("title")
-                                                : "unknown")
-                                        + "\n\ttext: " +
-                                        (mNextDoc.contains("text")
-                                                ? mNextDoc.get("text")
-                                                : "unknown"));
+                    // Add section
+                    if (mDoc.contains("first") &&
+                            mDoc.getBoolean("first").equals(Boolean.TRUE)) {
+                        Log.d(TAG, "Adding at first");
+                        adapter.addSection(
+                                0,
+                                header,
+                                new ArrayList<BaseQuestDetailsItem>() {{
+                                    add(item);
+                                }}
+                        );
+                    } else {
+                        adapter.addSection(
+                                header,
+                                new ArrayList<BaseQuestDetailsItem>() {{
+                                    add(item);
+                                }}
+                        );
+                    }
+                    if (step != 0)
+                        adapter.collapseAllSections();
+                    adapter.notifyDataSetChanged();
+                } else mDoc.getReference().collection("sub").get().addOnSuccessListener(
+                        queryDocumentSnapshots -> {
+                            // Create recycler view
+                            RecyclerView itemRecyclerView = new RecyclerView(getActivity());
+                            recyclerView.setNestedScrollingEnabled(true);
+                            setDescriptionRecyclerView(itemRecyclerView);
 
-                                // Header
-                                BaseSectionedHeader header = new BaseSectionedHeader() {{
-                                    setTitle(mNextDoc.contains("title")
-                                            ? (String) mNextDoc.get("title")
-                                            : getResources().getString(R.string.details_title_unknown));
-                                }};
+                            parseDescription(
+                                    queryDocumentSnapshots,
+                                    step + 1,
+                                    itemRecyclerView
+                            );
 
-                                // Item
-                                BaseQuestDetailsItem item;
+                            // Recycler
+                            adapter.addSection(
+                                    header,
+                                    new ArrayList<BaseQuestDetailsItem>() {{
+                                        add(new QuestDetailsItemRecycler(itemRecyclerView));
+                                    }}
+                            );
 
-                                if (mNextDoc.contains("text")) {
-                                    // Text
-                                    item = new QuestDetailsItemText() {{
-                                        setText((String) mNextDoc.get("text"));
-                                    }};
-                                } else {
-                                    // Create recycler view
-                                    RecyclerView itemRecyclerView = new RecyclerView(getActivity());
-                                    recyclerView.setNestedScrollingEnabled(true);
-                                    setDescriptionRecyclerView(itemRecyclerView);
-
-                                    // Parse recycler view
-                                    parseDescription(mNextDoc, step + 1, itemRecyclerView);
-
-                                    // Recycler
-                                    item = new QuestDetailsItemRecycler() {{
-                                        setRecyclerView(itemRecyclerView);
-                                    }};
-                                }
-
-                                // Add section
-                                if (mNextDoc.contains("first") &&
-                                        mNextDoc.getBoolean("first").equals(Boolean.TRUE)) {
-                                    Log.d(TAG, "Adding at first");
-                                    adapter.addSection(
-                                            0,
-                                            header,
-                                            new ArrayList<BaseQuestDetailsItem>() {{
-                                                add(item);
-                                            }}
-                                    );
-                                } else
-                                    adapter.addSection(
-                                            header,
-                                            new ArrayList<BaseQuestDetailsItem>() {{
-                                                add(item);
-                                            }}
-                                    );
-                            }
                             if (step != 0)
                                 adapter.collapseAllSections();
                             adapter.notifyDataSetChanged();
-                        }).addOnFailureListener(this::descriptionError);
+                        }
+                );
             }
-        } else setDescriptionVisibility(View.GONE);
+        }
 
         // Collapse all
         if (step != 0)

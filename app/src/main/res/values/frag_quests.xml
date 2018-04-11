@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Unknown -->
-    <string name="details_title_unknown">Unknown title</string>
     <string name="details_unknown">Description is not available\nor has not been added yet</string>
     <string name="details_add_details">Add/Change description</string>
 

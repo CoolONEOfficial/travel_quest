@@ -5,6 +5,10 @@ package ru.coolone.travelquest.ui.fragments.quests.details.items;
  */
 
 public class QuestDetailsItemText extends BaseQuestDetailsItem {
+    public QuestDetailsItemText(String mText) {
+        this.mText = mText;
+    }
+
     private String mText;
 
     public String getText() {

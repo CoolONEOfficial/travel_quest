@@ -7,6 +7,10 @@ import android.support.v7.widget.RecyclerView;
  */
 
 public class QuestDetailsItemRecycler extends BaseQuestDetailsItem {
+    public QuestDetailsItemRecycler(RecyclerView recyclerView) {
+        this.recyclerView = recyclerView;
+    }
+
     private RecyclerView recyclerView;
 
     public RecyclerView getRecyclerView() {
