@@ -501,15 +501,33 @@ public class MainActivity extends AppCompatActivity implements
         return id != R.id.nav_logout;
     }
 
+    private void setToolbarAlpha(float alphaF) {
+        int alpha = (int) (alphaF * 255);
+        autocompleteTextView.setAlpha(alphaF);
+        toggle.getDrawerArrowDrawable().setAlpha(alpha);
+    }
+
     @Override
     public void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset) {
         if (slideOffset >= panel.getAnchorPoint() && slideOffset <= 0.5f) {
             slideOffset -= panel.getAnchorPoint();
             slideOffset /= 0.5f - panel.getAnchorPoint();
-            int alpha = (int) (255 - (slideOffset * 255));
-            float alphaF = 1.0f - slideOffset;
-            autocompleteTextView.setAlpha(alphaF);
-            toggle.getDrawerArrowDrawable().setAlpha(alpha);
+
+            setToolbarAlpha(1.0f - slideOffset);
+        }
+    }
+
+    @Override
+    public void onPanelStateChanged(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
+        switch (newState) {
+            case HIDDEN:
+            case ANCHORED:
+            case COLLAPSED:
+                setToolbarAlpha(1.0f);
+                break;
+            case EXPANDED:
+                setToolbarAlpha(0.0f);
+                break;
         }
     }
 

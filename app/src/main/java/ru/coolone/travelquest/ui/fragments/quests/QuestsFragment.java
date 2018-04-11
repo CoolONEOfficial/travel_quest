@@ -82,6 +82,7 @@ public class QuestsFragment extends Fragment
 
         // Sliding panel
         slidingPanel = view.findViewById(R.id.sliding_panel);
+        final SlidingUpPanelListener parentListener = ((SlidingUpPanelListener) getActivity());
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -92,8 +93,7 @@ public class QuestsFragment extends Fragment
                 );
 
                 // Notify parent
-                ((SlidingUpPanelListener)getActivity())
-                        .onPanelSlide(slidingPanel, slideOffset);
+                parentListener.onPanelSlide(slidingPanel, slideOffset);
             }
 
             @Override
@@ -112,6 +112,9 @@ public class QuestsFragment extends Fragment
                                         .getHeight());
                         break;
                 }
+
+                // Notify parent
+                parentListener.onPanelStateChanged(slidingPanel, previousState, newState);
             }
         });
 
@@ -347,5 +350,9 @@ public class QuestsFragment extends Fragment
 
     public interface SlidingUpPanelListener {
         void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset);
+
+        void onPanelStateChanged(SlidingUpPanelLayout panel,
+                                 SlidingUpPanelLayout.PanelState previousState,
+                                 SlidingUpPanelLayout.PanelState newState);
     }
 }
