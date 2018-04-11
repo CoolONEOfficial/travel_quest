@@ -1,8 +1,10 @@
 package ru.coolone.travelquest.ui.activities;
 
 import android.content.Intent;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -50,6 +52,16 @@ public class ConfirmMailActivity extends AppCompatActivity {
                     CheckConfirmTask task = new CheckConfirmTask(this);
                     task.execute();
                 }
+        );
+
+        // Fix action bar color
+        getSupportActionBar().setBackgroundDrawable(
+                new ColorDrawable(
+                        ContextCompat.getColor(
+                                this,
+                                R.color.colorPrimary
+                        )
+                )
         );
     }
 

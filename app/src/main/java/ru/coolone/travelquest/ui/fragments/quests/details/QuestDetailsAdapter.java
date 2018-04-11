@@ -117,8 +117,9 @@ public class QuestDetailsAdapter
 
         @Override
         public void onClick(View view) {
+            int section = getRelativePosition().section();
+            toggleSectionExpanded(section);
             if (headerClickListener != null) {
-                int section = getRelativePosition().section();
                 BaseSectionedHeader header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onClick(header, this, section);

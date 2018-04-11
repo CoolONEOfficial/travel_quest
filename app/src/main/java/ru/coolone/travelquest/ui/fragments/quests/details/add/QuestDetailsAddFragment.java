@@ -3,16 +3,19 @@ package ru.coolone.travelquest.ui.fragments.quests.details.add;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
+
+import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.parseDetails;
+import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.setDetailsRecyclerView;
 
 /**
  * @author coolone
@@ -23,7 +26,7 @@ public class QuestDetailsAddFragment extends Fragment {
 
     // Arguments
     public enum ArgKeys {
-        PAGE("page"),
+        PLACE_ID("place_id"),
         LANG("lang");
 
         private final String val;
@@ -39,18 +42,31 @@ public class QuestDetailsAddFragment extends Fragment {
     }
 
     enum Lang {
-        RU,
-        EN
+        RU("RU"),
+        US("US");
+
+        private final String val;
+
+        Lang(String val) {
+            this.val = val;
+        }
+
+        @Override
+        public String toString() {
+            return val;
+        }
     }
 
     private Lang lang;
+    private String placeId;
 
     // Description recycler view
     RecyclerView descriptionRecyclerView;
 
-    public static QuestDetailsAddFragment newInstance(int page) {
+    public static QuestDetailsAddFragment newInstance(Lang lang, String placeId) {
         Bundle args = new Bundle();
-        args.putInt(ArgKeys.PAGE.toString(), page);
+        args.putSerializable(ArgKeys.LANG.toString(), lang);
+        args.putString(ArgKeys.PLACE_ID.toString(), placeId);
         QuestDetailsAddFragment fragment = new QuestDetailsAddFragment();
         fragment.setArguments(args);
         return fragment;
@@ -59,42 +75,11 @@ public class QuestDetailsAddFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            lang = (Lang) getArguments().getSerializable(ArgKeys.LANG.toString());
+        Bundle args = getArguments();
+        if (args != null) {
+            lang = (Lang) args.getSerializable(ArgKeys.LANG.toString());
+            placeId = args.getString(ArgKeys.PLACE_ID.toString());
         }
-    }
-
-    private void setDescriptionRecyclerView(RecyclerView recyclerView) {
-        // Recycler view
-        recyclerView.setHasFixedSize(true);
-
-        // Layout manager
-        RecyclerView.LayoutManager descriptionLayoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(descriptionLayoutManager);
-
-        // Adapter
-        QuestDetailsAddAdapter adapter = (recyclerView.getAdapter() == null
-                ? new QuestDetailsAddAdapter()
-                : (QuestDetailsAddAdapter) recyclerView.getAdapter());
-        adapter.setHeaderClickListener(
-                new BaseSectionedAdapter.OnClickListener
-                        <BaseSectionedHeader, QuestDetailsAddAdapter.HeaderHolder>() {
-                    @Override
-                    public void onClick(BaseSectionedHeader i,
-                                        QuestDetailsAddAdapter.HeaderHolder i2,
-                                        int section) {
-                        Log.d(TAG, "Toggle section expanded");
-                        adapter.toggleSectionExpanded(section);
-                    }
-
-                    @Override
-                    public boolean onLongClick(BaseSectionedHeader i, QuestDetailsAddAdapter.HeaderHolder i2, int section) {
-                        return false;
-                    }
-
-                });
-        adapter.shouldShowHeadersForEmptySections(true);
-        recyclerView.setAdapter(adapter);
     }
 
     @Override
@@ -105,8 +90,52 @@ public class QuestDetailsAddFragment extends Fragment {
         // Recycle view
         descriptionRecyclerView = view.findViewById(R.id.add_details_description_recycler);
         descriptionRecyclerView.setNestedScrollingEnabled(false);
-        setDescriptionRecyclerView(descriptionRecyclerView);
+        setDetailsRecyclerView(
+                descriptionRecyclerView,
+                QuestDetailsAddAdapter.class,
+                getContext()
+        );
+
+        refreshDetails();
 
         return view;
+    }
+
+    private void createTemplateDetails() {
+
+    }
+
+    private void refreshDetails() {
+        if (placeId != null) {
+            FirebaseFirestore db = FirebaseFirestore
+                    .getInstance();
+
+            CollectionReference collRef =
+                    db
+                            .collection(lang.val)
+                            .document("quests")
+                            .collection(placeId);
+
+            // Parse description
+
+            // Get doc
+            collRef.get().addOnCompleteListener(
+                    task -> {
+                        if (task.isSuccessful()) {
+                            QuerySnapshot coll = task.getResult();
+
+                            // Parse description
+                            parseDetails(coll,
+                                    0,
+                                    getView().findViewById(R.id.add_details_description_recycler),
+                                    QuestDetailsAddAdapter.class,
+                                    this.getContext()
+                            );
+                        } else createTemplateDetails();
+                    })
+                    .addOnFailureListener(
+                            e -> createTemplateDetails()
+                    );
+        }
     }
 }

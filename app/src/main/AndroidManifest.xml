@@ -45,7 +45,8 @@
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.activities.ConfirmMailActivity"
-            android:label="@string/title_activity_confirm_mail" />
+            android:label="@string/title_activity_confirm_mail"
+            android:theme="@style/AppTheme" />
     </application>
 
 </manifest>

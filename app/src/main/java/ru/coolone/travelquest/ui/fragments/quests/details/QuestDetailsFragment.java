@@ -238,7 +238,7 @@ public class QuestDetailsFragment extends Fragment {
         // Recycle view
         descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
         descriptionRecyclerView.setNestedScrollingEnabled(false);
-        setDescriptionRecyclerView(descriptionRecyclerView);
+        setDetailsRecyclerView(descriptionRecyclerView, QuestDetailsAdapter.class, getContext());
 
         // Add description button
         descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
@@ -350,41 +350,32 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
-    private void setDescriptionRecyclerView(RecyclerView recyclerView) {
+    static public void setDetailsRecyclerView(
+            RecyclerView recyclerView,
+            Class<? extends BaseSectionedAdapter> adapterClass,
+            Context context
+    ) {
         // Recycler view
         recyclerView.setHasFixedSize(true);
 
         // Layout manager
-        RecyclerView.LayoutManager descriptionLayoutManager = new LinearLayoutManager(getActivity());
-        recyclerView.setLayoutManager(descriptionLayoutManager);
+        RecyclerView.LayoutManager detailsLayoutManager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter
-        QuestDetailsAdapter adapter = (recyclerView.getAdapter() == null
-                ? new QuestDetailsAdapter()
-                : (QuestDetailsAdapter) recyclerView.getAdapter());
-        adapter.setHeaderClickListener(
-                new BaseSectionedAdapter.OnClickListener
-                        <BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder>() {
-                    @Override
-                    public void onClick(BaseSectionedHeader i,
-                                        QuestDetailsAdapter.HeaderHolder i2,
-                                        int section) {
-                        Log.d(TAG, "Toggle section expanded");
-                        adapter.toggleSectionExpanded(section);
-                    }
-
-                    @Override
-                    public boolean onLongClick(BaseSectionedHeader i,
-                                               QuestDetailsAdapter.HeaderHolder i2,
-                                               int section) {
-                        return false;
-                    }
-                });
-        adapter.shouldShowHeadersForEmptySections(true);
-        recyclerView.setAdapter(adapter);
+        BaseSectionedAdapter adapter;
+        try {
+            adapter = (recyclerView.getAdapter() == null
+                    ? adapterClass.newInstance()
+                    : (QuestDetailsAdapter) recyclerView.getAdapter());
+            adapter.shouldShowHeadersForEmptySections(true);
+            recyclerView.setAdapter(adapter);
+        } catch (java.lang.InstantiationException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void refreshDescription() {
+    private void refreshDetails() {
         if (placeId != null) {
             FirebaseFirestore db = FirebaseFirestore
                     .getInstance();
@@ -395,7 +386,7 @@ public class QuestDetailsFragment extends Fragment {
                             .document("quests")
                             .collection(placeId);
 
-            // Parse description
+            // Parse details
 
             // Get doc
             collRef.get().addOnCompleteListener(
@@ -407,9 +398,12 @@ public class QuestDetailsFragment extends Fragment {
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse description
-                            parseDescription(coll,
+                            parseDetails(coll,
                                     0,
-                                    (RecyclerView) viewArr.get(R.id.details_description_recycler));
+                                    (RecyclerView) viewArr.get(R.id.details_description_recycler),
+                                    QuestDetailsAdapter.class,
+                                    getContext()
+                            );
                         } else descriptionError("Get document task not successful");
                     })
                     .addOnFailureListener(this::descriptionError);
@@ -435,10 +429,16 @@ public class QuestDetailsFragment extends Fragment {
                 .setVisibility(errorVisibility);
     }
 
-    private void parseDescription(QuerySnapshot coll, int step, RecyclerView recyclerView) {
+    static public void parseDetails(
+            QuerySnapshot coll,
+            int step,
+            RecyclerView recyclerView,
+            Class<? extends BaseSectionedAdapter> adapterClass,
+            Context context
+    ) {
         Log.d(TAG, "Parse step: " + step);
 
-        QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
+        BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
 
         if (step != 0) {
             adapter.collapseAllSections();
@@ -487,14 +487,16 @@ public class QuestDetailsFragment extends Fragment {
                 } else mDoc.getReference().collection("sub").get().addOnSuccessListener(
                         queryDocumentSnapshots -> {
                             // Create recycler view
-                            RecyclerView itemRecyclerView = new RecyclerView(getActivity());
+                            RecyclerView itemRecyclerView = new RecyclerView(context);
                             recyclerView.setNestedScrollingEnabled(true);
-                            setDescriptionRecyclerView(itemRecyclerView);
+                            setDetailsRecyclerView(itemRecyclerView, adapterClass, context);
 
-                            parseDescription(
+                            parseDetails(
                                     queryDocumentSnapshots,
                                     step + 1,
-                                    itemRecyclerView
+                                    itemRecyclerView,
+                                    adapterClass,
+                                    context
                             );
 
                             // Recycler
@@ -557,7 +559,7 @@ public class QuestDetailsFragment extends Fragment {
         refreshUrl();
         refreshRating();
         refreshTypes();
-        refreshDescription();
+        refreshDetails();
         refreshPhotos();
     }
 
@@ -603,7 +605,7 @@ public class QuestDetailsFragment extends Fragment {
 
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
-        refreshDescription();
+        refreshDetails();
         refreshPhotos();
     }
 
@@ -704,13 +706,11 @@ public class QuestDetailsFragment extends Fragment {
                                 .freeze()
                                 .getPhoto(MainActivity.getApiClient())
                                 .setResultCallback(
-                                        placePhotoResult -> {
-                                            ((ImageView)
-                                                    ((LinearLayout)
-                                                            parent.viewArr.get(R.id.details_photos_layout)
-                                                    ).getChildAt(mAttributedPhotoIdFinal)
-                                            ).setImageBitmap(placePhotoResult.getBitmap());
-                                        }
+                                        placePhotoResult -> ((ImageView)
+                                                ((LinearLayout)
+                                                        parent.viewArr.get(R.id.details_photos_layout)
+                                                ).getChildAt(mAttributedPhotoIdFinal)
+                                        ).setImageBitmap(placePhotoResult.getBitmap())
                                 );
                     }
                 } else {

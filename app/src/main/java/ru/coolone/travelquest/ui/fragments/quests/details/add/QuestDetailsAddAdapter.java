@@ -106,7 +106,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         public HeaderHolder(View v) {
             super(v);
             title = v.findViewById(R.id.add_details_head_text);
-            caret = v.findViewById(R.id.details_head_caret);
+            caret = v.findViewById(R.id.add_details_head_caret);
 
             // Handle clicks
             v.setOnClickListener(this);
