@@ -440,6 +440,10 @@ public class QuestDetailsFragment extends Fragment {
 
         QuestDetailsAdapter adapter = (QuestDetailsAdapter) recyclerView.getAdapter();
 
+        if (step != 0) {
+            adapter.collapseAllSections();
+        }
+
         for (DocumentSnapshot mDoc : coll.getDocuments()) {
             Log.d(TAG, "Next doc:"
                     + "\n\ttitle: " +
@@ -479,8 +483,6 @@ public class QuestDetailsFragment extends Fragment {
                                 }}
                         );
                     }
-                    if (step != 0)
-                        adapter.collapseAllSections();
                     adapter.notifyDataSetChanged();
                 } else mDoc.getReference().collection("sub").get().addOnSuccessListener(
                         queryDocumentSnapshots -> {
@@ -502,9 +504,6 @@ public class QuestDetailsFragment extends Fragment {
                                         add(new QuestDetailsItemRecycler(itemRecyclerView));
                                     }}
                             );
-
-                            if (step != 0)
-                                adapter.collapseAllSections();
                             adapter.notifyDataSetChanged();
                         }
                 );
