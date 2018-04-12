@@ -1,8 +1,10 @@
 package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,6 +110,13 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             title = v.findViewById(R.id.add_details_head_text);
             caret = v.findViewById(R.id.add_details_head_caret);
 
+            caret.setOnClickListener(
+                    v1 -> onClick(null)
+            );
+            caret.setOnLongClickListener(
+                    v1 -> onLongClick(null)
+            );
+
             // Handle clicks
             v.setOnClickListener(this);
             v.setOnLongClickListener(this);
@@ -120,8 +129,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
 
         @Override
         public void onClick(View view) {
+            int section = getRelativePosition().section();
+            toggleSectionExpanded(section);
             if (headerClickListener != null) {
-                int section = getRelativePosition().section();
                 BaseSectionedHeader header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onClick(header, this, section);
@@ -135,7 +145,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
                 int section = getRelativePosition().section();
                 BaseSectionedHeader header = getHeader(section);
                 if (header != null) {
-                    headerClickListener.onClick(header, this, section);
+                    headerClickListener.onLongClick(header, this, section);
                 }
                 return true;
             }
@@ -151,6 +161,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             super(v);
 
             this.text = v.findViewById(R.id.add_details_item_text);
+            text.setMovementMethod(new ScrollingMovementMethod());
 
             // Handle clicks
             v.setOnClickListener(this);

@@ -6,4 +6,5 @@
     android:layout_height="wrap_content"
     android:gravity="top"
     android:inputType="textMultiLine"
-    android:lines="8" />
+    android:lines="8"
+    android:scrollbars="vertical" />

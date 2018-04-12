@@ -16,7 +16,7 @@
             android:id="@+id/about_logo"
             android:layout_width="match_parent"
             android:layout_height="70dp"
-            android:contentDescription="@string/about_logo_description"
+            android:contentDescription="@string/about_logo_details"
             android:src="@mipmap/ic_launcher" />
 
         <TextView

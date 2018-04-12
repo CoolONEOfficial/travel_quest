@@ -8,7 +8,7 @@
     tools:context=".ui.fragments.quests.details.QuestDetailsFragment">
 
     <ScrollView
-        android:id="@+id/details_description_scroll"
+        android:id="@+id/details_details_scroll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/details_bottom_delimiter"
@@ -16,7 +16,7 @@
         android:scrollbars="none">
 
         <LinearLayout
-            android:id="@+id/details_description"
+            android:id="@+id/details_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
@@ -100,7 +100,7 @@
                 </HorizontalScrollView>
 
                 <android.support.v7.widget.RecyclerView
-                    android:id="@+id/details_description_recycler"
+                    android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_below="@id/details_photos_scroll"
@@ -108,10 +108,10 @@
                     android:paddingRight="@dimen/content_inset" />
 
                 <ImageView
-                    android:id="@+id/details_description_unknown_text_smile"
+                    android:id="@+id/details_details_unknown_text_smile"
                     android:layout_width="match_parent"
                     android:layout_height="100dp"
-                    android:layout_below="@id/details_description_recycler"
+                    android:layout_below="@id/details_details_recycler"
                     android:layout_centerHorizontal="true"
                     android:layout_marginTop="50dp"
                     android:scaleType="fitCenter"
@@ -120,10 +120,10 @@
                     android:visibility="gone" />
 
                 <TextView
-                    android:id="@+id/details_description_unknown_text"
+                    android:id="@+id/details_details_unknown_text"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/details_description_unknown_text_smile"
+                    android:layout_below="@id/details_details_unknown_text_smile"
                     android:gravity="center_horizontal"
                     android:text="@string/details_unknown"
                     android:textColor="@color/secondary_text"
@@ -131,10 +131,10 @@
                     android:visibility="gone" />
 
                 <TextView
-                    android:id="@+id/details_description_unknown_text_primary"
+                    android:id="@+id/details_details_unknown_text_primary"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/details_description_unknown_text"
+                    android:layout_below="@id/details_details_unknown_text"
                     android:layout_centerHorizontal="true"
                     android:gravity="center_horizontal"
                     android:textColor="@color/secondary_text_inverse"
@@ -142,7 +142,7 @@
                     android:visibility="gone" />
 
                 <Button
-                    android:id="@+id/details_description_add_button"
+                    android:id="@+id/details_details_add_button"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_alignParentBottom="true"

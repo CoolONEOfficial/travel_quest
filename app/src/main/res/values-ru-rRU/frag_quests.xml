@@ -4,5 +4,5 @@
     <string name="details_unknown">Описание не доступно\nили его еще не добавили</string>
     <string name="details_add_details">Добавить/Изменить описание</string>
 
-    <string name="details_head_caret_description">Кнопка, которая открывает подзаголовок</string>
+    <string name="details_head_caret_details">Кнопка, которая открывает подзаголовок</string>
 </resources>

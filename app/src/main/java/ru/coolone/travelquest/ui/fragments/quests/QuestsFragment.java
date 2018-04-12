@@ -325,7 +325,7 @@ public class QuestsFragment extends Fragment
         );
 
         // Set recycler is scrollable
-        slidingPanel.setScrollableView(view.findViewById(R.id.details_description_scroll));
+        slidingPanel.setScrollableView(view.findViewById(R.id.details_details_scroll));
 
         // Set panel anchor point
         slidingPanel.setAnchorPoint(1f);

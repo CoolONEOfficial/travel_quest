@@ -12,7 +12,13 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import java.util.ArrayList;
+
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
+import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.parseDetails;
 import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.setDetailsRecyclerView;
@@ -42,26 +48,28 @@ public class QuestDetailsAddFragment extends Fragment {
     }
 
     enum Lang {
-        RU("RU"),
-        US("US");
+        RUSSIAN("RU", R.string.add_place_tab_russian_title),
+        ENGLISH("US", R.string.add_place_tab_english_title);
 
-        private final String val;
+        public final String lang;
+        public final int titleId;
 
-        Lang(String val) {
-            this.val = val;
+        Lang(String lang, int titleId) {
+            this.lang = lang;
+            this.titleId = titleId;
         }
 
         @Override
         public String toString() {
-            return val;
+            return lang;
         }
     }
 
-    private Lang lang;
-    private String placeId;
+    public Lang lang;
+    public String placeId;
 
     // Description recycler view
-    RecyclerView descriptionRecyclerView;
+    RecyclerView detailsRecyclerView;
 
     public static QuestDetailsAddFragment newInstance(Lang lang, String placeId) {
         Bundle args = new Bundle();
@@ -88,10 +96,10 @@ public class QuestDetailsAddFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_add_place_page, container, false);
 
         // Recycle view
-        descriptionRecyclerView = view.findViewById(R.id.add_details_description_recycler);
-        descriptionRecyclerView.setNestedScrollingEnabled(false);
+        detailsRecyclerView = view.findViewById(R.id.add_details_details_recycler);
+        detailsRecyclerView.setNestedScrollingEnabled(false);
         setDetailsRecyclerView(
-                descriptionRecyclerView,
+                detailsRecyclerView,
                 QuestDetailsAddAdapter.class,
                 getContext()
         );
@@ -102,7 +110,14 @@ public class QuestDetailsAddFragment extends Fragment {
     }
 
     private void createTemplateDetails() {
+        QuestDetailsAddAdapter adapter = (QuestDetailsAddAdapter) detailsRecyclerView.getAdapter();
 
+        adapter.addSection(
+                new BaseSectionedHeader("TITLE"),
+                new ArrayList<BaseQuestDetailsItem>() {{
+                    add(new QuestDetailsItemText("TEXT"));
+                }}
+        );
     }
 
     private void refreshDetails() {
@@ -112,25 +127,24 @@ public class QuestDetailsAddFragment extends Fragment {
 
             CollectionReference collRef =
                     db
-                            .collection(lang.val)
+                            .collection(lang.lang)
                             .document("quests")
                             .collection(placeId);
 
-            // Parse description
+            // Parse details
 
             // Get doc
             collRef.get().addOnCompleteListener(
                     task -> {
                         if (task.isSuccessful()) {
-                            QuerySnapshot coll = task.getResult();
-
-                            // Parse description
-                            parseDetails(coll,
+                            // Parse details
+                            if(!parseDetails(task.getResult(),
                                     0,
-                                    getView().findViewById(R.id.add_details_description_recycler),
+                                    getView().findViewById(R.id.add_details_details_recycler),
                                     QuestDetailsAddAdapter.class,
                                     this.getContext()
-                            );
+                            ))
+                                createTemplateDetails();
                         } else createTemplateDetails();
                     })
                     .addOnFailureListener(

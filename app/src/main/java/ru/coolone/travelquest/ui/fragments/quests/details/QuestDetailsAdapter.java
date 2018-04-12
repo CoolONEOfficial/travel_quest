@@ -105,6 +105,13 @@ public class QuestDetailsAdapter
             title = v.findViewById(R.id.details_head_text);
             caret = v.findViewById(R.id.details_head_caret);
 
+//            caret.setOnClickListener(
+//                    v1 -> onClick(null)
+//            );
+//            caret.setOnLongClickListener(
+//                    v1 -> onLongClick(null)
+//            );
+
             // Handle clicks
             v.setOnClickListener(this);
             v.setOnLongClickListener(this);

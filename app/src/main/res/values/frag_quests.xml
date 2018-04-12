@@ -2,9 +2,9 @@
 <resources>
     <!-- Unknown -->
     <string name="details_unknown">Description is not available\nor has not been added yet</string>
-    <string name="details_add_details">Add/Change description</string>
+    <string name="details_add_details">Add/Change details</string>
 
-    <string name="details_head_caret_description">Button, that open\'s subtitle</string>
+    <string name="details_head_caret_details">Button, that open\'s subtitle</string>
 
     <dimen name="details_tab">10dp</dimen>
 

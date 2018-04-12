@@ -26,7 +26,7 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/content_inset"
-        android:contentDescription="@string/details_head_caret_description"
+        android:contentDescription="@string/details_head_caret_details"
         android:src="@drawable/ic_arrow_down" />
 
 </RelativeLayout>

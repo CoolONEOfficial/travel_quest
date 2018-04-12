@@ -46,8 +46,8 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItem
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
-    RecyclerView descriptionRecyclerView;
-    Button descriptionAddButton;
+    RecyclerView detailsRecyclerView;
+    Button detailsAddButton;
     private FragmentListener fragmentListener;
 
     private String title;
@@ -216,11 +216,11 @@ public class QuestDetailsFragment extends Fragment {
                 R.id.layout_details_body,
                 R.id.layout_details,
                 R.id.details_title,
-                R.id.details_description_recycler,
-                R.id.details_description_add_button,
-                R.id.details_description_unknown_text,
-                R.id.details_description_unknown_text_primary,
-                R.id.details_description_unknown_text_smile,
+                R.id.details_details_recycler,
+                R.id.details_details_add_button,
+                R.id.details_details_unknown_text,
+                R.id.details_details_unknown_text_primary,
+                R.id.details_details_unknown_text_smile,
                 R.id.details_phone,
                 R.id.details_url,
                 R.id.details_types,
@@ -236,13 +236,13 @@ public class QuestDetailsFragment extends Fragment {
         }
 
         // Recycle view
-        descriptionRecyclerView = (RecyclerView) viewArr.get(R.id.details_description_recycler);
-        descriptionRecyclerView.setNestedScrollingEnabled(false);
-        setDetailsRecyclerView(descriptionRecyclerView, QuestDetailsAdapter.class, getContext());
+        detailsRecyclerView = (RecyclerView) viewArr.get(R.id.details_details_recycler);
+        detailsRecyclerView.setNestedScrollingEnabled(false);
+        setDetailsRecyclerView(detailsRecyclerView, QuestDetailsAdapter.class, getContext());
 
-        // Add description button
-        descriptionAddButton = (Button) viewArr.get(R.id.details_description_add_button);
-        descriptionAddButton.setOnClickListener(
+        // Add details button
+        detailsAddButton = (Button) viewArr.get(R.id.details_details_add_button);
+        detailsAddButton.setOnClickListener(
                 v -> {
                     Intent intent = new Intent(getActivity(), AddPlaceActivity.class);
                     intent.putExtra(AddPlaceActivity.ArgKeys.PLACE_ID.toString(), placeId);
@@ -394,19 +394,20 @@ public class QuestDetailsFragment extends Fragment {
                         if (task.isSuccessful()) {
                             QuerySnapshot coll = task.getResult();
 
-                            // Show description
+                            // Show details
                             setDescriptionVisibility(View.VISIBLE);
 
-                            // Parse description
-                            parseDetails(coll,
+                            // Parse details
+                            if(!parseDetails(coll,
                                     0,
-                                    (RecyclerView) viewArr.get(R.id.details_description_recycler),
+                                    (RecyclerView) viewArr.get(R.id.details_details_recycler),
                                     QuestDetailsAdapter.class,
                                     getContext()
-                            );
-                        } else descriptionError("Get document task not successful");
+                            ))
+                                detailsError("Docs not valid or empty");
+                        } else detailsError("Get document task not successful");
                     })
-                    .addOnFailureListener(this::descriptionError);
+                    .addOnFailureListener(this::detailsError);
         }
     }
 
@@ -416,26 +417,28 @@ public class QuestDetailsFragment extends Fragment {
                 : View.VISIBLE);
 
         // Description visibility
-        viewArr.get(R.id.details_description_recycler)
+        viewArr.get(R.id.details_details_recycler)
                 .setVisibility(visibility);
 
         // Error visibility
-        viewArr.get(R.id.details_description_unknown_text)
+        viewArr.get(R.id.details_details_unknown_text)
                 .setVisibility(errorVisibility);
-        viewArr.get(R.id.details_description_unknown_text_primary)
+        viewArr.get(R.id.details_details_unknown_text_primary)
                 .setVisibility(errorVisibility);
-        ((TextView) viewArr.get(R.id.details_description_unknown_text_primary)).setText("");
-        viewArr.get(R.id.details_description_unknown_text_smile)
+        ((TextView) viewArr.get(R.id.details_details_unknown_text_primary)).setText("");
+        viewArr.get(R.id.details_details_unknown_text_smile)
                 .setVisibility(errorVisibility);
     }
 
-    static public void parseDetails(
+    static public boolean parseDetails(
             QuerySnapshot coll,
             int step,
             RecyclerView recyclerView,
             Class<? extends BaseSectionedAdapter> adapterClass,
             Context context
     ) {
+        boolean result = false;
+
         Log.d(TAG, "Parse step: " + step);
 
         BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
@@ -457,8 +460,7 @@ public class QuestDetailsFragment extends Fragment {
 
             if (mDoc.contains("title")) {
                 // Header
-                BaseSectionedHeader header = new BaseSectionedHeader();
-                header.setTitle((String) mDoc.get("title"));
+                BaseSectionedHeader header = new BaseSectionedHeader((String) mDoc.get("title"));
 
                 if (mDoc.contains("text")) {
                     // Text item
@@ -484,6 +486,8 @@ public class QuestDetailsFragment extends Fragment {
                         );
                     }
                     adapter.notifyDataSetChanged();
+
+                    result = true;
                 } else mDoc.getReference().collection("sub").get().addOnSuccessListener(
                         queryDocumentSnapshots -> {
                             // Create recycler view
@@ -518,19 +522,21 @@ public class QuestDetailsFragment extends Fragment {
 
         // Update adapter
         recyclerView.setAdapter(adapter);
+
+        return result;
     }
 
-    private void descriptionError(String errStr) {
-        // Hide description and show errors
+    private void detailsError(String errStr) {
+        // Hide details and show errors
         setDescriptionVisibility(View.GONE);
 
         // Set error text
-        ((TextView) viewArr.get(R.id.details_description_unknown_text_primary))
+        ((TextView) viewArr.get(R.id.details_details_unknown_text_primary))
                 .setText(errStr);
     }
 
-    private void descriptionError(Exception e) {
-        descriptionError(e.getLocalizedMessage());
+    private void detailsError(Exception e) {
+        detailsError(e.getLocalizedMessage());
     }
 
     private void refreshPhotos() {

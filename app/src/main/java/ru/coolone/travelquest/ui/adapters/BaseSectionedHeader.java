@@ -5,6 +5,10 @@ package ru.coolone.travelquest.ui.adapters;
  */
 
 public class BaseSectionedHeader {
+    public BaseSectionedHeader(String title) {
+        this.title = title;
+    }
+
     private String title;
 
     public String getTitle() {
