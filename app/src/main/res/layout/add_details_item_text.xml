@@ -7,5 +7,4 @@
     android:gravity="top"
     android:hint="@string/add_place_text_hint"
     android:inputType="textMultiLine"
-    android:lines="8"
     android:scrollbars="vertical"/>

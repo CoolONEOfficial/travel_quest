@@ -397,7 +397,7 @@ public class QuestDetailsFragment extends Fragment {
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse details
-                            if(!parseDetails(coll,
+                            if (!parseDetails(coll,
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_details_recycler),
                                     QuestDetailsAdapter.class,
@@ -444,8 +444,11 @@ public class QuestDetailsFragment extends Fragment {
 
         BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
 
-        if (collapseSections && step != 0) {
-            adapter.collapseAllSections();
+        if (collapseSections) {
+            if (step != 0)
+                adapter.collapseAllSections();
+        } else {
+            adapter.expandAllSections();
         }
 
         for (DocumentSnapshot mDoc : coll.getDocuments()) {

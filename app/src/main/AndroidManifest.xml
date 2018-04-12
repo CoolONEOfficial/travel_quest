@@ -34,15 +34,18 @@
         <activity
             android:name=".ui.activities.LoginActivity"
             android:label="@string/title_activity_login"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:launchMode="singleTask" />
         <activity
             android:name=".ui.activities.SigninActivity"
             android:label="@string/title_activity_signin"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:launchMode="singleTask" />
         <activity
             android:name=".ui.activities.AddPlaceActivity"
             android:label="@string/title_activity_add_place"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:parentActivityName=".ui.activities.MainActivity" />
         <activity
             android:name=".ui.activities.ConfirmMailActivity"
             android:label="@string/title_activity_confirm_mail"

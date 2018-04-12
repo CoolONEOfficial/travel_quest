@@ -8,5 +8,5 @@
 
     <string name="add_place_details_hint" translatable="true">Description</string>
     
-    <string name="add_place_send" translatable="true">Send</string>
+    <string name="add_place_action_send_title" translatable="true">Send</string>
 </resources>
