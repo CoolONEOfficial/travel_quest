@@ -509,12 +509,14 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset) {
-        if (slideOffset >= panel.getAnchorPoint() && slideOffset <= 0.5f) {
-            slideOffset -= panel.getAnchorPoint();
-            slideOffset /= 0.5f - panel.getAnchorPoint();
-
-            setToolbarAlpha(1.0f - slideOffset);
-        }
+        setToolbarAlpha(
+                slideOffset < panel.getAnchorPoint()
+                        ? 1f :
+                        (slideOffset > 0.5f
+                                ? 0f
+                                : 1f - ((slideOffset - panel.getAnchorPoint()) / (0.5f - panel.getAnchorPoint()))
+                        )
+        );
     }
 
     @Override
