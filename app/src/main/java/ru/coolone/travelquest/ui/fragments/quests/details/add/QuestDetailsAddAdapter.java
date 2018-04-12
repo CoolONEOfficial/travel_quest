@@ -2,12 +2,16 @@ package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
 import android.content.Context;
 import android.os.Build;
+import android.sax.TextElementListener;
+import android.support.design.widget.TextInputEditText;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -155,13 +159,15 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
 
     public class ItemHolderText
             extends BaseSectionedViewHolder<QuestDetailsItemText> {
-        TextView text;
+        EditText text;
 
         ItemHolderText(View v) {
             super(v);
 
             this.text = v.findViewById(R.id.add_details_item_text);
-            text.setMovementMethod(new ScrollingMovementMethod());
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+            }
 
             // Handle clicks
             v.setOnClickListener(this);

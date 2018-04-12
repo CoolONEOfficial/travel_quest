@@ -113,9 +113,9 @@ public class QuestDetailsAddFragment extends Fragment {
         QuestDetailsAddAdapter adapter = (QuestDetailsAddAdapter) detailsRecyclerView.getAdapter();
 
         adapter.addSection(
-                new BaseSectionedHeader("TITLE"),
+                new BaseSectionedHeader(""),
                 new ArrayList<BaseQuestDetailsItem>() {{
-                    add(new QuestDetailsItemText("TEXT"));
+                    add(new QuestDetailsItemText(""));
                 }}
         );
     }
@@ -142,7 +142,8 @@ public class QuestDetailsAddFragment extends Fragment {
                                     0,
                                     getView().findViewById(R.id.add_details_details_recycler),
                                     QuestDetailsAddAdapter.class,
-                                    this.getContext()
+                                    this.getContext(),
+                                    false
                             ))
                                 createTemplateDetails();
                         } else createTemplateDetails();

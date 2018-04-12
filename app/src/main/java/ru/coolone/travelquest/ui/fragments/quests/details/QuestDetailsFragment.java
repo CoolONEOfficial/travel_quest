@@ -363,9 +363,8 @@ public class QuestDetailsFragment extends Fragment {
         recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter
-        BaseSectionedAdapter adapter;
         try {
-            adapter = (recyclerView.getAdapter() == null
+            BaseSectionedAdapter adapter = (recyclerView.getAdapter() == null
                     ? adapterClass.newInstance()
                     : (QuestDetailsAdapter) recyclerView.getAdapter());
             adapter.shouldShowHeadersForEmptySections(true);
@@ -402,7 +401,8 @@ public class QuestDetailsFragment extends Fragment {
                                     0,
                                     (RecyclerView) viewArr.get(R.id.details_details_recycler),
                                     QuestDetailsAdapter.class,
-                                    getContext()
+                                    getContext(),
+                                    true
                             ))
                                 detailsError("Docs not valid or empty");
                         } else detailsError("Get document task not successful");
@@ -435,7 +435,8 @@ public class QuestDetailsFragment extends Fragment {
             int step,
             RecyclerView recyclerView,
             Class<? extends BaseSectionedAdapter> adapterClass,
-            Context context
+            Context context,
+            boolean collapseSections
     ) {
         boolean result = false;
 
@@ -443,7 +444,7 @@ public class QuestDetailsFragment extends Fragment {
 
         BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
 
-        if (step != 0) {
+        if (collapseSections && step != 0) {
             adapter.collapseAllSections();
         }
 
@@ -500,7 +501,8 @@ public class QuestDetailsFragment extends Fragment {
                                     step + 1,
                                     itemRecyclerView,
                                     adapterClass,
-                                    context
+                                    context,
+                                    true
                             );
 
                             // Recycler

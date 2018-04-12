@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="add_place_title_hint">Enter title…</string>
+    <string name="add_place_text_hint">Enter text…</string>
+
     <string name="add_place_tab_russian_title" translatable="true">Russian</string>
     <string name="add_place_tab_english_title" translatable="true">English</string>
 

@@ -1,8 +1,10 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
+import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -105,12 +107,12 @@ public class QuestDetailsAdapter
             title = v.findViewById(R.id.details_head_text);
             caret = v.findViewById(R.id.details_head_caret);
 
-//            caret.setOnClickListener(
-//                    v1 -> onClick(null)
-//            );
-//            caret.setOnLongClickListener(
-//                    v1 -> onLongClick(null)
-//            );
+            caret.setOnClickListener(
+                    v1 -> onClick(null)
+            );
+            caret.setOnLongClickListener(
+                    v1 -> onLongClick(null)
+            );
 
             // Handle clicks
             v.setOnClickListener(this);
@@ -156,6 +158,9 @@ public class QuestDetailsAdapter
             super(v);
 
             this.text = v.findViewById(R.id.details_item_text);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+            }
 
             // Handle clicks
             v.setOnClickListener(this);
