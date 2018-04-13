@@ -35,6 +35,10 @@ public class BaseSectionedAdapter<
         sections.add(item);
     }
 
+    public void addSection(int section, Pair<H, List<I>> item) {
+        sections.add(section, item);
+    }
+
     public void clear() {
         for (Pair<H, List<I>> section : sections)
             section.second.clear();

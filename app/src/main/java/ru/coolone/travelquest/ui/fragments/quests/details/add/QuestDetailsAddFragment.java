@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -139,11 +137,9 @@ public class QuestDetailsAddFragment extends Fragment {
                         if (task.isSuccessful()) {
                             // Parse details
                             if(!parseDetails(task.getResult(),
-                                    0,
                                     getView().findViewById(R.id.add_details_details_recycler),
                                     QuestDetailsAddAdapter.class,
-                                    this.getContext(),
-                                    false
+                                    this.getContext()
                             ))
                                 createTemplateDetails();
                         } else createTemplateDetails();
