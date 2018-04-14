@@ -26,9 +26,6 @@ import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -360,7 +357,7 @@ public class QuestDetailsFragment extends Fragment {
             Context context
     ) {
         // Recycler view
-        recyclerView.setHasFixedSize(true);
+        recyclerView.setHasFixedSize(false);
 
         // Layout manager
         RecyclerView.LayoutManager detailsLayoutManager = new LinearLayoutManager(context);
@@ -376,6 +373,24 @@ public class QuestDetailsFragment extends Fragment {
         } catch (java.lang.InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
+    }
+
+    private static Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> generateHeaderSection(
+            String title,
+            Class<? extends BaseSectionedAdapter> adapterClass,
+            Context context
+    ) {
+        final RecyclerView recyclerView = new RecyclerView(context);
+        setDetailsRecyclerView(recyclerView, adapterClass, context);
+
+        final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(recyclerView);
+
+        return new Pair<>(
+                new BaseSectionedHeader(title),
+                new ArrayList<BaseQuestDetailsItem>() {{
+                    add(itemRecycler);
+                }}
+        );
     }
 
     private void refreshDetails() {
@@ -401,9 +416,9 @@ public class QuestDetailsFragment extends Fragment {
                             setDescriptionVisibility(View.VISIBLE);
 
                             // Parse details
-                            if (!parseDetails(coll,
+                            if (!parseDetails(
+                                    coll,
                                     (RecyclerView) viewArr.get(R.id.details_details_recycler),
-                                    QuestDetailsAdapter.class,
                                     getContext()
                             ))
                                 detailsError("Docs not valid or empty");
@@ -435,13 +450,11 @@ public class QuestDetailsFragment extends Fragment {
     static public boolean parseDetails(
             QuerySnapshot coll,
             RecyclerView recyclerView,
-            Class<? extends BaseSectionedAdapter> adapterClass,
             Context context
     ) {
         return parseDetailsHeaders(
                 coll,
                 recyclerView,
-                adapterClass,
                 context
         );
     }
@@ -449,7 +462,6 @@ public class QuestDetailsFragment extends Fragment {
     static private boolean parseDetailsHeaders(
             QuerySnapshot coll,
             RecyclerView recyclerView,
-            Class<? extends BaseSectionedAdapter> adapterClass,
             Context context
     ) {
         Log.d(TAG, "--- Started parse details headers ---");
@@ -461,12 +473,12 @@ public class QuestDetailsFragment extends Fragment {
         for (DocumentSnapshot mDoc : coll.getDocuments()) {
             if (mDoc.contains("title")) {
                 // Recycler view
-                final RecyclerView itemRecyclerView = new RecyclerView(context);
-                recyclerView.setNestedScrollingEnabled(true);
-                setDetailsRecyclerView(itemRecyclerView, adapterClass, context);
+                final RecyclerView recycler = new RecyclerView(context);
+                recycler.setNestedScrollingEnabled(true);
+                setDetailsRecyclerView(recycler, adapter.getClass(), context);
 
                 // Recycler item
-                final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(itemRecyclerView);
+                final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(recycler);
 
                 // Section
                 final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
@@ -485,7 +497,7 @@ public class QuestDetailsFragment extends Fragment {
                 mDoc.getReference().collection("coll").get()
                         .addOnCompleteListener(
                                 task -> {
-                                    if(task.isSuccessful()) {
+                                    if (task.isSuccessful()) {
                                         // Parse details
                                         parseDetailsSections(
                                                 task.getResult(),
@@ -501,8 +513,6 @@ public class QuestDetailsFragment extends Fragment {
                                     // TODO: FAILURE
                                 }
                         );
-
-
 
                 result = true;
             }
@@ -537,39 +547,35 @@ public class QuestDetailsFragment extends Fragment {
                 Log.d(TAG, "mDoc is title (" + mDocTitle + ")");
 
                 // Recycler view
-                final RecyclerView itemRecyclerView = new RecyclerView(context);
-                setDetailsRecyclerView(itemRecyclerView, parentAdapter.getClass(), context);
+                final RecyclerView recycler = new RecyclerView(context);
+                recycler.setNestedScrollingEnabled(true);
+                setDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
+                final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
 
                 // Recycler item
                 mItem = new QuestDetailsItemRecycler(
-                        itemRecyclerView
+                        recycler
                 );
 
                 // Next section
-                final ArrayList<BaseQuestDetailsItem> nextSectionItems = new ArrayList<>();
-                nextSectionItems.add(mItem);
                 final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
                         new BaseSectionedHeader(mDocTitle),
-                        nextSectionItems
+                        new ArrayList<>()
                 );
-
-                // Recycler adapter
-                final BaseSectionedAdapter adapter = (BaseSectionedAdapter) itemRecyclerView.getAdapter();
 
                 // Add section
                 adapter.addSection(nextSection);
-                adapter.notifyDataSetChanged();
 
                 // Get collection
                 mDoc.getReference().collection("coll").get()
                         .addOnCompleteListener(
                                 task -> {
-                                    if(task.isSuccessful()) {
+                                    if (task.isSuccessful()) {
                                         // Parse inner sections
                                         parseDetailsSections(
                                                 task.getResult(),
                                                 nextSection,
-                                                adapter,
+                                                parentAdapter,
                                                 context
                                         );
                                     }

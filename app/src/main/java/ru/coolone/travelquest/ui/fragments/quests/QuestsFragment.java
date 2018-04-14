@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
@@ -160,6 +161,13 @@ public class QuestsFragment extends Fragment
 
                                 @Override
                                 public void onFailure(Throwable throwable) {
+                                    Toast.makeText(
+                                            getContext(),
+                                            getString(R.string.map_place_autocomplete_error),
+                                            Toast.LENGTH_SHORT
+                                    ).show();
+
+                                    mapView.removeView(progressBar);
                                 }
                             }
                     );

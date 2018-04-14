@@ -4,7 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
-    android:padding="@dimen/content_inset">
+    android:paddingBottom="@dimen/content_inset"
+    android:paddingEnd="@dimen/content_inset"
+    android:paddingTop="@dimen/content_inset">
 
     <EditText
         android:id="@+id/add_details_head_text"

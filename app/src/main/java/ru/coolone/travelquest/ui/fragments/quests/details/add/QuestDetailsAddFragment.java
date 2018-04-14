@@ -136,9 +136,9 @@ public class QuestDetailsAddFragment extends Fragment {
                     task -> {
                         if (task.isSuccessful()) {
                             // Parse details
-                            if(!parseDetails(task.getResult(),
+                            if(!parseDetails(
+                                    task.getResult(),
                                     getView().findViewById(R.id.add_details_details_recycler),
-                                    QuestDetailsAddAdapter.class,
                                     this.getContext()
                             ))
                                 createTemplateDetails();
