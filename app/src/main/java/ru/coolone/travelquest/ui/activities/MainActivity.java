@@ -505,6 +505,11 @@ public class MainActivity extends AppCompatActivity implements
         int alpha = (int) (alphaF * 255);
         autocompleteTextView.setAlpha(alphaF);
         toggle.getDrawerArrowDrawable().setAlpha(alpha);
+        toolbar.setVisibility(
+                alphaF < 0.1f
+                        ? View.GONE
+                        : View.VISIBLE
+        );
     }
 
     @Override

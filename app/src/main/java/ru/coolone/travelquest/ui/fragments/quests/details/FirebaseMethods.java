@@ -31,9 +31,45 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItem
 public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
+    private static int startedTasks;
+
+    private static void onStartTask() {
+        startedTasks++;
+    }
+
+    private static void onEndTask(SerializeDetailsListener listener) {
+        startedTasks--;
+
+        if (startedTasks == 0) {
+            listener.onSerializeDetailsCompleted();
+            listener.onSerializeDetailsSuccess();
+        }
+    }
+
+    public interface SerializeDetailsListener {
+        void onSerializeDetailsSuccess();
+        void onSerializeDetailsCompleted();
+        void onSerializeDetailsError(Exception e);
+    }
+
     static public void serializeDetails(
             CollectionReference coll,
-            RecyclerView recyclerView
+            RecyclerView recyclerView,
+            SerializeDetailsListener listener
+    ) {
+        serializeDetails(
+                coll,
+                recyclerView,
+                0,
+                listener
+        );
+    }
+
+    static private void serializeDetails(
+            CollectionReference coll,
+            RecyclerView recyclerView,
+            int id,
+            SerializeDetailsListener listener
     ) {
         Log.d(TAG, "--- Started serialize details ---");
 
@@ -43,66 +79,76 @@ public class FirebaseMethods {
         for (int mSectionId = 0; mSectionId < adapter.getSectionCount(); mSectionId++) {
             final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> mSection = adapter.getSection(mSectionId);
 
+            if (mSection.first.getTitle().isEmpty())
+                continue;
+
             Log.d(TAG, "mSection"
                     + '\n' + " id: " + mSectionId
                     + '\n' + " title: " + mSection.first.getTitle()
                     + '\n' + " size: " + mSection.second.size());
 
-            final DocumentReference mDoc = coll.document(Integer.toString(mSectionId));
+            final DocumentReference mDoc = coll.document(Integer.toString(mSectionId) + id);
 
+            onStartTask();
             mDoc.set(
                     new HashMap<String, Object>() {{
                         put("title", mSection.first.getTitle());
                     }}
             ).addOnSuccessListener(
-                    taskTitleComplete -> {
-                        Log.d(TAG, "Adding title " + mSection.first.getTitle() + " ended");
-
-                        CollectionReference nextColl = mDoc.collection("coll");
-
-                        Log.d(TAG, "Starting items for");
-                        for (int mItemId = 0; mItemId < mSection.second.size(); mItemId++) {
-                            BaseQuestDetailsItem mItem = mSection.second.get(mItemId);
-                            Log.d(TAG, "mItem"
-                                    + '\n' + " class: " + mItem.getClass().getSimpleName()
-                            );
-
-                            if (mItem instanceof QuestDetailsItemText) {
-                                Log.d(TAG, "mItem is text");
-
-                                nextColl.document(Integer.toString(mItemId)).set(
-                                        new HashMap<String, Object>() {{
-                                            put(
-                                                    "text",
-                                                    ((QuestDetailsItemText) mItem).getText()
-                                            );
-                                        }}
-                                ).addOnSuccessListener(
-                                        taskTextComplete -> {
-                                            Log.d(TAG, "Adding text " + ((QuestDetailsItemText) mItem).getText() + " ended");
-                                        }
-                                ).addOnFailureListener(
-                                        e -> {
-                                            Log.e(TAG, "Create firebase doument with text error", e);
-                                            // TODO: fail
-                                        }
-                                );
-                            } else if (mItem instanceof QuestDetailsItemRecycler) {
-                                Log.d(TAG, "mItem is recycler");
-
-                                serializeDetails(
-                                        nextColl,
-                                        ((QuestDetailsItemRecycler) mItem).getRecyclerView()
-                                );
-                            }
-                        }
-                    }
+                    taskTitleComplete -> Log.d(TAG, "Adding title " + mSection.first.getTitle() + " ended")
             ).addOnFailureListener(
                     e -> {
                         Log.e(TAG, "Create firebase doument with title error", e);
-                        // TODO: fail
+                        listener.onSerializeDetailsCompleted();
+                        listener.onSerializeDetailsError(e);
                     }
+            ).addOnCompleteListener(
+                    task -> onEndTask(listener)
             );
+
+            CollectionReference nextColl = mDoc.collection("coll");
+
+            Log.d(TAG, "Starting items for");
+            for (int mItemId = 0; mItemId < mSection.second.size(); mItemId++) {
+                BaseQuestDetailsItem mItem = mSection.second.get(mItemId);
+                Log.d(TAG, "mItem"
+                        + '\n' + " class: " + mItem.getClass().getSimpleName()
+                );
+
+                if (mItem instanceof QuestDetailsItemText &&
+                        !((QuestDetailsItemText) mItem).getText().isEmpty()) {
+                    Log.d(TAG, "mItem is text");
+
+                    onStartTask();
+                    nextColl.document(Integer.toString(mItemId)).set(
+                            new HashMap<String, Object>() {{
+                                put(
+                                        "text",
+                                        ((QuestDetailsItemText) mItem).getText()
+                                );
+                            }}
+                    ).addOnSuccessListener(
+                            taskTextComplete -> Log.d(TAG, "Adding text " + ((QuestDetailsItemText) mItem).getText() + " ended")
+                    ).addOnFailureListener(
+                            e -> {
+                                Log.e(TAG, "Create firebase doument with text error", e);
+                                listener.onSerializeDetailsCompleted();
+                                listener.onSerializeDetailsError(e);
+                            }
+                    ).addOnCompleteListener(
+                            task -> onEndTask(listener)
+                    );
+                } else if (mItem instanceof QuestDetailsItemRecycler) {
+                    Log.d(TAG, "mItem is recycler");
+
+                    serializeDetails(
+                            nextColl,
+                            ((QuestDetailsItemRecycler) mItem).getRecyclerView(),
+                            mItemId,
+                            listener
+                    );
+                }
+            }
         }
 
         Log.d(TAG, "--- Ended serialize details ---");
