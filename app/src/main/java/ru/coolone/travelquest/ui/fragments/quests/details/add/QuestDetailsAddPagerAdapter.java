@@ -5,14 +5,13 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import ru.coolone.travelquest.R;
-
 /**
  * @author coolone
  * @since 30.03.18
  */
 public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
-    private QuestDetailsAddFragment tabFragments[] = new QuestDetailsAddFragment[QuestDetailsAddFragment.Lang.values().length];
+    private QuestDetailsAddFragment tabFragments[] =
+            new QuestDetailsAddFragment[QuestDetailsAddFragment.Lang.values().length];
     private Context context;
 
     public QuestDetailsAddPagerAdapter(FragmentManager fm, String placeId, Context context) {

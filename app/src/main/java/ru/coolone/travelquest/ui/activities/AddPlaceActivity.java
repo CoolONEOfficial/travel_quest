@@ -7,19 +7,18 @@ import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsAdapter;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddFragment;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddPagerAdapter;
+
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.serializeDetails;
 
 public class AddPlaceActivity extends AppCompatActivity {
     private static final String TAG = AddPlaceActivity.class.getSimpleName();
@@ -43,6 +42,8 @@ public class AddPlaceActivity extends AppCompatActivity {
     // Google map place id
     String placeId;
 
+    QuestDetailsAddPagerAdapter pagerAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,17 +51,16 @@ public class AddPlaceActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         placeId = getIntent().getStringExtra(ArgKeys.PLACE_ID.toString());
-        if(placeId == null)
+        if (placeId == null)
             Log.e(TAG, "Place id not found!");
 
         ViewPager viewPager = findViewById(R.id.add_details_viewpager);
-        viewPager.setAdapter(
-                new QuestDetailsAddPagerAdapter(
-                        getSupportFragmentManager(),
-                        placeId,
-                        this
-                )
+        pagerAdapter = new QuestDetailsAddPagerAdapter(
+                getSupportFragmentManager(),
+                placeId,
+                this
         );
+        viewPager.setAdapter(pagerAdapter);
 
         TabLayout tabLayout = findViewById(R.id.add_details_sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
@@ -99,6 +99,19 @@ public class AddPlaceActivity extends AppCompatActivity {
     }
 
     private void applyDetails() {
-        // TODO: apply details
+        FirebaseFirestore db = FirebaseFirestore
+                .getInstance();
+
+        for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+            QuestDetailsAddFragment mFrag = (QuestDetailsAddFragment) pagerAdapter.getItem(mFragId);
+
+            serializeDetails(
+                    db
+                            .collection(mFrag.lang.lang)
+                            .document("quests")
+                            .collection(placeId),
+                    mFrag.recycler
+            );
+        }
     }
 }

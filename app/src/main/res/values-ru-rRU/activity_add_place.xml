@@ -9,4 +9,9 @@
     <string name="add_place_details_hint" translatable="true">Описание</string>
 
     <string name="add_place_action_send_title" translatable="true">Отправить</string>
+
+    <string name="add_place_add_dialog_title">Что Вы хотите добавить?</string>
+
+    <string name="add_place_add_dialog_text">Текст</string>
+    <string name="add_place_add_dialog_section">Заголовок</string>
 </resources>

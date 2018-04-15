@@ -9,4 +9,9 @@
     <string name="add_place_details_hint" translatable="true">Description</string>
     
     <string name="add_place_action_send_title" translatable="true">Send</string>
+
+    <string name="add_place_add_dialog_title">What do you want to add?</string>
+
+    <string name="add_place_add_dialog_text">Text</string>
+    <string name="add_place_add_dialog_section">Title</string>
 </resources>

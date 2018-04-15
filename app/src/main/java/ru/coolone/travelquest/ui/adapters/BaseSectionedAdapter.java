@@ -23,20 +23,18 @@ public class BaseSectionedAdapter<
         extends SectionedRecyclerViewAdapter<IVH> {
     protected List<Pair<H, List<I>>> sections = new ArrayList<>();
 
-    public void addSection(int section, H header, List<I> items) {
-        sections.add(section, new Pair<>(header, items));
-    }
-
-    public void addSection(H header, List<I> items) {
-        sections.add(new Pair<>(header, items));
-    }
-
     public void addSection(Pair<H, List<I>> item) {
-        sections.add(item);
+        addSection(sections.size(), item);
     }
 
     public void addSection(int section, Pair<H, List<I>> item) {
         sections.add(section, item);
+        notifyDataSetChanged();
+    }
+
+    public void removeSection(int section) {
+        sections.remove(section);
+        notifyDataSetChanged();
     }
 
     public void clear() {

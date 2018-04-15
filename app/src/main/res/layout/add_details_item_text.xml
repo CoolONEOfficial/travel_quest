@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<EditText xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/add_details_item_text"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:gravity="top"
-    android:hint="@string/add_place_text_hint"
-    android:inputType="textMultiLine"
-    android:scrollbars="vertical"/>
+    android:layout_marginStart="@dimen/content_inset"
+    android:gravity="end"
+    android:orientation="horizontal">
+
+    <EditText
+        android:id="@+id/add_details_item_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toStartOf="@id/add_details_item_text_remove"
+        android:hint="@string/add_place_text_hint"
+        android:inputType="textMultiLine"
+        android:scrollbars="vertical" />
+
+    <ImageButton
+        android:id="@+id/add_details_item_text_remove"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:src="@drawable/ic_remove" />
+</RelativeLayout>

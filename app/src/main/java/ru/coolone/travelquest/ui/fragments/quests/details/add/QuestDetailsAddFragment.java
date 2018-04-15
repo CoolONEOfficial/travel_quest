@@ -2,8 +2,10 @@ package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,8 +20,8 @@ import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.parseDetails;
-import static ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment.setDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
 
 /**
  * @author coolone
@@ -45,7 +47,7 @@ public class QuestDetailsAddFragment extends Fragment {
         }
     }
 
-    enum Lang {
+    public enum Lang {
         RUSSIAN("RU", R.string.add_place_tab_russian_title),
         ENGLISH("US", R.string.add_place_tab_english_title);
 
@@ -67,7 +69,11 @@ public class QuestDetailsAddFragment extends Fragment {
     public String placeId;
 
     // Description recycler view
-    RecyclerView detailsRecyclerView;
+    public RecyclerView recycler;
+    QuestDetailsAddAdapter recyclerAdapter;
+
+    // Add section button
+    FloatingActionButton addSectionButton;
 
     public static QuestDetailsAddFragment newInstance(Lang lang, String placeId) {
         Bundle args = new Bundle();
@@ -94,12 +100,24 @@ public class QuestDetailsAddFragment extends Fragment {
         View view = inflater.inflate(R.layout.activity_add_place_page, container, false);
 
         // Recycle view
-        detailsRecyclerView = view.findViewById(R.id.add_details_details_recycler);
-        detailsRecyclerView.setNestedScrollingEnabled(false);
+        recycler = view.findViewById(R.id.add_details_details_recycler);
+        recycler.setNestedScrollingEnabled(false);
         setDetailsRecyclerView(
-                detailsRecyclerView,
+                recycler,
                 QuestDetailsAddAdapter.class,
                 getContext()
+        );
+        recyclerAdapter = (QuestDetailsAddAdapter) recycler.getAdapter();
+
+        // Add section button
+        addSectionButton = view.findViewById(R.id.add_details_add_section_button);
+        addSectionButton.setOnClickListener(
+                v -> recyclerAdapter.addSection(
+                            new Pair<>(
+                                    new BaseSectionedHeader(""),
+                                    new ArrayList<>()
+                            )
+                    )
         );
 
         refreshDetails();
@@ -108,13 +126,13 @@ public class QuestDetailsAddFragment extends Fragment {
     }
 
     private void createTemplateDetails() {
-        QuestDetailsAddAdapter adapter = (QuestDetailsAddAdapter) detailsRecyclerView.getAdapter();
-
-        adapter.addSection(
-                new BaseSectionedHeader(""),
-                new ArrayList<BaseQuestDetailsItem>() {{
-                    add(new QuestDetailsItemText(""));
-                }}
+        recyclerAdapter.addSection(
+                new Pair<>(
+                        new BaseSectionedHeader(""),
+                        new ArrayList<BaseQuestDetailsItem>() {{
+                            add(new QuestDetailsItemText(""));
+                        }}
+                )
         );
     }
 
@@ -136,9 +154,9 @@ public class QuestDetailsAddFragment extends Fragment {
                     task -> {
                         if (task.isSuccessful()) {
                             // Parse details
-                            if(!parseDetails(
+                            if (!parseDetails(
                                     task.getResult(),
-                                    getView().findViewById(R.id.add_details_details_recycler),
+                                    recycler,
                                     this.getContext()
                             ))
                                 createTemplateDetails();

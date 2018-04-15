@@ -2,18 +2,22 @@ package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
 import android.content.Context;
 import android.os.Build;
-import android.sax.TextElementListener;
-import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
 import android.text.Layout;
-import android.text.method.ScrollingMovementMethod;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
@@ -23,6 +27,8 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetails
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
+
 /**
  * @author coolone
  * @since 06.04.18
@@ -30,6 +36,14 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItem
 public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
+    public QuestDetailsAddAdapter(
+            Context context
+    ) {
+        this.context = context;
+    }
+
+    // Context
+    Context context;
 
     private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
@@ -62,6 +76,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             boolean expanded
     ) {
         holder.bind(section);
+
         // Set caret image
         ((HeaderHolder) holder).caret.setImageResource(
                 expanded
@@ -107,18 +122,94 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             extends BaseSectionedViewHolder<BaseSectionedHeader>
             implements View.OnClickListener, View.OnLongClickListener {
         ImageView caret;
-        TextView title;
+        EditText title;
+        ImageButton buttonAdd;
+        ImageButton buttonRemove;
 
         public HeaderHolder(View v) {
             super(v);
             title = v.findViewById(R.id.add_details_head_text);
             caret = v.findViewById(R.id.add_details_head_caret);
+            buttonAdd = v.findViewById(R.id.add_details_head_add);
+            buttonRemove = v.findViewById(R.id.add_details_head_remove);
+
+            title.addTextChangedListener(
+                    new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            getHeader(getRelativePosition().section())
+                                    .setTitle(s.toString());
+                        }
+                    }
+            );
 
             caret.setOnClickListener(
                     v1 -> onClick(null)
             );
             caret.setOnLongClickListener(
                     v1 -> onLongClick(null)
+            );
+
+            buttonAdd.setOnClickListener(
+                    v1 -> {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        builder.setTitle(context.getString(R.string.add_place_add_dialog_title));
+
+                        builder.setItems(
+                                new String[]{
+                                        context.getString(R.string.add_place_add_dialog_section),
+                                        context.getString(R.string.add_place_add_dialog_text)
+                                }, (dialog, item) -> {
+                                    final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section =
+                                            getSection(getRelativePosition().section());
+
+                                    BaseQuestDetailsItem detailsItem = null;
+
+                                    switch (item) {
+                                        case 0:
+                                            RecyclerView recycler = new RecyclerView(context);
+                                            setDetailsRecyclerView(
+                                                    recycler,
+                                                    QuestDetailsAddAdapter.class,
+                                                    context
+                                            );
+                                            ((BaseSectionedAdapter) recycler.getAdapter())
+                                                    .addSection(
+                                                            new Pair<>(
+                                                                    new BaseSectionedHeader(""),
+                                                                    new ArrayList()
+                                                            )
+                                                    );
+
+                                            detailsItem = new QuestDetailsItemRecycler(recycler);
+                                            break;
+                                        case 1:
+                                            detailsItem = new QuestDetailsItemText("");
+                                            break;
+                                    }
+
+                                    section.second.add(detailsItem);
+                                    notifyDataSetChanged();
+                                }
+                        );
+                        builder.setCancelable(true);
+                        builder.show();
+                    }
+            );
+
+            buttonRemove.setOnClickListener(
+                    v12 -> {
+                        removeSection(getRelativePosition().section());
+                        notifyDataSetChanged();
+                    }
             );
 
             // Handle clicks
@@ -160,14 +251,43 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
     public class ItemHolderText
             extends BaseSectionedViewHolder<QuestDetailsItemText> {
         EditText text;
+        ImageButton buttonRemove;
 
         ItemHolderText(View v) {
             super(v);
 
-            this.text = v.findViewById(R.id.add_details_item_text);
+            text = v.findViewById(R.id.add_details_item_text);
+            buttonRemove = v.findViewById(R.id.add_details_item_text_remove);
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
             }
+            text.addTextChangedListener(
+                    new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            ((QuestDetailsItemText) getItem(getLayoutPosition()))
+                                    .setText(s.toString());
+                        }
+                    }
+            );
+
+            buttonRemove.setOnClickListener(
+                    v1 -> {
+                        List<BaseQuestDetailsItem> sectionItems = getSection(getRelativePosition().section()).second;
+
+                        sectionItems.remove(getRelativePosition().relativePos());
+                        notifyDataSetChanged();
+                    }
+            );
 
             // Handle clicks
             v.setOnClickListener(this);
@@ -223,7 +343,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             Log.d(TAG, "Item recycler holder created:\n\tsize: "
                     + String.valueOf(recyclerView.getChildCount())
                     + "\n\titem view:" + String.valueOf(v)
-                    + "\n\tadapter" + String.valueOf(recyclerView.getAdapter()));
+                    + "\n\trecyclerAdapter" + String.valueOf(recyclerView.getAdapter()));
         }
 
         @Override

@@ -23,7 +23,6 @@ public class QuestDetailsAdapter
         extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
-
     private static final String TAG = QuestDetailsFragment.class.getSimpleName();
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
     private OnClickListener<BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder> headerClickListener;

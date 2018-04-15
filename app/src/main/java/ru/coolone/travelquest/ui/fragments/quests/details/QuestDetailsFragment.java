@@ -7,11 +7,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
-import android.util.Pair;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,7 +24,6 @@ import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -38,11 +34,9 @@ import java.util.List;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddPlaceActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
 
 public class QuestDetailsFragment extends Fragment {
 
@@ -239,7 +233,11 @@ public class QuestDetailsFragment extends Fragment {
         // Recycle view
         detailsRecyclerView = (RecyclerView) viewArr.get(R.id.details_details_recycler);
         detailsRecyclerView.setNestedScrollingEnabled(false);
-        setDetailsRecyclerView(detailsRecyclerView, QuestDetailsAdapter.class, getContext());
+        setDetailsRecyclerView(
+                detailsRecyclerView,
+                QuestDetailsAdapter.class,
+                getContext()
+        );
 
         // Add details button
         detailsAddButton = (Button) viewArr.get(R.id.details_details_add_button);
@@ -351,48 +349,6 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_rating_star).setVisibility(visibility);
     }
 
-    static public void setDetailsRecyclerView(
-            RecyclerView recyclerView,
-            Class<? extends BaseSectionedAdapter> adapterClass,
-            Context context
-    ) {
-        // Recycler view
-        recyclerView.setHasFixedSize(false);
-
-        // Layout manager
-        RecyclerView.LayoutManager detailsLayoutManager = new LinearLayoutManager(context);
-        recyclerView.setLayoutManager(detailsLayoutManager);
-
-        // Adapter
-        try {
-            BaseSectionedAdapter adapter = (recyclerView.getAdapter() == null
-                    ? adapterClass.newInstance()
-                    : (QuestDetailsAdapter) recyclerView.getAdapter());
-            adapter.shouldShowHeadersForEmptySections(true);
-            recyclerView.setAdapter(adapter);
-        } catch (java.lang.InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> generateHeaderSection(
-            String title,
-            Class<? extends BaseSectionedAdapter> adapterClass,
-            Context context
-    ) {
-        final RecyclerView recyclerView = new RecyclerView(context);
-        setDetailsRecyclerView(recyclerView, adapterClass, context);
-
-        final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(recyclerView);
-
-        return new Pair<>(
-                new BaseSectionedHeader(title),
-                new ArrayList<BaseQuestDetailsItem>() {{
-                    add(itemRecycler);
-                }}
-        );
-    }
-
     private void refreshDetails() {
         if (placeId != null) {
             FirebaseFirestore db = FirebaseFirestore
@@ -446,305 +402,6 @@ public class QuestDetailsFragment extends Fragment {
         viewArr.get(R.id.details_details_unknown_text_smile)
                 .setVisibility(errorVisibility);
     }
-
-    static public boolean parseDetails(
-            QuerySnapshot coll,
-            RecyclerView recyclerView,
-            Context context
-    ) {
-        return parseDetailsHeaders(
-                coll,
-                recyclerView,
-                context
-        );
-    }
-
-    static private boolean parseDetailsHeaders(
-            QuerySnapshot coll,
-            RecyclerView recyclerView,
-            Context context
-    ) {
-        Log.d(TAG, "--- Started parse details headers ---");
-
-        boolean result = false;
-
-        BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
-
-        for (DocumentSnapshot mDoc : coll.getDocuments()) {
-            if (mDoc.contains("title")) {
-                // Recycler view
-                final RecyclerView recycler = new RecyclerView(context);
-                recycler.setNestedScrollingEnabled(true);
-                setDetailsRecyclerView(recycler, adapter.getClass(), context);
-
-                // Recycler item
-                final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(recycler);
-
-                // Section
-                final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
-                        new BaseSectionedHeader(mDoc.getString("title")),
-                        new ArrayList<BaseQuestDetailsItem>() {{
-                            add(itemRecycler);
-                        }}
-                );
-
-                // Add item
-                adapter.addSection(
-                        nextSection
-                );
-                adapter.notifyDataSetChanged();
-
-                mDoc.getReference().collection("coll").get()
-                        .addOnCompleteListener(
-                                task -> {
-                                    if (task.isSuccessful()) {
-                                        // Parse details
-                                        parseDetailsSections(
-                                                task.getResult(),
-                                                nextSection,
-                                                adapter,
-                                                context
-                                        );
-                                    }
-                                }
-                        )
-                        .addOnFailureListener(
-                                e -> {
-                                    // TODO: FAILURE
-                                }
-                        );
-
-                result = true;
-            }
-        }
-
-        Log.d(TAG, "--- Ended parse details headers ---");
-
-        return result;
-    }
-
-    static private void parseDetailsSections(
-            QuerySnapshot coll,
-            Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section,
-            BaseSectionedAdapter parentAdapter,
-            Context context) {
-        Log.d(TAG, "--- Started parse details sections ---");
-
-        for (DocumentSnapshot mDoc : coll.getDocuments()) {
-            Log.d(TAG, "mDoc id: " + mDoc.getId());
-
-            BaseQuestDetailsItem mItem = null;
-
-            if (mDoc.contains("text")) {
-                String mDocText = mDoc.getString("text");
-                Log.d(TAG, "mDoc is text (" + mDocText + ")");
-
-                mItem = new QuestDetailsItemText(
-                        mDocText
-                );
-            } else if (mDoc.contains("title")) {
-                final String mDocTitle = mDoc.getString("title");
-                Log.d(TAG, "mDoc is title (" + mDocTitle + ")");
-
-                // Recycler view
-                final RecyclerView recycler = new RecyclerView(context);
-                recycler.setNestedScrollingEnabled(true);
-                setDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
-                final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
-
-                // Recycler item
-                mItem = new QuestDetailsItemRecycler(
-                        recycler
-                );
-
-                // Next section
-                final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
-                        new BaseSectionedHeader(mDocTitle),
-                        new ArrayList<>()
-                );
-
-                // Add section
-                adapter.addSection(nextSection);
-
-                // Get collection
-                mDoc.getReference().collection("coll").get()
-                        .addOnCompleteListener(
-                                task -> {
-                                    if (task.isSuccessful()) {
-                                        // Parse inner sections
-                                        parseDetailsSections(
-                                                task.getResult(),
-                                                nextSection,
-                                                parentAdapter,
-                                                context
-                                        );
-                                    }
-                                }
-                        )
-                        .addOnFailureListener(
-                                e -> {
-                                    // TODO: FAILURE
-                                }
-                        );
-            } else {
-                Log.e(TAG, "Unknown doc! (" + mDoc.getId() + ") " + mDoc);
-            }
-
-            if (mItem != null) {
-                Log.d(TAG, "Item " + mItem.getClass().getSimpleName() + " added to section");
-                section.second.add(mItem);
-
-                parentAdapter.notifyDataSetChanged();
-            }
-        }
-
-        Log.d(TAG, "--- Ended parse details sections ---");
-    }
-
-//    static public boolean parseDetailsSections(
-//            QuerySnapshot coll,
-//            int step,
-//            RecyclerView recyclerView,
-//            Class<? extends BaseSectionedAdapter> adapterClass,
-//            Context context,
-//            boolean collapseSections
-//    ) {
-//        boolean result = false;
-//
-//        Log.d(TAG, "Parse step: " + step);
-//
-//        BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
-//
-//        for (DocumentSnapshot mDoc : coll.getDocuments()) {
-//            BaseQuestDetailsItem mItem;
-//
-//            if(mDoc.contains("title")) {
-//                // Section
-//                final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection =
-//                        new Pair<>(
-//                                new BaseSectionedHeader((String) mDoc.get("title")),
-//                                new ArrayList()
-//                        );
-//
-//                final int nextSectionId = adapter.getSectionCount();
-//                adapter.addSection(
-//                        nextSectionId,
-//                        nextSection
-//                );
-//
-//                mDoc.getReference().collection("coll").get().addOnCompleteListener(
-//                        task -> {
-//                            // Create recycler view
-//                            RecyclerView itemRecyclerView = new RecyclerView(context);
-//                            recyclerView.setNestedScrollingEnabled(true);
-//                            setDetailsRecyclerView(itemRecyclerView, adapterClass, context);
-//
-//                            // Recycler item
-//                            QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(
-//                                    itemRecyclerView
-//                            );
-//
-//                            nextSection.second.add(
-//                                    itemRecycler
-//                            );
-//
-//                            parseDetailsSections(
-//                                    coll,
-//                                    step + 1,
-//                                    itemRecyclerView,
-//
-//                            )
-//                        }
-//                ).addOnFailureListener(
-//                        e -> {
-//
-//                        }
-//                );
-//            } else if(mDoc.contains("text")) {
-//
-//            }
-//        }
-//
-//        for (DocumentSnapshot mDoc : coll.getDocuments()) {
-//            Log.d(TAG, "Next doc:"
-//                    + "\n\ttitle: " +
-//                    (mDoc.contains("title")
-//                            ? mDoc.get("title")
-//                            : "unknown")
-//                    + "\n\ttext: " +
-//                    (mDoc.contains("text")
-//                            ? mDoc.get("text")
-//                            : "unknown"));
-//
-//            if (mDoc.contains("title")) {
-//                // Header
-//                BaseSectionedHeader header = new BaseSectionedHeader((String) mDoc.get("title"));
-//
-//                if (mDoc.contains("text")) {
-//                    // Text item
-//                    BaseQuestDetailsItem item = new QuestDetailsItemText((String) mDoc.get("text"));
-//
-//                    // Add section
-//                    if (mDoc.contains("first") &&
-//                            mDoc.getBoolean("first").equals(Boolean.TRUE)) {
-//                        Log.d(TAG, "Adding at first");
-//                        adapter.addSection(
-//                                0,
-//                                header,
-//                                new ArrayList<BaseQuestDetailsItem>() {{
-//                                    add(item);
-//                                }}
-//                        );
-//                    } else {
-//                        adapter.addSection(
-//                                header,
-//                                new ArrayList<BaseQuestDetailsItem>() {{
-//                                    add(item);
-//                                }}
-//                        );
-//                    }
-//                    adapter.notifyDataSetChanged();
-//
-//                    result = true;
-//                } else mDoc.getReference().collection("sub").get().addOnSuccessListener(
-//                        queryDocumentSnapshots -> {
-//                            // Create recycler view
-//                            RecyclerView itemRecyclerView = new RecyclerView(context);
-//                            recyclerView.setNestedScrollingEnabled(true);
-//                            setDetailsRecyclerView(itemRecyclerView, adapterClass, context);
-//
-//                            parseDetailsSections(
-//                                    queryDocumentSnapshots,
-//                                    step + 1,
-//                                    itemRecyclerView,
-//                                    adapterClass,
-//                                    context,
-//                                    collapseSections
-//                            );
-//
-//                            // Recycler
-//                            adapter.addSection(
-//                                    header,
-//                                    new ArrayList<BaseQuestDetailsItem>() {{
-//                                        add(new QuestDetailsItemRecycler(itemRecyclerView));
-//                                    }}
-//                            );
-//                            adapter.notifyDataSetChanged();
-//                        }
-//                );
-//            }
-//        }
-//
-//        // Collapse all
-//        if (collapseSections)
-//            if (step != 0)
-//                adapter.collapseAllSections();
-//
-//        // Update adapter
-//        recyclerView.setAdapter(adapter);
-//
-//        return result;
-//    }
 
     private void detailsError(String errStr) {
         // Hide details and show errors
