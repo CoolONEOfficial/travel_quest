@@ -1,7 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,11 +8,11 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -25,12 +24,16 @@ import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.ViewById;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddPlaceActivity_;
@@ -39,74 +42,145 @@ import ru.coolone.travelquest.ui.activities.MainActivity;
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
 
+@EFragment
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
 
-    RecyclerView detailsRecyclerView;
-    Button detailsAddButton;
+    // Arguments
+    public enum ArgKeys {
+        TITLE("title"),
+        PHONE("phone"),
+        URL("url"),
+        RATING("rating"),
+        TYPES("types"),
+        PLACE_ID("placeId");
+
+        private final String val;
+
+        ArgKeys(String val) {
+            this.val = val;
+        }
+
+        @Override
+        public String toString() {
+            return val;
+        }
+    }
 
     private FragmentListener fragmentListener;
 
+    @ViewById(R.id.details_details_recycler)
+    RecyclerView detailsRecyclerView;
+
+    @ViewById(R.id.details_details_add_button)
+    Button detailsAddButton;
+
+    @FragmentArg
     @Getter
-    private String title;
+    String title;
+    @ViewById(R.id.details_title)
+    TextView titleView;
 
+    @FragmentArg
     @Getter
-    private String placeId;
+    String placeId;
 
+    @FragmentArg
     @Getter
-    private String phone;
+    String phone;
+    @ViewById(R.id.details_phone)
+    TextView phoneView;
 
+    @FragmentArg
     @Getter
-    private String url;
+    String url;
+    @ViewById(R.id.details_url)
+    TextView urlView;
 
+    @FragmentArg
     @Getter
-    private float rating;
+    float rating;
+    @ViewById(R.id.details_rating)
+    TextView ratingView;
+    @ViewById(R.id.details_rating_star)
+    TextView ratingStarView;
 
+    @FragmentArg
     @Getter
-    private String[] types;
+    String[] types;
+    @ViewById(R.id.details_types)
+    TextView typesView;
 
-    private SparseArray<View> viewArr = new SparseArray<>();
+    @ViewById(R.id.details_bottom)
+    LinearLayout bottom;
+    @ViewById(R.id.details_bottom_delimiter)
+    View bottomDelimiter;
 
-    public QuestDetailsFragment() {
-        // Required empty public constructor
+    @ViewById(R.id.details_details_unknown_text)
+    TextView detailsUnknownText;
+
+    @ViewById(R.id.details_details_unknown_text_primary)
+    TextView detailsUnknownTextPrimary;
+
+    @ViewById(R.id.details_details_unknown_text_smile)
+    ImageView detailsUnknownTextSmile;
+
+    @ViewById(R.id.details_photos_layout)
+    LinearLayout photosLayout;
+
+    @ViewById(R.id.details_photos_scroll)
+    HorizontalScrollView photosScroll;
+
+    @AfterViews
+    void afterViews() {
+        // Recycle view
+        detailsRecyclerView.setNestedScrollingEnabled(false);
+        setDetailsRecyclerView(
+                detailsRecyclerView,
+                QuestDetailsAdapter.class,
+                getContext()
+        );
+
+        // Add details button
+        detailsAddButton.setOnClickListener(
+                // To add place activity
+                v -> AddPlaceActivity_.intent(getContext())
+                        .placeId(placeId)
+                        .start()
+        );
+
+        refresh();
+    }
+
+    void refresh() {
+        setTitle(title);
+        setPlaceId(placeId);
+        setPhone(phone);
+        setUrl(url);
+        setRating(rating);
+        setTypes(types);
+    }
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
+        View view = inflater.inflate(R.layout.fragment_quest_details,
+                container,
+                false);
+
+        // Call listener
+        fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
+
+        return view;
     }
 
     /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param title   Title.
-     * @param phone   Phone number.
-     * @param url     Website url.
-     * @param rating  Rating.
-     * @param types   Types array
-     * @param placeId Place id
-     * @return A new instance of fragment QuestDetailsFragment.
+     * @param place   Google maps place with details data
+     * @param context @{@link Context}
+     * @return @{@link QuestDetailsFragment}
      */
-    public static QuestDetailsFragment newInstance(
-            String title,
-            String phone,
-            String url,
-            float rating,
-            String[] types,
-            String placeId) {
-        // Create quest
-        QuestDetailsFragment fragment = new QuestDetailsFragment();
-
-        // Put arguments
-        Bundle args = new Bundle();
-        args.putString(ArgKeys.TITLE.toString(), title);
-        args.putString(ArgKeys.PLACE_ID.toString(), placeId);
-        args.putString(ArgKeys.PHONE.toString(), phone);
-        args.putString(ArgKeys.URL.toString(), url);
-        args.putFloat(ArgKeys.RATING.toString(), rating);
-        args.putStringArray(ArgKeys.TYPES.toString(), types);
-        fragment.setArguments(args);
-
-        return fragment;
-    }
-
     public static QuestDetailsFragment newInstance(com.google.android.gms.location.places.Place place, Context context) {
         // Convert List<Place types ids> to List<Place types>
         List<Integer> placeTypeIds = place.getPlaceTypes();
@@ -118,16 +192,16 @@ public class QuestDetailsFragment extends Fragment {
                 placeTypes.add(mPlaceType);
         }
 
-        return newInstance(
-                place.getName().toString(),
-                place.getPhoneNumber().toString(),
-                place.getWebsiteUri() != null
+        return QuestDetailsFragment_.builder()
+                .title(place.getName().toString())
+                .phone(place.getPhoneNumber().toString())
+                .url(place.getWebsiteUri() != null
                         ? place.getWebsiteUri().toString()
-                        : null,
-                place.getRating(),
-                placeTypes.toArray(new String[0]),
-                place.getId()
-        );
+                        : null)
+                .rating(place.getRating())
+                .types(placeTypes.toArray(new String[0]))
+                .placeId(place.getId())
+                .build();
     }
 
     private static String placeTypeIdToString(Context parent, Integer placeTypeId) {
@@ -196,203 +270,23 @@ public class QuestDetailsFragment extends Fragment {
         return placeTypeStr;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
-
-        if (args != null) {
-            // Get arguments
-            title = args.getString(ArgKeys.TITLE.toString());
-            placeId = args.getString(ArgKeys.PLACE_ID.toString());
-            phone = args.getString(ArgKeys.PHONE.toString());
-            url = args.getString(ArgKeys.URL.toString());
-            rating = args.getFloat(ArgKeys.RATING.toString());
-            types = args.getStringArray(ArgKeys.TYPES.toString());
-        }
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_quest_details,
-                container,
-                false);
-
-        // Get views
-        for (int mViewId : new int[]{
-                R.id.layout_details_header,
-                R.id.layout_details_body,
-                R.id.layout_details,
-                R.id.details_title,
-                R.id.details_details_recycler,
-                R.id.details_details_add_button,
-                R.id.details_details_unknown_text,
-                R.id.details_details_unknown_text_primary,
-                R.id.details_details_unknown_text_smile,
-                R.id.details_phone,
-                R.id.details_url,
-                R.id.details_types,
-                R.id.details_rating,
-                R.id.details_rating_star,
-                R.id.details_photos_layout,
-                R.id.details_photos_scroll,
-                R.id.details_bottom,
-                R.id.details_bottom_delimiter
-        }) {
-            viewArr.put(mViewId,
-                    view.findViewById(mViewId));
-        }
-
-        // Recycle view
-        detailsRecyclerView = (RecyclerView) viewArr.get(R.id.details_details_recycler);
-        detailsRecyclerView.setNestedScrollingEnabled(false);
-        setDetailsRecyclerView(
-                detailsRecyclerView,
-                QuestDetailsAdapter.class,
-                getContext()
-        );
-
-        // Add details button
-        detailsAddButton = (Button) viewArr.get(R.id.details_details_add_button);
-        detailsAddButton.setOnClickListener(
-                v -> {
-                    Intent intent = new Intent(getActivity(), AddPlaceActivity_.class);
-                    intent.putExtra(AddPlaceActivity_.ArgKeys.PLACE_ID.toString(), placeId);
-                    startActivity(intent);
-                }
-        );
-
-        // Refresh views
-        refresh();
-
-        // Call listener
-        fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
-
-        return view;
-    }
-
-    private void refreshTitle() {
-        if (title != null) {
-            ((TextView) viewArr.get(R.id.details_title)).setText(title);
-        }
-    }
-
-    private void refreshPhone() {
-        // Set phone
-        if (phone != null) {
-            ((TextView) viewArr.get(R.id.details_phone)).setText(phone);
-        }
-
-        // Set visibility
-        boolean visibility = (phone != null);
-        viewArr.get(R.id.details_phone).setVisibility(
-                visibility
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        // Set delimiter visibility
-        refreshBottomInfoVisibility();
-    }
-
     private void refreshBottomInfoVisibility() {
         setBottomInfoVisibility(
-                (((TextView) viewArr.get(R.id.details_url)).getText().length() > 0 ||
-                        ((TextView) viewArr.get(R.id.details_phone)).getText().length() > 0)
+                (urlView.getText().length() > 0 ||
+                        phoneView.getText().length() > 0)
                         ? View.VISIBLE
                         : View.GONE
         );
     }
 
     private void setBottomInfoVisibility(int visibility) {
-        viewArr.get(R.id.details_bottom).setVisibility(visibility);
-        viewArr.get(R.id.details_bottom_delimiter).setVisibility(visibility);
-    }
-
-    private void refreshTypes() {
-        // - Get type string -
-        String typeStr = TextUtils.join(", ", types);
-
-        // - Set type string -
-
-        // Set visibility
-        int visibility = (typeStr == null || typeStr.isEmpty())
-                ? View.GONE
-                : View.VISIBLE;
-        viewArr.get(R.id.details_types).setVisibility(visibility);
-
-        // Set text
-        ((TextView) viewArr.get(R.id.details_types)).setText(typeStr);
-    }
-
-    private void refreshUrl() {
-        // Set url
-        if (url != null)
-            ((TextView) viewArr.get(R.id.details_url)).setText(url);
-
-        // Set url visibility
-        boolean visibility = (url != null);
-        viewArr.get(R.id.details_url).setVisibility(
-                visibility
-                        ? View.VISIBLE
-                        : View.GONE
-        );
-
-        // Set delimiter visibility
-        refreshBottomInfoVisibility();
-    }
-
-    private void refreshRating() {
-        // Set rating
-        if (rating != -1) {
-            ((TextView) viewArr.get(R.id.details_rating))
-                    .setText(new DecimalFormat("#.#").format(rating));
-        }
-
-        // Set rating visibility
-        int visibility = (rating == -1
-                ? View.GONE
-                : View.VISIBLE
-        );
-        setRatingVisibility(visibility);
+        bottom.setVisibility(visibility);
+        bottomDelimiter.setVisibility(visibility);
     }
 
     private void setRatingVisibility(int visibility) {
-        viewArr.get(R.id.details_rating).setVisibility(visibility);
-        viewArr.get(R.id.details_rating_star).setVisibility(visibility);
-    }
-
-    private void refreshDetails() {
-        if (placeId != null) {
-            FirebaseFirestore db = FirebaseFirestore
-                    .getInstance();
-
-            val collRef =
-                    db
-                            .collection(MainActivity.getLocale(getContext()).lang)
-                            .document("quests")
-                            .collection(placeId);
-
-            // Parse details
-
-            // Get doc
-            collRef.get().addOnSuccessListener(
-                    task -> {
-                        // Show details
-                        setDescriptionVisibility(View.VISIBLE);
-
-                        // Parse details
-                        if (!parseDetails(
-                                task,
-                                (RecyclerView) viewArr.get(R.id.details_details_recycler),
-                                getContext()
-                        ))
-                            detailsError("Docs not valid or empty");
-                    })
-                    .addOnFailureListener(this::detailsError);
-        }
+        ratingView.setVisibility(visibility);
+        ratingStarView.setVisibility(visibility);
     }
 
     private void setDescriptionVisibility(int visibility) {
@@ -401,17 +295,13 @@ public class QuestDetailsFragment extends Fragment {
                 : View.VISIBLE);
 
         // Description visibility
-        viewArr.get(R.id.details_details_recycler)
-                .setVisibility(visibility);
+        detailsRecyclerView.setVisibility(visibility);
 
         // Error visibility
-        viewArr.get(R.id.details_details_unknown_text)
-                .setVisibility(errorVisibility);
-        viewArr.get(R.id.details_details_unknown_text_primary)
-                .setVisibility(errorVisibility);
-        ((TextView) viewArr.get(R.id.details_details_unknown_text_primary)).setText("");
-        viewArr.get(R.id.details_details_unknown_text_smile)
-                .setVisibility(errorVisibility);
+        detailsUnknownText.setVisibility(errorVisibility);
+        detailsUnknownTextPrimary.setVisibility(errorVisibility);
+        detailsUnknownTextPrimary.setText("");
+        detailsUnknownTextSmile.setVisibility(errorVisibility);
     }
 
     private void detailsError(String errStr) {
@@ -419,16 +309,11 @@ public class QuestDetailsFragment extends Fragment {
         setDescriptionVisibility(View.GONE);
 
         // Set error text
-        ((TextView) viewArr.get(R.id.details_details_unknown_text_primary))
-                .setText(errStr);
+        detailsUnknownTextPrimary.setText(errStr);
     }
 
     private void detailsError(Exception e) {
         detailsError(e.getLocalizedMessage());
-    }
-
-    private void refreshPhotos() {
-        new PhotoTask(this).execute(placeId);
     }
 
     private void setDescriptionPhotoImageView(ImageView imageView) {
@@ -442,50 +327,109 @@ public class QuestDetailsFragment extends Fragment {
     }
 
     private void setPhotosVisibility(int visibility) {
-        viewArr.get(R.id.details_photos_layout).setVisibility(visibility);
-        viewArr.get(R.id.details_photos_scroll).setVisibility(visibility);
-    }
-
-    private void refresh() {
-        // Refresh all
-        refreshTitle();
-        refreshPhone();
-        refreshUrl();
-        refreshRating();
-        refreshTypes();
-        refreshDetails();
-        refreshPhotos();
+        photosLayout.setVisibility(visibility);
+        photosScroll.setVisibility(visibility);
     }
 
     public void setTitle(String title) {
         this.title = title;
-        refreshTitle();
+        titleView.setText(title);
     }
 
     public void setPhone(String phone) {
         this.phone = phone;
-        refreshPhone();
+        phoneView.setText(phone);
+
+        // Set visibility
+        boolean visibility = (phone != null);
+        phoneView.setVisibility(
+                visibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+
+        // Set delimiter visibility
+        refreshBottomInfoVisibility();
     }
 
     public void setUrl(String url) {
         this.url = url;
-        refreshUrl();
+        urlView.setText(url);
+
+        // Set url visibility
+        boolean visibility = (url != null);
+        urlView.setVisibility(
+                visibility
+                        ? View.VISIBLE
+                        : View.GONE
+        );
+
+        // Set delimiter visibility
+        refreshBottomInfoVisibility();
     }
 
     public void setRating(float rating) {
         this.rating = rating;
-        refreshRating();
+        ratingView.setText(new DecimalFormat("#.#").format(rating));
+
+        // Set rating visibility
+        int visibility = (rating == -1
+                ? View.GONE
+                : View.VISIBLE
+        );
+        setRatingVisibility(visibility);
     }
 
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
-        refreshDetails();
-        refreshPhotos();
+
+        FirebaseFirestore db = FirebaseFirestore
+                .getInstance();
+
+        val collRef =
+                db
+                        .collection(MainActivity.getLocale(getContext()).lang)
+                        .document("quests")
+                        .collection(placeId);
+
+        // Parse details
+
+        // Get doc
+        collRef.get().addOnSuccessListener(
+                task -> {
+                    // Show details
+                    setDescriptionVisibility(View.VISIBLE);
+
+                    // Parse details
+                    if (!parseDetails(
+                            task,
+                            detailsRecyclerView,
+                            getContext()
+                    ))
+                        detailsError("Docs not valid or empty");
+                })
+                .addOnFailureListener(this::detailsError);
+
+        // Photos
+        new PhotoTask(this).execute(placeId);
     }
 
     public void setTypes(String[] types) {
         this.types = types;
-        refreshTypes();
+
+        // - Get type string -
+        String typeStr = TextUtils.join(", ", types);
+
+        // - Set type string -
+
+        // Set visibility
+        int visibility = (typeStr == null || typeStr.isEmpty())
+                ? View.GONE
+                : View.VISIBLE;
+        typesView.setVisibility(visibility);
+
+        // Set text
+        typesView.setText(typeStr);
     }
 
     @Override
@@ -500,27 +444,6 @@ public class QuestDetailsFragment extends Fragment {
 
     public void setFragmentListener(FragmentListener fragmentListener) {
         this.fragmentListener = fragmentListener;
-    }
-
-    // Arguments
-    public enum ArgKeys {
-        TITLE("title"),
-        PHONE("phone"),
-        URL("url"),
-        RATING("rating"),
-        TYPES("types"),
-        PLACE_ID("place_id");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return val;
-        }
     }
 
     public interface FragmentListener {
@@ -577,9 +500,7 @@ public class QuestDetailsFragment extends Fragment {
                                 .getPhoto(MainActivity.getApiClient())
                                 .setResultCallback(
                                         placePhotoResult -> ((ImageView)
-                                                ((LinearLayout)
-                                                        parent.viewArr.get(R.id.details_photos_layout)
-                                                ).getChildAt(mAttributedPhotoIdFinal)
+                                                parent.photosLayout.getChildAt(mAttributedPhotoIdFinal)
                                         ).setImageBitmap(placePhotoResult.getBitmap())
                                 );
                     }
@@ -611,8 +532,7 @@ public class QuestDetailsFragment extends Fragment {
                 );
 
                 // Add view
-                ((LinearLayout) parent.viewArr.get(R.id.details_photos_layout))
-                        .addView(mPhotoView);
+                parent.photosLayout.addView(mPhotoView);
             }
         }
     }

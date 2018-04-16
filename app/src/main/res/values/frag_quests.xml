@@ -12,7 +12,6 @@
 
     <!-- Photos line height -->
     <dimen name="details_photos_size_anchored">200dp</dimen>
-    <dimen name="details_photos_size_expanded">100dp</dimen>
 
     <!-- Map default zoom -->
     <dimen name="map_zoom">14px</dimen>

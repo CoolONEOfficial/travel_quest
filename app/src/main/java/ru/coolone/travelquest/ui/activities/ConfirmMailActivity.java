@@ -67,9 +67,7 @@ public class ConfirmMailActivity extends AppCompatActivity {
 
     private void onSuccess() {
         // To main activity
-        Intent intent = new Intent(this, MainActivity_.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        MainActivity_.intent(this).start();
         finish();
     }
 
