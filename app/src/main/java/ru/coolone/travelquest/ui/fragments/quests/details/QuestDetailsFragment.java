@@ -23,16 +23,17 @@ import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.activities.AddPlaceActivity;
+import ru.coolone.travelquest.ui.activities.AddPlaceActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
@@ -41,16 +42,30 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 public class QuestDetailsFragment extends Fragment {
 
     static final String TAG = QuestDetailsFragment.class.getSimpleName();
+
     RecyclerView detailsRecyclerView;
     Button detailsAddButton;
+
     private FragmentListener fragmentListener;
 
+    @Getter
     private String title;
+
+    @Getter
     private String placeId;
+
+    @Getter
     private String phone;
+
+    @Getter
     private String url;
+
+    @Getter
     private float rating;
+
+    @Getter
     private String[] types;
+
     private SparseArray<View> viewArr = new SparseArray<>();
 
     public QuestDetailsFragment() {
@@ -243,8 +258,8 @@ public class QuestDetailsFragment extends Fragment {
         detailsAddButton = (Button) viewArr.get(R.id.details_details_add_button);
         detailsAddButton.setOnClickListener(
                 v -> {
-                    Intent intent = new Intent(getActivity(), AddPlaceActivity.class);
-                    intent.putExtra(AddPlaceActivity.ArgKeys.PLACE_ID.toString(), placeId);
+                    Intent intent = new Intent(getActivity(), AddPlaceActivity_.class);
+                    intent.putExtra(AddPlaceActivity_.ArgKeys.PLACE_ID.toString(), placeId);
                     startActivity(intent);
                 }
         );
@@ -354,31 +369,27 @@ public class QuestDetailsFragment extends Fragment {
             FirebaseFirestore db = FirebaseFirestore
                     .getInstance();
 
-            CollectionReference collRef =
+            val collRef =
                     db
-                            .collection(MainActivity.getLocaleStr(getContext()))
+                            .collection(MainActivity.getLocale(getContext()).lang)
                             .document("quests")
                             .collection(placeId);
 
             // Parse details
 
             // Get doc
-            collRef.get().addOnCompleteListener(
+            collRef.get().addOnSuccessListener(
                     task -> {
-                        if (task.isSuccessful()) {
-                            QuerySnapshot coll = task.getResult();
+                        // Show details
+                        setDescriptionVisibility(View.VISIBLE);
 
-                            // Show details
-                            setDescriptionVisibility(View.VISIBLE);
-
-                            // Parse details
-                            if (!parseDetails(
-                                    coll,
-                                    (RecyclerView) viewArr.get(R.id.details_details_recycler),
-                                    getContext()
-                            ))
-                                detailsError("Docs not valid or empty");
-                        } else detailsError("Get document task not successful");
+                        // Parse details
+                        if (!parseDetails(
+                                task,
+                                (RecyclerView) viewArr.get(R.id.details_details_recycler),
+                                getContext()
+                        ))
+                            detailsError("Docs not valid or empty");
                     })
                     .addOnFailureListener(this::detailsError);
         }
@@ -446,17 +457,9 @@ public class QuestDetailsFragment extends Fragment {
         refreshPhotos();
     }
 
-    public String getTitle() {
-        return title;
-    }
-
     public void setTitle(String title) {
         this.title = title;
         refreshTitle();
-    }
-
-    public String getPhone() {
-        return phone;
     }
 
     public void setPhone(String phone) {
@@ -464,17 +467,9 @@ public class QuestDetailsFragment extends Fragment {
         refreshPhone();
     }
 
-    public String getUrl() {
-        return url;
-    }
-
     public void setUrl(String url) {
         this.url = url;
         refreshUrl();
-    }
-
-    public float getRating() {
-        return rating;
     }
 
     public void setRating(float rating) {
@@ -482,18 +477,10 @@ public class QuestDetailsFragment extends Fragment {
         refreshRating();
     }
 
-    public String getPlaceId() {
-        return placeId;
-    }
-
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
         refreshDetails();
         refreshPhotos();
-    }
-
-    public String[] getTypes() {
-        return types;
     }
 
     public void setTypes(String[] types) {

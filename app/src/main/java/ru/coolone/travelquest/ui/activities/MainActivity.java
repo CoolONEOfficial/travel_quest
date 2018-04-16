@@ -2,6 +2,7 @@ package ru.coolone.travelquest.ui.activities;
 
 import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -17,7 +18,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.SparseArrayCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
@@ -43,26 +43,27 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
 import ru.coolone.travelquest.ui.fragments.quests.QuestsFragment;
 import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 
+@SuppressLint("Registered")
+@EActivity
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
         QuestsFragment.SlidingUpPanelListener,
         QuestsFragment.AutocompleteTextViewGetter {
-
-    public static final String[] supportLangs = {
-            "US",
-            "RU"
-    };
     static final String TAG = MainActivity.class.getSimpleName();
     static final int NAV_MENU_DEFAULT_ID = R.id.nav_quests;
 
@@ -79,16 +80,142 @@ public class MainActivity extends AppCompatActivity implements
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
 
     // Drawer layout
+    @ViewById(R.id.drawer_layout)
     DrawerLayout drawer;
 
+    // Navigation view
+    @ViewById(R.id.nav_view)
+    NavigationView navigationView;
+
     // Toolbar
+    @ViewById(R.id.app_bar)
     Toolbar toolbar;
+    @ViewById(R.id.app_bar_main)
     View toolbarMain;
+    @ViewById(R.id.app_bar_title)
     TextView toolbarTitle;
+    @ViewById(R.id.app_bar_layout)
     FrameLayout toolbarLayout;
 
     // Autocomplete place
     PlacesAutocompleteTextView autocompleteTextView;
+
+    @AfterViews
+    void afterViews() {
+        // Toolbar
+        setSupportActionBar(toolbar);
+
+        // Drawer layout
+        toggle = new ActionBarDrawerToggle(
+                this,
+                drawer, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        // Navigation view
+        navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.d(TAG, "Current locale: "
+                + getLocale(this));
+        setTheme(R.style.AppTheme_NoActionBar);
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        // Strict mode
+        StrictMode.setThreadPolicy(
+                new StrictMode.ThreadPolicy
+                        .Builder()
+                        .detectAll()
+                        .penaltyLog()
+                        .build());
+        StrictMode.setVmPolicy(
+                new StrictMode.VmPolicy
+                        .Builder()
+                        .detectLeakedSqlLiteObjects()
+                        .detectLeakedClosableObjects()
+                        .penaltyLog()
+                        .build());
+
+
+        // Switch last login method
+        val user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            if (!user.isEmailVerified() && !user.isAnonymous())
+                // To confirm mail screen
+                toActivity(ConfirmMailActivity.class);
+        } else {
+            showAuthDialog();
+        }
+
+        // Get settings
+        settings = PreferenceManager.getDefaultSharedPreferences(this);
+
+        // Google api client
+        apiClient = new GoogleApiClient
+                .Builder(this)
+                .addApi(Places.GEO_DATA_API)
+                .addApi(Places.PLACE_DETECTION_API)
+                .enableAutoManage(this, this)
+                .build();
+
+        // Autocomplete place
+        autocompleteTextView = new PlacesAutocompleteTextView(
+                this,
+                getString(R.string.GOOGLE_MAPS_API_KEY)
+        );
+        autocompleteTextView.setLocationBiasEnabled(true);
+        autocompleteTextView.setRadiusMeters(10000L);
+        autocompleteTextView.setResultType(AutocompleteResultType.GEOCODE);
+        autocompleteTextView.setLanguageCode("ru");
+        autocompleteTextView.setHint(getString(R.string.place_autocomplete_hint));
+        Location targetLocation = new Location("");
+        targetLocation.setLatitude(56.326887);
+        targetLocation.setLongitude(44.005986);
+        autocompleteTextView.setCurrentLocation(targetLocation);
+        autocompleteTextView.setLocationBiasEnabled(true);
+        autocompleteTextView.setInputType(InputType.TYPE_CLASS_TEXT);
+        autocompleteTextView.setMaxLines(1);
+        autocompleteTextView.addTextChangedListener(
+                new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence s, int start, int before, int count) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable s) {
+                        autocompleteTextView.showClearButton(s.length() > 0);
+                    }
+                }
+        );
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (settings.getBoolean("firstrun", true)) {
+            settings.edit().putBoolean("firstrun", false).apply();
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(getString(R.string.alert_greetings_title))
+                    .setMessage(getString(R.string.alert_greetings_text))
+                    .setCancelable(false)
+                    .setNegativeButton("OK",
+                            (dialog, id) -> dialog.cancel());
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
 
     private void showAuthDialog() {
         AlertDialog.Builder ad = new AlertDialog.Builder(this);
@@ -124,9 +251,6 @@ public class MainActivity extends AppCompatActivity implements
         ad.show();
     }
 
-    public MainActivity() {
-    }
-
     static public int getAppHeight(Activity activity) {
         return activity.findViewById(R.id.fragment_container).getHeight();
     }
@@ -139,7 +263,7 @@ public class MainActivity extends AppCompatActivity implements
         return activity.findViewById(R.id.app_bar).getHeight();
     }
 
-    public static String getLocaleStr(Context context) {
+    public static SupportLang getLocale(Context context) {
         // Get locale
         String localeStr;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N)
@@ -148,16 +272,16 @@ public class MainActivity extends AppCompatActivity implements
             localeStr = context.getResources().getConfiguration().locale.getCountry();
 
         // Check support
-        for (String mLocale : supportLangs) {
+        for (val mLocale : SupportLang.values()) {
             Log.d(TAG, "Current locale: " + localeStr
                     + "\n\tmLocale: " + mLocale);
-            if (localeStr.equals(mLocale)) {
+            if (localeStr.equals(mLocale.lang)) {
                 Log.d(TAG, "Locale is supported!");
-                return localeStr;
+                return mLocale;
             }
         }
 
-        return supportLangs[0];
+        return SupportLang.values()[0];
     }
 
     public static GoogleApiClient getApiClient() {
@@ -175,24 +299,6 @@ public class MainActivity extends AppCompatActivity implements
         finishAffinity();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (settings.getBoolean("firstrun", true)) {
-            settings.edit().putBoolean("firstrun", false).apply();
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(getString(R.string.alert_greetings_title))
-                    .setMessage(getString(R.string.alert_greetings_text))
-                    .setCancelable(false)
-                    .setNegativeButton("OK",
-                            (dialog, id) -> dialog.cancel());
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
-    }
-
     private void toActivity(Class<? extends Activity> activity) {
         // Set intent
         Intent intent = new Intent(this, activity);
@@ -201,109 +307,6 @@ public class MainActivity extends AppCompatActivity implements
         // Go to target activity
         startActivity(intent);
         finish();
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        Log.d(TAG, "Current locale: "
-                + getLocaleStr(this));
-
-        // Strict mode
-        StrictMode.setThreadPolicy(
-                new StrictMode.ThreadPolicy
-                        .Builder()
-                        .detectAll()
-                        .penaltyLog()
-                        .build());
-        StrictMode.setVmPolicy(
-                new StrictMode.VmPolicy
-                        .Builder()
-                        .detectLeakedSqlLiteObjects()
-                        .detectLeakedClosableObjects()
-                        .penaltyLog()
-                        .build());
-
-
-        // Switch last login method
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            if (!user.isEmailVerified() && !user.isAnonymous())
-                // To confirm mail screen
-                toActivity(ConfirmMailActivity.class);
-        } else {
-            showAuthDialog();
-        }
-
-        setTheme(R.style.AppTheme_NoActionBar);
-
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        // Google api client
-        apiClient = new GoogleApiClient
-                .Builder(this)
-                .addApi(Places.GEO_DATA_API)
-                .addApi(Places.PLACE_DETECTION_API)
-                .enableAutoManage(this, this)
-                .build();
-
-        // Get settings
-        settings = PreferenceManager.getDefaultSharedPreferences(this);
-
-        // Toolbar
-        toolbar = findViewById(R.id.app_bar);
-        setSupportActionBar(toolbar);
-        toolbarMain = findViewById(R.id.app_bar_main);
-        toolbarTitle = findViewById(R.id.app_bar_title);
-        toolbarLayout = findViewById(R.id.app_bar_layout);
-
-        // Drawer layout
-        drawer = findViewById(R.id.drawer_layout);
-        toggle = new ActionBarDrawerToggle(
-                this,
-                drawer, toolbar,
-                R.string.navigation_drawer_open,
-                R.string.navigation_drawer_close);
-        drawer.addDrawerListener(toggle);
-        toggle.syncState();
-
-        // Navigation view
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        // Autocomplete place
-        autocompleteTextView = new PlacesAutocompleteTextView(
-                this,
-                getString(R.string.GOOGLE_MAPS_API_KEY)
-        );
-        autocompleteTextView.setLocationBiasEnabled(true);
-        autocompleteTextView.setRadiusMeters(10000L);
-        autocompleteTextView.setResultType(AutocompleteResultType.GEOCODE);
-        autocompleteTextView.setLanguageCode("ru");
-        autocompleteTextView.setHint(getString(R.string.place_autocomplete_hint));
-        Location targetLocation = new Location("");
-        targetLocation.setLatitude(56.326887);
-        targetLocation.setLongitude(44.005986);
-        autocompleteTextView.setCurrentLocation(targetLocation);
-        autocompleteTextView.setLocationBiasEnabled(true);
-        autocompleteTextView.setInputType(InputType.TYPE_CLASS_TEXT);
-        autocompleteTextView.setMaxLines(1);
-        autocompleteTextView.addTextChangedListener(
-                new TextWatcher() {
-                    @Override
-                    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    }
-
-                    @Override
-                    public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    }
-
-                    @Override
-                    public void afterTextChanged(Editable s) {
-                        autocompleteTextView.showClearButton(s.length() > 0);
-                    }
-                }
-        );
     }
 
     private void setToolbarColors(int color) {
@@ -372,7 +375,7 @@ public class MainActivity extends AppCompatActivity implements
             );
 
             // Elevation
-            StateListAnimator stateListAnimator = new StateListAnimator();
+            val stateListAnimator = new StateListAnimator();
             stateListAnimator.addState(
                     new int[0],
                     ObjectAnimator.ofFloat(
@@ -419,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements
             showAuthDialog();
         } else {
             // To fragment
-            FragmentTransaction fragTrans = getSupportFragmentManager().beginTransaction();
+            val fragTrans = getSupportFragmentManager().beginTransaction();
             FragmentId fragId = null;
             switch (id) {
                 case R.id.nav_quests:
@@ -445,8 +448,8 @@ public class MainActivity extends AppCompatActivity implements
             );
 
             // Colors
-            final String mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
-            final boolean mapBlack = "night".equalsIgnoreCase(mapStyle)
+            val mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
+            val mapBlack = "night".equalsIgnoreCase(mapStyle)
                     || "solarized".equalsIgnoreCase(mapStyle);
             setToolbarColors(
                     id == R.id.nav_quests
@@ -478,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements
 
             // Autocomplete place text
             if (id == R.id.nav_quests) {
-                final FrameLayout.LayoutParams autocompleteTextViewParams = new FrameLayout.LayoutParams(
+                val autocompleteTextViewParams = new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                 );
@@ -494,7 +497,7 @@ public class MainActivity extends AppCompatActivity implements
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
+        val id = item.getItemId();
 
         onNavigationItemSelected(id);
 
@@ -502,7 +505,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     private void setToolbarAlpha(float alphaF) {
-        int alpha = (int) (alphaF * 255);
+        val alpha = (int) (alphaF * 255);
         autocompleteTextView.setAlpha(alphaF);
         toggle.getDrawerArrowDrawable().setAlpha(alpha);
         toolbar.setVisibility(
@@ -543,10 +546,33 @@ public class MainActivity extends AppCompatActivity implements
         return autocompleteTextView;
     }
 
-    // Fragments id
+    /**
+     * Ids for @{@link Fragment}s
+     */
     enum FragmentId {
         ABOUT,
         QUESTS,
         SETTINGS
+    }
+
+    /**
+     * Languages info
+     */
+    public enum SupportLang {
+        RUSSIAN("RU", R.string.add_place_tab_russian_title),
+        ENGLISH("US", R.string.add_place_tab_english_title);
+
+        public final String lang;
+        public final int titleId;
+
+        SupportLang(String lang, int titleId) {
+            this.lang = lang;
+            this.titleId = titleId;
+        }
+
+        @Override
+        public String toString() {
+            return lang;
+        }
     }
 }

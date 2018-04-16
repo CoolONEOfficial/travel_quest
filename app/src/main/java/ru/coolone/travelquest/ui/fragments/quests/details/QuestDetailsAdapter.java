@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
@@ -125,10 +126,10 @@ public class QuestDetailsAdapter
 
         @Override
         public void onClick(View view) {
-            int section = getRelativePosition().section();
+            val section = getRelativePosition().section();
             toggleSectionExpanded(section);
             if (headerClickListener != null) {
-                BaseSectionedHeader header = getHeader(section);
+                val header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onClick(header, this, section);
                 }
@@ -138,8 +139,8 @@ public class QuestDetailsAdapter
         @Override
         public boolean onLongClick(View view) {
             if (headerClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseSectionedHeader header = getHeader(section);
+                val section = getRelativePosition().section();
+                val header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onClick(header, this, section);
                 }
@@ -176,10 +177,9 @@ public class QuestDetailsAdapter
         @Override
         public void onClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onClick(item, this, section);
+                    itemClickListener.onClick(item, this, getRelativePosition().section());
                 }
             }
         }
@@ -187,10 +187,9 @@ public class QuestDetailsAdapter
         @Override
         public boolean onLongClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onLongClick(item, this, section);
+                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
                 }
                 return true;
             }
@@ -229,10 +228,9 @@ public class QuestDetailsAdapter
         @Override
         public void onClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onClick(item, this, section);
+                    itemClickListener.onClick(item, this,  getRelativePosition().section());
                 }
             }
         }
@@ -240,10 +238,9 @@ public class QuestDetailsAdapter
         @Override
         public boolean onLongClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onLongClick(item, this, section);
+                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
                 }
                 return true;
             }

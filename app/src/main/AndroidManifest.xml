@@ -21,9 +21,8 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="${googleMapApiKey}" />
-
         <activity
-            android:name=".ui.activities.MainActivity"
+            android:name=".ui.activities.MainActivity_"
             android:theme="@style/AppTheme.NoActionBar.Launcher">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -42,10 +41,9 @@
             android:theme="@style/AppTheme"
             android:launchMode="singleTask" />
         <activity
-            android:name=".ui.activities.AddPlaceActivity"
+            android:name=".ui.activities.AddPlaceActivity_"
             android:label="@string/title_activity_add_place"
-            android:theme="@style/AppTheme"
-            android:parentActivityName=".ui.activities.MainActivity" />
+            android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.activities.ConfirmMailActivity"
             android:label="@string/title_activity_confirm_mail"

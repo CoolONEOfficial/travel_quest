@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
@@ -36,7 +37,6 @@ public class FirebaseMethods {
     private static void onStartTask() {
         startedTasks++;
     }
-
     private static void onEndTask(SerializeDetailsListener listener) {
         startedTasks--;
 
@@ -68,16 +68,17 @@ public class FirebaseMethods {
     static private void serializeDetails(
             CollectionReference coll,
             RecyclerView recyclerView,
-            int id,
+            int startId,
             SerializeDetailsListener listener
     ) {
         Log.d(TAG, "--- Started serialize details ---");
 
-        BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
+        val adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
 
         Log.d(TAG, "Starting sections for");
         for (int mSectionId = 0; mSectionId < adapter.getSectionCount(); mSectionId++) {
-            final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> mSection = adapter.getSection(mSectionId);
+            val mSection = (Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>)
+                    adapter.getSection(mSectionId);
 
             if (mSection.first.getTitle().isEmpty())
                 continue;
@@ -87,7 +88,7 @@ public class FirebaseMethods {
                     + '\n' + " title: " + mSection.first.getTitle()
                     + '\n' + " size: " + mSection.second.size());
 
-            final DocumentReference mDoc = coll.document(Integer.toString(mSectionId) + id);
+            val mDoc = coll.document(Integer.toString(mSectionId) + startId);
 
             onStartTask();
             mDoc.set(
@@ -106,11 +107,11 @@ public class FirebaseMethods {
                     task -> onEndTask(listener)
             );
 
-            CollectionReference nextColl = mDoc.collection("coll");
+            val nextColl = mDoc.collection("coll");
 
             Log.d(TAG, "Starting items for");
             for (int mItemId = 0; mItemId < mSection.second.size(); mItemId++) {
-                BaseQuestDetailsItem mItem = mSection.second.get(mItemId);
+                val mItem = mSection.second.get(mItemId);
                 Log.d(TAG, "mItem"
                         + '\n' + " class: " + mItem.getClass().getSimpleName()
                 );
@@ -312,13 +313,13 @@ public class FirebaseMethods {
         recyclerView.setHasFixedSize(false);
 
         // Layout manager
-        RecyclerView.LayoutManager detailsLayoutManager = new LinearLayoutManager(context);
+        val detailsLayoutManager = new LinearLayoutManager(context);
         detailsLayoutManager.offsetChildrenHorizontal((int) context.getResources().getDimension(R.dimen.content_inset));
         recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter
         try {
-            BaseSectionedAdapter adapter =
+            val adapter = (BaseSectionedAdapter)
                     (recyclerView.getAdapter() != null
                             ? (BaseSectionedAdapter) recyclerView.getAdapter() :
                             (adapterClass == QuestDetailsAddAdapter.class)

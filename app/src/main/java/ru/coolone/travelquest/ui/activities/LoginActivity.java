@@ -11,7 +11,6 @@ import ru.coolone.travelquest.R;
  */
 public class LoginActivity
         extends AbstractAuthActivity {
-
     static final String TAG = LoginActivity.class.getSimpleName();
 
     @Override

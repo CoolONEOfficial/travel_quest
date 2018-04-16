@@ -10,12 +10,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 
+import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -47,25 +48,7 @@ public class QuestDetailsAddFragment extends Fragment {
         }
     }
 
-    public enum Lang {
-        RUSSIAN("RU", R.string.add_place_tab_russian_title),
-        ENGLISH("US", R.string.add_place_tab_english_title);
-
-        public final String lang;
-        public final int titleId;
-
-        Lang(String lang, int titleId) {
-            this.lang = lang;
-            this.titleId = titleId;
-        }
-
-        @Override
-        public String toString() {
-            return lang;
-        }
-    }
-
-    public Lang lang;
+    public SupportLang lang;
     public String placeId;
 
     // Description recycler view
@@ -75,11 +58,11 @@ public class QuestDetailsAddFragment extends Fragment {
     // Add section button
     FloatingActionButton addSectionButton;
 
-    public static QuestDetailsAddFragment newInstance(Lang lang, String placeId) {
-        Bundle args = new Bundle();
+    public static QuestDetailsAddFragment newInstance(SupportLang lang, String placeId) {
+        val args = new Bundle();
         args.putSerializable(ArgKeys.LANG.toString(), lang);
         args.putString(ArgKeys.PLACE_ID.toString(), placeId);
-        QuestDetailsAddFragment fragment = new QuestDetailsAddFragment();
+        val fragment = new QuestDetailsAddFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -87,9 +70,9 @@ public class QuestDetailsAddFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Bundle args = getArguments();
+        val args = getArguments();
         if (args != null) {
-            lang = (Lang) args.getSerializable(ArgKeys.LANG.toString());
+            lang = (SupportLang) args.getSerializable(ArgKeys.LANG.toString());
             placeId = args.getString(ArgKeys.PLACE_ID.toString());
         }
     }
@@ -97,7 +80,7 @@ public class QuestDetailsAddFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.activity_add_place_page, container, false);
+        val view = inflater.inflate(R.layout.activity_add_place_page, container, false);
 
         // Recycle view
         recycler = view.findViewById(R.id.add_details_details_recycler);
@@ -113,11 +96,11 @@ public class QuestDetailsAddFragment extends Fragment {
         addSectionButton = view.findViewById(R.id.add_details_add_section_button);
         addSectionButton.setOnClickListener(
                 v -> recyclerAdapter.addSection(
-                            new Pair<>(
-                                    new BaseSectionedHeader(""),
-                                    new ArrayList<>()
-                            )
-                    )
+                        new Pair<>(
+                                new BaseSectionedHeader(""),
+                                new ArrayList<>()
+                        )
+                )
         );
 
         refreshDetails();
@@ -138,10 +121,10 @@ public class QuestDetailsAddFragment extends Fragment {
 
     private void refreshDetails() {
         if (placeId != null) {
-            FirebaseFirestore db = FirebaseFirestore
+            val db = FirebaseFirestore
                     .getInstance();
 
-            CollectionReference collRef =
+            val collRef =
                     db
                             .collection(lang.lang)
                             .document("quests")
@@ -150,17 +133,16 @@ public class QuestDetailsAddFragment extends Fragment {
             // Parse details
 
             // Get doc
-            collRef.get().addOnCompleteListener(
+            collRef.get().addOnSuccessListener(
                     task -> {
-                        if (task.isSuccessful()) {
-                            // Parse details
-                            if (!parseDetails(
-                                    task.getResult(),
-                                    recycler,
-                                    this.getContext()
-                            ))
-                                createTemplateDetails();
-                        } else createTemplateDetails();
+                        // Parse details
+                        if (!parseDetails(
+                                task,
+                                recycler,
+                                this.getContext()
+                        ))
+                            createTemplateDetails();
+
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()

@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
@@ -160,7 +161,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
 
             buttonAdd.setOnClickListener(
                     v1 -> {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                        val builder = new AlertDialog.Builder(context);
                         builder.setTitle(context.getString(R.string.add_place_add_dialog_title));
 
                         builder.setItems(
@@ -184,7 +185,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
                                             ((BaseSectionedAdapter) recycler.getAdapter())
                                                     .addSection(
                                                             new Pair<>(
-                                                                    new BaseSectionedHeader(""),
+                                                                    new BaseSectionedHeader(),
                                                                     new ArrayList()
                                                             )
                                                     );
@@ -192,7 +193,7 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
                                             detailsItem = new QuestDetailsItemRecycler(recycler);
                                             break;
                                         case 1:
-                                            detailsItem = new QuestDetailsItemText("");
+                                            detailsItem = new QuestDetailsItemText();
                                             break;
                                     }
 
@@ -224,10 +225,10 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
 
         @Override
         public void onClick(View view) {
-            int section = getRelativePosition().section();
+            val section = getRelativePosition().section();
             toggleSectionExpanded(section);
             if (headerClickListener != null) {
-                BaseSectionedHeader header = getHeader(section);
+                val header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onClick(header, this, section);
                 }
@@ -237,8 +238,8 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public boolean onLongClick(View view) {
             if (headerClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseSectionedHeader header = getHeader(section);
+                val section = getRelativePosition().section();
+                val header = getHeader(section);
                 if (header != null) {
                     headerClickListener.onLongClick(header, this, section);
                 }
@@ -282,9 +283,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
 
             buttonRemove.setOnClickListener(
                     v1 -> {
-                        List<BaseQuestDetailsItem> sectionItems = getSection(getRelativePosition().section()).second;
-
-                        sectionItems.remove(getRelativePosition().relativePos());
+                        getSection(getRelativePosition().section())
+                                .second
+                                .remove(getRelativePosition().relativePos());
                         notifyDataSetChanged();
                     }
             );
@@ -304,10 +305,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public void onClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onClick(item, this, section);
+                    itemClickListener.onClick(item, this, getRelativePosition().section());
                 }
             }
         }
@@ -315,10 +315,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public boolean onLongClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onLongClick(item, this, section);
+                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
                 }
                 return true;
             }
@@ -357,10 +356,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public void onClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onClick(item, this, section);
+                    itemClickListener.onClick(item, this, getRelativePosition().section());
                 }
             }
         }
@@ -368,10 +366,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public boolean onLongClick(View view) {
             if (itemClickListener != null) {
-                int section = getRelativePosition().section();
-                BaseQuestDetailsItem item = getItem(getLayoutPosition());
+                val item = getItem(getLayoutPosition());
                 if (item != null) {
-                    itemClickListener.onLongClick(item, this, section);
+                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
                 }
                 return true;
             }

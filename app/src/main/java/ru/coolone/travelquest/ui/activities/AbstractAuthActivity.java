@@ -459,7 +459,7 @@ abstract public class AbstractAuthActivity
         Intent intent;
         if (user.isEmailVerified()) {
             // ...to main activity
-            intent = new Intent(this, MainActivity.class);
+            intent = new Intent(this, MainActivity_.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         } else {
             // ...to confirm mail activity
@@ -528,7 +528,7 @@ abstract public class AbstractAuthActivity
         Log.d(TAG, "Google OAuth success");
 
         // To main activity
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, MainActivity_.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

@@ -5,13 +5,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
+
 /**
  * @author coolone
  * @since 30.03.18
  */
 public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
     private QuestDetailsAddFragment tabFragments[] =
-            new QuestDetailsAddFragment[QuestDetailsAddFragment.Lang.values().length];
+            new QuestDetailsAddFragment[SupportLang.values().length];
     private Context context;
 
     public QuestDetailsAddPagerAdapter(FragmentManager fm, String placeId, Context context) {
@@ -20,7 +22,7 @@ public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
 
         for(int mTabFragmentId = 0; mTabFragmentId < tabFragments.length; mTabFragmentId++) {
             tabFragments[mTabFragmentId] = QuestDetailsAddFragment.newInstance(
-                    QuestDetailsAddFragment.Lang.values()[mTabFragmentId],
+                    SupportLang.values()[mTabFragmentId],
                     placeId
             );
         }
@@ -35,6 +37,6 @@ public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
     }
 
     @Override public CharSequence getPageTitle(int position) {
-        return context.getString(QuestDetailsAddFragment.Lang.values()[position].titleId);
+        return context.getString(SupportLang.values()[position].titleId);
     }
 }

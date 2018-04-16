@@ -12,9 +12,12 @@ android {
         targetSdkVersion 27
         versionCode 8
         versionName "1.7"
+
+        // Google maps key
         manifestPlaceholders = [googleMapApiKey: GOOGLE_MAPS_API_KEY]
         resValue "string", "GOOGLE_MAPS_API_KEY", GOOGLE_MAPS_API_KEY
 
+        // JUnit
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -45,6 +48,8 @@ dependencies {
     ext {
         support = "27.1.1"
         ps = "15.0.0"
+        lb = "1.16.20"
+        aa = "4.4.0"
     }
 
     implementation fileTree(include: ['*.jar'], dir: 'libs')
@@ -70,8 +75,12 @@ dependencies {
     implementation 'com.takisoft.fix:preference-v7:27.0.0.0'
     implementation 'com.seatgeek:placesautocomplete:0.3-SNAPSHOT'
     implementation 'com.google.code.gson:gson:2.8.0'
-    compileOnly 'org.projectlombok:lombok:1.16.20'
-    annotationProcessor 'org.projectlombok:lombok:1.16.20'
+
+    compileOnly "org.projectlombok:lombok:${lb}"
+    annotationProcessor "org.projectlombok:lombok:${lb}"
+
+    annotationProcessor "org.androidannotations:androidannotations:${aa}"
+    compile "org.androidannotations:androidannotations-api:${aa}"
 }
 
 apply plugin: 'com.google.gms.google-services'

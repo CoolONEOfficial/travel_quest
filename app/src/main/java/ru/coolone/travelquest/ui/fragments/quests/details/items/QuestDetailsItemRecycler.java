@@ -2,25 +2,21 @@ package ru.coolone.travelquest.ui.fragments.quests.details.items;
 
 import android.support.v7.widget.RecyclerView;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 /**
  * Created by coolone on 15.11.17.
  */
 
+@RequiredArgsConstructor
 public class QuestDetailsItemRecycler extends BaseQuestDetailsItem {
-    public QuestDetailsItemRecycler(RecyclerView recyclerView) {
-        this.recyclerView = recyclerView;
-    }
+    @Getter
+    @Setter
+    final private RecyclerView recyclerView;
 
-    private RecyclerView recyclerView;
-
-    public RecyclerView getRecyclerView() {
-        return recyclerView;
-    }
-
-    public void setRecyclerView(RecyclerView recyclerView) {
-        this.recyclerView = recyclerView;
-    }
-
+    @Override
     public int getListItemId() {
         return Id.ITEM_RECYCLER.ordinal();
     }

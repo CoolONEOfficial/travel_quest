@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -9,9 +10,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -20,6 +18,13 @@ import android.widget.Toast;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.Extra;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.ViewById;
+
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddFragment;
@@ -27,12 +32,15 @@ import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddPag
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.serializeDetails;
 
+@SuppressLint("Registered")
+@EActivity
+@OptionsMenu(R.menu.activity_add_place_actions)
 public class AddPlaceActivity extends AppCompatActivity implements FirebaseMethods.SerializeDetailsListener {
     private static final String TAG = AddPlaceActivity.class.getSimpleName();
 
     // Arguments
     public enum ArgKeys {
-        PLACE_ID("place_id");
+        PLACE_ID("placeId");
 
         private final String val;
 
@@ -41,37 +49,33 @@ public class AddPlaceActivity extends AppCompatActivity implements FirebaseMetho
         }
 
         @Override
-        public String toString() {
+        final public String toString() {
             return val;
         }
     }
 
     // Google map place id
+    @Extra
     String placeId;
 
+    // Root layout
+    @ViewById(R.id.add_details_root_layout)
     LinearLayout rootLayout;
 
+    // View pager
+    @ViewById(R.id.add_details_viewpager)
+    ViewPager viewPager;
     QuestDetailsAddPagerAdapter pagerAdapter;
 
+    // Tab layout
+    @ViewById(R.id.add_details_sliding_tabs)
     TabLayout tabLayout;
-    ViewPager viewPager;
 
     ProgressBar progressBar;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_place);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
-        placeId = getIntent().getStringExtra(ArgKeys.PLACE_ID.toString());
-        if (placeId == null)
-            Log.e(TAG, "Place id not found!");
-
-        rootLayout = findViewById(R.id.add_details_root_layout);
-
+    @AfterViews
+    void afterViews() {
         // View pager
-        viewPager = findViewById(R.id.add_details_viewpager);
         pagerAdapter = new QuestDetailsAddPagerAdapter(
                 getSupportFragmentManager(),
                 placeId,
@@ -80,8 +84,14 @@ public class AddPlaceActivity extends AppCompatActivity implements FirebaseMetho
         viewPager.setAdapter(pagerAdapter);
 
         // Tab layout
-        tabLayout = findViewById(R.id.add_details_sliding_tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add_place);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Progress bar
         progressBar = new ProgressBar(this);
@@ -103,29 +113,13 @@ public class AddPlaceActivity extends AppCompatActivity implements FirebaseMetho
         );
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                NavUtils.navigateUpFromSameTask(this);
-                return true;
-            case R.id.add_details_action_send:
-                applyDetails();
-                break;
-        }
-
-        return super.onOptionsItemSelected(item);
+    @OptionsItem(android.R.id.home)
+    void homeSelected() {
+        finish();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.activity_add_place_actions, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    private void applyDetails() {
+    @OptionsItem(R.id.add_details_action_send)
+    void sendSelected() {
         tabLayout.setVisibility(View.GONE);
         viewPager.setVisibility(View.GONE);
         rootLayout.addView(progressBar);
