@@ -20,6 +20,7 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter_;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -214,7 +215,6 @@ public class FirebaseMethods {
             if (mDoc.contains("title")) {
                 // Recycler view
                 final RecyclerView recycler = new RecyclerView(context);
-                recycler.setNestedScrollingEnabled(true);
                 setDetailsRecyclerView(recycler, adapter.getClass(), context);
 
                 // Recycler item
@@ -282,7 +282,6 @@ public class FirebaseMethods {
 
                 // Recycler view
                 final RecyclerView recycler = new RecyclerView(context);
-                recycler.setNestedScrollingEnabled(true);
                 setDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
                 final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
 
@@ -340,6 +339,8 @@ public class FirebaseMethods {
             Class<? extends BaseSectionedAdapter> adapterClass,
             Context context
     ) {
+        recyclerView.setNestedScrollingEnabled(false);
+
         // Recycler view
         recyclerView.setHasFixedSize(false);
 
@@ -352,7 +353,7 @@ public class FirebaseMethods {
             val adapter = (BaseSectionedAdapter)
                     (recyclerView.getAdapter() != null
                             ? (BaseSectionedAdapter) recyclerView.getAdapter() :
-                            (adapterClass == QuestDetailsAddAdapter.class)
+                            (adapterClass == QuestDetailsAddAdapter_.class)
                                     ? adapterClass.getDeclaredConstructor
                                     (
                                             Context.class
