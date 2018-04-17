@@ -1,16 +1,16 @@
 package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
-import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import com.google.firebase.firestore.FirebaseFirestore;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
 
@@ -28,12 +28,13 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
  * @author coolone
  * @since 30.03.18
  */
+@EFragment(R.layout.activity_add_place_page)
 public class QuestDetailsAddFragment extends Fragment {
     private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
 
     // Arguments
     public enum ArgKeys {
-        PLACE_ID("place_id"),
+        PLACE_ID("placeId"),
         LANG("lang");
 
         private final String val;
@@ -48,42 +49,24 @@ public class QuestDetailsAddFragment extends Fragment {
         }
     }
 
+    @FragmentArg
     public SupportLang lang;
+
+    @FragmentArg
     public String placeId;
 
     // Description recycler view
+    @ViewById(R.id.add_details_details_recycler)
     public RecyclerView recycler;
     QuestDetailsAddAdapter recyclerAdapter;
 
     // Add section button
+    @ViewById(R.id.add_details_add_section_button)
     FloatingActionButton addSectionButton;
 
-    public static QuestDetailsAddFragment newInstance(SupportLang lang, String placeId) {
-        val args = new Bundle();
-        args.putSerializable(ArgKeys.LANG.toString(), lang);
-        args.putString(ArgKeys.PLACE_ID.toString(), placeId);
-        val fragment = new QuestDetailsAddFragment();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        val args = getArguments();
-        if (args != null) {
-            lang = (SupportLang) args.getSerializable(ArgKeys.LANG.toString());
-            placeId = args.getString(ArgKeys.PLACE_ID.toString());
-        }
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        val view = inflater.inflate(R.layout.activity_add_place_page, container, false);
-
+    @AfterViews
+    void afterViews() {
         // Recycle view
-        recycler = view.findViewById(R.id.add_details_details_recycler);
         recycler.setNestedScrollingEnabled(false);
         setDetailsRecyclerView(
                 recycler,
@@ -93,7 +76,6 @@ public class QuestDetailsAddFragment extends Fragment {
         recyclerAdapter = (QuestDetailsAddAdapter) recycler.getAdapter();
 
         // Add section button
-        addSectionButton = view.findViewById(R.id.add_details_add_section_button);
         addSectionButton.setOnClickListener(
                 v -> recyclerAdapter.addSection(
                         new Pair<>(
@@ -104,16 +86,14 @@ public class QuestDetailsAddFragment extends Fragment {
         );
 
         refreshDetails();
-
-        return view;
     }
 
     private void createTemplateDetails() {
         recyclerAdapter.addSection(
                 new Pair<>(
-                        new BaseSectionedHeader(""),
+                        new BaseSectionedHeader(),
                         new ArrayList<BaseQuestDetailsItem>() {{
-                            add(new QuestDetailsItemText(""));
+                            add(new QuestDetailsItemText());
                         }}
                 )
         );

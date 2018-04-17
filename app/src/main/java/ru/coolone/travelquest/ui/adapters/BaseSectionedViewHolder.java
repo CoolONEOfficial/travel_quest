@@ -4,6 +4,8 @@ import android.view.View;
 
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder;
 
+import org.androidannotations.annotations.EBean;
+
 /**
  * Created by radiationx on 14.09.17.
  */
@@ -12,7 +14,7 @@ public class BaseSectionedViewHolder<T>
         extends SectionedViewHolder
         implements View.OnClickListener, View.OnLongClickListener {
 
-    static final String TAG = BaseSectionedViewHolder.class.getSimpleName();
+    private static final String TAG = BaseSectionedViewHolder.class.getSimpleName();
 
     public BaseSectionedViewHolder(View v) {
         super(v);

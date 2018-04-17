@@ -1,11 +1,16 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -37,10 +42,11 @@ public class FirebaseMethods {
     private static void onStartTask() {
         startedTasks++;
     }
-    private static void onEndTask(SerializeDetailsListener listener) {
+
+    private static void onEndTask(SerializeDetailsListener listener, boolean checkEnd) {
         startedTasks--;
 
-        if (startedTasks == 0) {
+        if (checkEnd && startedTasks == 0) {
             listener.onSerializeDetailsCompleted();
             listener.onSerializeDetailsSuccess();
         }
@@ -48,7 +54,9 @@ public class FirebaseMethods {
 
     public interface SerializeDetailsListener {
         void onSerializeDetailsSuccess();
+
         void onSerializeDetailsCompleted();
+
         void onSerializeDetailsError(Exception e);
     }
 
@@ -57,11 +65,31 @@ public class FirebaseMethods {
             RecyclerView recyclerView,
             SerializeDetailsListener listener
     ) {
-        serializeDetails(
-                coll,
-                recyclerView,
-                0,
-                listener
+        onStartTask();
+        coll.get().addOnSuccessListener(
+                queryDocumentSnapshots -> {
+                    startedTasks += queryDocumentSnapshots.getDocuments().size();
+                    for (val mDoc : queryDocumentSnapshots.getDocuments())
+                        mDoc.getReference().delete()
+                                .addOnSuccessListener(
+                                        aVoid -> serializeDetails(
+                                                coll,
+                                                recyclerView,
+                                                0,
+                                                listener
+                                        )
+                                )
+                                .addOnFailureListener(
+                                        e -> Log.e(TAG, "Error while delete doc " + mDoc.getId())
+                                )
+                                .addOnCompleteListener(
+                                        task -> onEndTask(listener, false)
+                                );
+                }
+        ).addOnFailureListener(
+                e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
+        ).addOnCompleteListener(
+                task -> onEndTask(listener, false)
         );
     }
 
@@ -104,7 +132,7 @@ public class FirebaseMethods {
                         listener.onSerializeDetailsError(e);
                     }
             ).addOnCompleteListener(
-                    task -> onEndTask(listener)
+                    task -> onEndTask(listener, false)
             );
 
             val nextColl = mDoc.collection("coll");
@@ -137,7 +165,7 @@ public class FirebaseMethods {
                                 listener.onSerializeDetailsError(e);
                             }
                     ).addOnCompleteListener(
-                            task -> onEndTask(listener)
+                            task -> onEndTask(listener, true)
                     );
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
                     Log.d(TAG, "mItem is recycler");

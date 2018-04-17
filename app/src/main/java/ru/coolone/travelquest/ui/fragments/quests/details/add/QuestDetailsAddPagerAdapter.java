@@ -20,23 +20,26 @@ public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
         super(fm);
         this.context = context;
 
-        for(int mTabFragmentId = 0; mTabFragmentId < tabFragments.length; mTabFragmentId++) {
-            tabFragments[mTabFragmentId] = QuestDetailsAddFragment.newInstance(
-                    SupportLang.values()[mTabFragmentId],
-                    placeId
-            );
+        for (int mTabFragmentId = 0; mTabFragmentId < tabFragments.length; mTabFragmentId++) {
+            tabFragments[mTabFragmentId] = QuestDetailsAddFragment_.builder()
+                    .lang(SupportLang.values()[mTabFragmentId])
+                    .placeId(placeId)
+                    .build();
         }
     }
 
-    @Override public int getCount() {
+    @Override
+    public int getCount() {
         return tabFragments.length;
     }
 
-    @Override public Fragment getItem(int position) {
+    @Override
+    public Fragment getItem(int position) {
         return tabFragments[position];
     }
 
-    @Override public CharSequence getPageTitle(int position) {
+    @Override
+    public CharSequence getPageTitle(int position) {
         return context.getString(SupportLang.values()[position].titleId);
     }
 }
