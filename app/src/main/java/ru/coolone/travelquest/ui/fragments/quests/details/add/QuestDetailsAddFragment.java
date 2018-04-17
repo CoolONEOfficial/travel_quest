@@ -4,6 +4,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
+import android.view.Gravity;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,7 +33,7 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
  * @author coolone
  * @since 30.03.18
  */
-@EFragment(R.layout.activity_add_place_page)
+@EFragment(R.layout.fragment_add_details_page)
 public class QuestDetailsAddFragment extends Fragment {
     private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
 
@@ -56,13 +61,17 @@ public class QuestDetailsAddFragment extends Fragment {
     public String placeId;
 
     // Description recycler view
-    @ViewById(R.id.add_details_details_recycler)
+    @ViewById(R.id.add_details_page_details_recycler)
     public RecyclerView recycler;
     QuestDetailsAddAdapter recyclerAdapter;
 
     // Add section button
-    @ViewById(R.id.add_details_add_section_button)
+    @ViewById(R.id.add_details_page_add_section_button)
     FloatingActionButton addSectionButton;
+
+    // Root layout
+    @ViewById(R.id.add_details_page_root_layout)
+    FrameLayout frameLayout;
 
     @AfterViews
     void afterViews() {
@@ -111,6 +120,17 @@ public class QuestDetailsAddFragment extends Fragment {
 
             // Parse details
 
+            // Show bar
+            val bar = new ProgressBar(getContext());
+            val params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            params.gravity = Gravity.CENTER;
+            bar.setLayoutParams(params);
+
+            frameLayout.addView(bar);
+
             // Get doc
             collRef.get().addOnSuccessListener(
                     task -> {
@@ -125,6 +145,9 @@ public class QuestDetailsAddFragment extends Fragment {
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()
+                    )
+                    .addOnCompleteListener(
+                            task -> frameLayout.removeView(bar)
                     );
         }
     }

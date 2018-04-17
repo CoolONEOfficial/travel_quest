@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,8 @@ import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
@@ -36,7 +39,7 @@ import java.util.List;
 import lombok.Getter;
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.activities.AddPlaceActivity_;
+import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
@@ -132,6 +135,9 @@ public class QuestDetailsFragment extends Fragment {
     @ViewById(R.id.details_photos_scroll)
     HorizontalScrollView photosScroll;
 
+    @ViewById(R.id.layout_details_body)
+    RelativeLayout bodyLayout;
+
     @AfterViews
     void afterViews() {
         // Recycle view
@@ -144,7 +150,7 @@ public class QuestDetailsFragment extends Fragment {
         // Add details button
         detailsAddButton.setOnClickListener(
                 // To add place activity
-                v -> AddPlaceActivity_.intent(getContext())
+                v -> AddDetailsActivity_.intent(getContext())
                         .placeId(placeId)
                         .start()
         );
@@ -393,6 +399,18 @@ public class QuestDetailsFragment extends Fragment {
 
         // Parse details
 
+        // Show progress bar
+        val bar = new ProgressBar(getContext());
+        val params = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        params.addRule(
+            RelativeLayout.CENTER_IN_PARENT
+        );
+        bar.setLayoutParams(params);
+        bodyLayout.addView(bar);
+
         // Get doc
         collRef.get().addOnSuccessListener(
                 task -> {
@@ -407,7 +425,10 @@ public class QuestDetailsFragment extends Fragment {
                     ))
                         detailsError("Docs not valid or empty");
                 })
-                .addOnFailureListener(this::detailsError);
+                .addOnFailureListener(this::detailsError)
+                .addOnCompleteListener(
+                        task -> bodyLayout.removeView(bar)
+                );
 
         // Photos
         new PhotoTask(this).execute(placeId);

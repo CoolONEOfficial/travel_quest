@@ -17,8 +17,8 @@ public class BaseSectionedViewHolder<T>
 
     private static final String TAG = BaseSectionedViewHolder.class.getSimpleName();
 
-    private BaseSectionedAdapter.OnClickListener onClickListener;
-    private BaseSectionedAdapter baseAdapter;
+    public BaseSectionedAdapter.OnClickListener onClickListener;
+    public BaseSectionedAdapter baseAdapter;
 
     public BaseSectionedViewHolder(View v) {
         super(v);

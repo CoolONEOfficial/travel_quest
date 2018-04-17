@@ -4,11 +4,9 @@ import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.NavUtils;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +33,8 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 @SuppressLint("Registered")
 @EActivity
 @OptionsMenu(R.menu.activity_add_place_actions)
-public class AddPlaceActivity extends AppCompatActivity implements FirebaseMethods.SerializeDetailsListener {
-    private static final String TAG = AddPlaceActivity.class.getSimpleName();
+public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.SerializeDetailsListener {
+    private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
     // Arguments
     public enum ArgKeys {
@@ -90,7 +88,7 @@ public class AddPlaceActivity extends AppCompatActivity implements FirebaseMetho
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_place);
+        setContentView(R.layout.activity_add_details);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Progress bar

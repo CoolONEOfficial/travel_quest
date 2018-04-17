@@ -43,11 +43,11 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
+    private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
+
     // Context
     @RootContext
     Context context;
-
-    private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
 
     @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
@@ -139,12 +139,8 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
                     }
             );
 
-            caret.setOnClickListener(
-                    v1 -> onClick(null)
-            );
-            caret.setOnLongClickListener(
-                    v1 -> onLongClick(null)
-            );
+            caret.setOnClickListener(this);
+            caret.setOnLongClickListener(this);
 
             buttonAdd.setOnClickListener(
                     v1 -> {
