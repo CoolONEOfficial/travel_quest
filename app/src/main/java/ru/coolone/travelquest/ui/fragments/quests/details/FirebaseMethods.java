@@ -335,7 +335,6 @@ public class FirebaseMethods {
         Log.d(TAG, "--- Ended parse details sections ---");
     }
 
-
     static public void setDetailsRecyclerView(
             RecyclerView recyclerView,
             Class<? extends BaseSectionedAdapter> adapterClass,
@@ -346,7 +345,6 @@ public class FirebaseMethods {
 
         // Layout manager
         val detailsLayoutManager = new LinearLayoutManager(context);
-        detailsLayoutManager.offsetChildrenHorizontal((int) context.getResources().getDimension(R.dimen.content_inset));
         recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter

@@ -16,6 +16,7 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -103,7 +104,7 @@ public class QuestDetailsAdapter
         TextView title;
 
         public HeaderHolder(View v) {
-            super(v);
+            super(v, itemClickListener, QuestDetailsAdapter.this);
             title = v.findViewById(R.id.details_head_text);
             caret = v.findViewById(R.id.details_head_caret);
 
@@ -113,40 +114,17 @@ public class QuestDetailsAdapter
             caret.setOnLongClickListener(
                     v1 -> onLongClick(null)
             );
+        }
 
-            // Handle clicks
-            v.setOnClickListener(this);
-            v.setOnLongClickListener(this);
+        @Override
+        public void onClick(View view) {
+            toggleSectionExpanded(getRelativePosition().section());
+            super.onClick(view);
         }
 
         @Override
         public void bind(int section) {
             title.setText(sections.get(section).first.getTitle());
-        }
-
-        @Override
-        public void onClick(View view) {
-            val section = getRelativePosition().section();
-            toggleSectionExpanded(section);
-            if (headerClickListener != null) {
-                val header = getHeader(section);
-                if (header != null) {
-                    headerClickListener.onClick(header, this, section);
-                }
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            if (headerClickListener != null) {
-                val section = getRelativePosition().section();
-                val header = getHeader(section);
-                if (header != null) {
-                    headerClickListener.onClick(header, this, section);
-                }
-                return true;
-            }
-            return false;
         }
     }
 
@@ -155,16 +133,12 @@ public class QuestDetailsAdapter
         TextView text;
 
         ItemHolderText(View v) {
-            super(v);
+            super(v, itemClickListener, QuestDetailsAdapter.this);
 
             this.text = v.findViewById(R.id.details_item_text);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
             }
-
-            // Handle clicks
-            v.setOnClickListener(this);
-            v.setOnLongClickListener(this);
 
             Log.d(TAG, "Item text holder created:" + this.text.getText());
         }
@@ -173,28 +147,6 @@ public class QuestDetailsAdapter
         public void bind(QuestDetailsItemText item) {
             text.setText(item.getText());
         }
-
-        @Override
-        public void onClick(View view) {
-            if (itemClickListener != null) {
-                val item = getItem(getLayoutPosition());
-                if (item != null) {
-                    itemClickListener.onClick(item, this, getRelativePosition().section());
-                }
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            if (itemClickListener != null) {
-                val item = getItem(getLayoutPosition());
-                if (item != null) {
-                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
-                }
-                return true;
-            }
-            return false;
-        }
     }
 
     public class ItemHolderRecycler
@@ -202,14 +154,10 @@ public class QuestDetailsAdapter
         RecyclerView recyclerView;
 
         ItemHolderRecycler(View v, Context context) {
-            super(v);
+            super(v, itemClickListener, QuestDetailsAdapter.this);
 
             this.recyclerView = v.findViewById(R.id.details_item_recycler);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-
-            // Handle clicks
-            v.setOnClickListener(this);
-            v.setOnLongClickListener(this);
 
             Log.d(TAG, "Item recycler holder created:\n\tsize: "
                     + String.valueOf(recyclerView.getChildCount())
@@ -223,28 +171,6 @@ public class QuestDetailsAdapter
                     + String.valueOf(recycler));
             recyclerView.setAdapter(recycler.getRecyclerView().getAdapter());
             recyclerView.invalidate();
-        }
-
-        @Override
-        public void onClick(View view) {
-            if (itemClickListener != null) {
-                val item = getItem(getLayoutPosition());
-                if (item != null) {
-                    itemClickListener.onClick(item, this,  getRelativePosition().section());
-                }
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View view) {
-            if (itemClickListener != null) {
-                val item = getItem(getLayoutPosition());
-                if (item != null) {
-                    itemClickListener.onLongClick(item, this, getRelativePosition().section());
-                }
-                return true;
-            }
-            return false;
         }
     }
 }

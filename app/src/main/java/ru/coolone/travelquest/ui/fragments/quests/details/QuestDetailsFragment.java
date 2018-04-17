@@ -135,7 +135,6 @@ public class QuestDetailsFragment extends Fragment {
     @AfterViews
     void afterViews() {
         // Recycle view
-        detailsRecyclerView.setNestedScrollingEnabled(false);
         setDetailsRecyclerView(
                 detailsRecyclerView,
                 QuestDetailsAdapter.class,
