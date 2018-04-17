@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
@@ -26,8 +27,11 @@ public class QuestDetailsAdapter
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
     private static final String TAG = QuestDetailsFragment.class.getSimpleName();
-    private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
-    private OnClickListener<BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder> headerClickListener;
+    @Setter
+    protected OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
+
+    @Setter
+    protected OnClickListener<BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder> headerClickListener;
 
     @Override
     public BaseSectionedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -74,14 +78,6 @@ public class QuestDetailsAdapter
         ((BaseSectionedViewHolder<BaseQuestDetailsItem>) holder).bind(getItem(section, relPos));
     }
 
-    public void setHeaderClickListener(OnClickListener<BaseSectionedHeader, HeaderHolder> headerClickListener) {
-        this.headerClickListener = headerClickListener;
-    }
-
-    public void setItemClickListener(OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener) {
-        this.itemClickListener = itemClickListener;
-    }
-
     @Override
     public int getItemViewType(int section, int relativePosition, int absolutePosition) {
         return getItem(section, relativePosition).getListItemId();
@@ -104,7 +100,7 @@ public class QuestDetailsAdapter
         TextView title;
 
         public HeaderHolder(View v) {
-            super(v, itemClickListener, QuestDetailsAdapter.this);
+            super(v, headerClickListener, QuestDetailsAdapter.this);
             title = v.findViewById(R.id.details_head_text);
             caret = v.findViewById(R.id.details_head_caret);
 

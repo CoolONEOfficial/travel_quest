@@ -16,14 +16,19 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
+import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsAdapter.ListItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -34,20 +39,20 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
  * @author coolone
  * @since 06.04.18
  */
+@EBean
 public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
-    public QuestDetailsAddAdapter(
-            Context context
-    ) {
-        this.context = context;
-    }
-
     // Context
+    @RootContext
     Context context;
 
     private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
+
+    @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
+
+    @Setter
     private OnClickListener<BaseSectionedHeader, QuestDetailsAddAdapter.HeaderHolder> headerClickListener;
 
     @Override
@@ -96,27 +101,9 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         ((BaseSectionedViewHolder<BaseQuestDetailsItem>) holder).bind(getItem(section, relPos));
     }
 
-    public void setHeaderClickListener(OnClickListener<BaseSectionedHeader, HeaderHolder> headerClickListener) {
-        this.headerClickListener = headerClickListener;
-    }
-
-    public void setItemClickListener(OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener) {
-        this.itemClickListener = itemClickListener;
-    }
-
     @Override
     public int getItemViewType(int section, int relativePosition, int absolutePosition) {
         return getItem(section, relativePosition).getListItemId();
-    }
-
-    public interface ListItem {
-        int getListItemId();
-
-        enum Id {
-            HEADER_TEXT,
-            ITEM_TEXT,
-            ITEM_RECYCLER
-        }
     }
 
     public class HeaderHolder
