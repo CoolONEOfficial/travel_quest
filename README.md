@@ -3,7 +3,9 @@
 [![Build Status](https://travis-ci.org/CoolONEOfficial/travel_quest.svg?branch=master)](https://travis-ci.org/CoolONEOfficial/travel_quest)
 
 <p align="center">
-<img src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/266d2b2d/img/en_get.svg" width="50%">
+<a href="https://play.google.com/store/apps/details?id=ru.coolone.travelquest">
+<img border="0" src="https://cdn.rawgit.com/steverichey/google-play-badge-svg/266d2b2d/img/en_get.svg" width="50%" >
+</a>
 </p>
 
 The application allows you to learn the history of Nizhny Novgorod.
