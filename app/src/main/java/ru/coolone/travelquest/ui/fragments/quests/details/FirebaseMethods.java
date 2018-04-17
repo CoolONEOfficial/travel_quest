@@ -1,18 +1,12 @@
 package ru.coolone.travelquest.ui.fragments.quests.details;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
@@ -39,14 +33,13 @@ public class FirebaseMethods {
 
     private static int startedTasks;
 
-    private static void onStartTask() {
-        startedTasks++;
-    }
-
-    private static void onEndTask(SerializeDetailsListener listener, boolean checkEnd) {
+    private static void checkEndTask(SerializeDetailsListener listener) {
         startedTasks--;
 
-        if (checkEnd && startedTasks == 0) {
+        Log.d(TAG, "checkEndTask started, tasks count: " + startedTasks);
+
+        if (startedTasks == 0) {
+            Log.d(TAG, "All serialize tasks ended!");
             listener.onSerializeDetailsCompleted();
             listener.onSerializeDetailsSuccess();
         }
@@ -55,9 +48,9 @@ public class FirebaseMethods {
     public interface SerializeDetailsListener {
         void onSerializeDetailsSuccess();
 
-        void onSerializeDetailsCompleted();
-
         void onSerializeDetailsError(Exception e);
+
+        void onSerializeDetailsCompleted();
     }
 
     static public void serializeDetails(
@@ -65,31 +58,42 @@ public class FirebaseMethods {
             RecyclerView recyclerView,
             SerializeDetailsListener listener
     ) {
-        onStartTask();
+        startedTasks++;
         coll.get().addOnSuccessListener(
                 queryDocumentSnapshots -> {
                     startedTasks += queryDocumentSnapshots.getDocuments().size();
-                    for (val mDoc : queryDocumentSnapshots.getDocuments())
-                        mDoc.getReference().delete()
-                                .addOnSuccessListener(
-                                        aVoid -> serializeDetails(
-                                                coll,
-                                                recyclerView,
-                                                0,
-                                                listener
-                                        )
-                                )
-                                .addOnFailureListener(
-                                        e -> Log.e(TAG, "Error while delete doc " + mDoc.getId())
-                                )
-                                .addOnCompleteListener(
-                                        task -> onEndTask(listener, false)
-                                );
+                    if (queryDocumentSnapshots.getDocuments().isEmpty())
+                        // Start serialize docs
+                        serializeDetails(
+                                coll,
+                                recyclerView,
+                                0,
+                                listener
+                        );
+                    else
+                        // Delete all old docs
+                        for (val mDoc : queryDocumentSnapshots.getDocuments())
+                            mDoc.getReference().delete()
+                                    .addOnSuccessListener(
+                                            // Start serialize docs
+                                            aVoid -> serializeDetails(
+                                                    coll,
+                                                    recyclerView,
+                                                    0,
+                                                    listener
+                                            )
+                                    )
+                                    .addOnFailureListener(
+                                            e -> Log.e(TAG, "Error while delete doc " + mDoc.getId())
+                                    )
+                                    .addOnCompleteListener(
+                                            task -> startedTasks--
+                                    );
                 }
         ).addOnFailureListener(
                 e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
         ).addOnCompleteListener(
-                task -> onEndTask(listener, false)
+                task -> startedTasks--
         );
     }
 
@@ -116,9 +120,9 @@ public class FirebaseMethods {
                     + '\n' + " title: " + mSection.first.getTitle()
                     + '\n' + " size: " + mSection.second.size());
 
-            val mDoc = coll.document(Integer.toString(mSectionId) + startId);
+            val mDoc = coll.document(Integer.toString(mSectionId + startId));
 
-            onStartTask();
+            startedTasks++;
             mDoc.set(
                     new HashMap<String, Object>() {{
                         put("title", mSection.first.getTitle());
@@ -132,7 +136,7 @@ public class FirebaseMethods {
                         listener.onSerializeDetailsError(e);
                     }
             ).addOnCompleteListener(
-                    task -> onEndTask(listener, false)
+                    task -> checkEndTask(listener)
             );
 
             val nextColl = mDoc.collection("coll");
@@ -148,7 +152,7 @@ public class FirebaseMethods {
                         !((QuestDetailsItemText) mItem).getText().isEmpty()) {
                     Log.d(TAG, "mItem is text");
 
-                    onStartTask();
+                    startedTasks++;
                     nextColl.document(Integer.toString(mItemId)).set(
                             new HashMap<String, Object>() {{
                                 put(
@@ -165,7 +169,7 @@ public class FirebaseMethods {
                                 listener.onSerializeDetailsError(e);
                             }
                     ).addOnCompleteListener(
-                            task -> onEndTask(listener, true)
+                            task -> checkEndTask(listener)
                     );
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
                     Log.d(TAG, "mItem is recycler");
