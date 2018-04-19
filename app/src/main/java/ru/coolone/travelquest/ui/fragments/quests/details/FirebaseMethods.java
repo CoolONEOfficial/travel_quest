@@ -14,13 +14,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import lombok.val;
-import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter_;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -33,6 +32,8 @@ public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
     private static int startedTasks;
+
+    private static int startedDeleteTasks;
 
     private static void checkEndTask(SerializeDetailsListener listener) {
         startedTasks--;
@@ -62,34 +63,41 @@ public class FirebaseMethods {
         startedTasks++;
         coll.get().addOnSuccessListener(
                 queryDocumentSnapshots -> {
-                    startedTasks += queryDocumentSnapshots.getDocuments().size();
                     if (queryDocumentSnapshots.getDocuments().isEmpty())
                         // Start serialize docs
                         serializeDetails(
                                 coll,
-                                recyclerView,
+                                (BaseSectionedAdapter) recyclerView.getAdapter(),
                                 0,
                                 listener
                         );
-                    else
+                    else {
                         // Delete all old docs
+                        startedDeleteTasks += queryDocumentSnapshots.getDocuments().size();
                         for (val mDoc : queryDocumentSnapshots.getDocuments())
                             mDoc.getReference().delete()
-                                    .addOnSuccessListener(
-                                            // Start serialize docs
-                                            aVoid -> serializeDetails(
-                                                    coll,
-                                                    recyclerView,
-                                                    0,
-                                                    listener
-                                            )
-                                    )
                                     .addOnFailureListener(
-                                            e -> Log.e(TAG, "Error while delete doc " + mDoc.getId())
+                                            e -> {
+                                                Log.e(TAG, "Error while delete doc " + mDoc.getId());
+
+                                                listener.onSerializeDetailsCompleted();
+                                                listener.onSerializeDetailsError(e);
+                                            }
                                     )
-                                    .addOnCompleteListener(
-                                            task -> startedTasks--
+                                    .addOnSuccessListener(
+                                            task -> {
+                                                startedDeleteTasks--;
+
+                                                // Start serialize docs
+                                                serializeDetails(
+                                                        coll,
+                                                        (BaseSectionedAdapter) recyclerView.getAdapter(),
+                                                        0,
+                                                        listener
+                                                );
+                                            }
                                     );
+                    }
                 }
         ).addOnFailureListener(
                 e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
@@ -98,15 +106,24 @@ public class FirebaseMethods {
         );
     }
 
+    static private String getSaltString() {
+        val saltChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz";
+        val salt = new StringBuilder();
+        val rnd = new Random();
+        while (salt.length() < 19) {
+            int index = (int) (rnd.nextFloat() * saltChars.length());
+            salt.append(saltChars.charAt(index));
+        }
+        return salt.toString();
+    }
+
     static private void serializeDetails(
             CollectionReference coll,
-            RecyclerView recyclerView,
+            BaseSectionedAdapter adapter,
             int startId,
             SerializeDetailsListener listener
     ) {
         Log.d(TAG, "--- Started serialize details ---");
-
-        val adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
 
         Log.d(TAG, "Starting sections for");
         for (int mSectionId = 0; mSectionId < adapter.getSectionCount(); mSectionId++) {
@@ -121,7 +138,9 @@ public class FirebaseMethods {
                     + '\n' + " title: " + mSection.first.getTitle()
                     + '\n' + " size: " + mSection.second.size());
 
-            val mDoc = coll.document(Integer.toString(mSectionId + startId));
+            val mDoc = coll.document(
+                    Integer.toString(mSectionId + startId) + getSaltString()
+            );
 
             startedTasks++;
             mDoc.set(
@@ -154,7 +173,7 @@ public class FirebaseMethods {
                     Log.d(TAG, "mItem is text");
 
                     startedTasks++;
-                    nextColl.document(Integer.toString(mItemId)).set(
+                    nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
                             new HashMap<String, Object>() {{
                                 put(
                                         "text",
@@ -175,9 +194,13 @@ public class FirebaseMethods {
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
                     Log.d(TAG, "mItem is recycler");
 
+                    val mItemRecycler = ((QuestDetailsItemRecycler) mItem).getRecyclerView();
+
+                    val mItemAdapter = (BaseSectionedAdapter) mItemRecycler.getAdapter();
+
                     serializeDetails(
                             nextColl,
-                            ((QuestDetailsItemRecycler) mItem).getRecyclerView(),
+                            mItemAdapter,
                             mItemId,
                             listener
                     );
@@ -353,7 +376,7 @@ public class FirebaseMethods {
             val adapter = (BaseSectionedAdapter)
                     (recyclerView.getAdapter() != null
                             ? (BaseSectionedAdapter) recyclerView.getAdapter() :
-                            (adapterClass == QuestDetailsAddAdapter_.class)
+                            (adapterClass == QuestDetailsAddAdapter.class)
                                     ? adapterClass.getDeclaredConstructor
                                     (
                                             Context.class

@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -17,18 +18,40 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.ViewById;
+
 import java.lang.ref.WeakReference;
 
 import ru.coolone.travelquest.R;
 
+@SuppressLint("Registered")
+@EActivity
 public class ConfirmMailActivity extends AppCompatActivity {
 
     final FirebaseUser user = FirebaseAuth
             .getInstance()
             .getCurrentUser();
+    @ViewById(R.id.confirm_mail_progress_layout)
     RelativeLayout progressLayout;
+
+    @ViewById(R.id.confirm_mail_layout)
     LinearLayout confirmLayout;
+
+    @ViewById(R.id.confirm_mail_button)
     Button checkButton;
+
+    @AfterViews
+    void afterViews() {
+        // Check mail button
+        checkButton.setOnClickListener(
+                view -> {
+                    CheckConfirmTask task = new CheckConfirmTask(this);
+                    task.execute();
+                }
+        );
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,17 +65,6 @@ public class ConfirmMailActivity extends AppCompatActivity {
             startActivity(loginIntent);
             finish();
         }
-
-        progressLayout = findViewById(R.id.confirm_mail_progress_layout);
-        confirmLayout = findViewById(R.id.confirm_mail_layout);
-        checkButton = findViewById(R.id.confirm_mail_button);
-
-        checkButton.setOnClickListener(
-                view -> {
-                    CheckConfirmTask task = new CheckConfirmTask(this);
-                    task.execute();
-                }
-        );
 
         // Fix action bar color
         getSupportActionBar().setBackgroundDrawable(

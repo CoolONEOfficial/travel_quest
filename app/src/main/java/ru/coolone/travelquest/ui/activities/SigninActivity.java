@@ -9,8 +9,11 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseUser;
 
+import org.androidannotations.annotations.EActivity;
+
 import ru.coolone.travelquest.R;
 
+@EActivity
 public class SigninActivity extends AbstractAuthActivity {
 
     final static String TAG = SigninActivity.class.getSimpleName();

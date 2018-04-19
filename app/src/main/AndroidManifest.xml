@@ -31,12 +31,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.activities.LoginActivity"
+            android:name=".ui.activities.LoginActivity_"
             android:label="@string/title_activity_login"
             android:theme="@style/AppTheme"
             android:launchMode="singleTask" />
         <activity
-            android:name=".ui.activities.SigninActivity"
+            android:name=".ui.activities.SigninActivity_"
             android:label="@string/title_activity_signin"
             android:theme="@style/AppTheme"
             android:launchMode="singleTask" />
@@ -45,7 +45,7 @@
             android:label="@string/title_activity_add_place"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".ui.activities.ConfirmMailActivity"
+            android:name=".ui.activities.ConfirmMailActivity_"
             android:label="@string/title_activity_confirm_mail"
             android:theme="@style/AppTheme" />
     </application>

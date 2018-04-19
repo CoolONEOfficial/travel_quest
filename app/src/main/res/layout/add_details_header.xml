@@ -30,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/content_inset"
-        android:layout_toStartOf="@+id/add_details_head_caret"
+        android:layout_alignParentEnd="true"
         android:src="@drawable/ic_add" />
 
     <android.support.v7.widget.AppCompatImageButton
@@ -41,15 +41,5 @@
         android:layout_marginEnd="@dimen/content_inset"
         android:layout_toStartOf="@+id/add_details_head_add"
         android:src="@drawable/ic_remove" />
-
-    <ImageView
-        android:id="@+id/add_details_head_caret"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
-        android:layout_margin="@dimen/content_inset"
-        android:contentDescription="@string/details_head_caret_details"
-        android:src="@drawable/ic_arrow_down" />
 
 </RelativeLayout>

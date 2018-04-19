@@ -7,7 +7,6 @@ import android.util.Pair;
 import android.view.Gravity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -18,6 +17,8 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -87,7 +88,7 @@ public class QuestDetailsAddFragment extends Fragment {
         addSectionButton.setOnClickListener(
                 v -> recyclerAdapter.addSection(
                         new Pair<>(
-                                new BaseSectionedHeader(""),
+                                new BaseSectionedHeader(),
                                 new ArrayList<>()
                         )
                 )

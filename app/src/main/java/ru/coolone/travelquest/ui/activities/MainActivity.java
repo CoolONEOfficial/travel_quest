@@ -8,6 +8,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
@@ -50,6 +51,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
+import org.androidannotations.api.builder.ActivityIntentBuilder;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -148,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements
         if (user != null) {
             if (!user.isEmailVerified() && !user.isAnonymous())
                 // To confirm mail screen
-                toActivity(ConfirmMailActivity.class);
+                toActivity(ConfirmMailActivity_.intent(this));
         } else {
             showAuthDialog();
         }
@@ -223,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements
         ad.setTitle(getString(R.string.alert_splash_title));
         ad.setMessage(getString(R.string.alert_splash_text));
         ad.setPositiveButton(getString(R.string.alert_splash_button_auth),
-                (dialog, which) -> toActivity(LoginActivity.class)
+                (dialog, which) -> toActivity(LoginActivity_.intent(this))
         );
         ad.setNegativeButton(getString(R.string.alert_splash_button_anonymous),
                 (dialog, which) -> {
@@ -231,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements
                     progress.setTitle(getString(R.string.login_progress));
                     progress.setCancelable(true);
                     progress.setOnCancelListener(
-                            dialog1 -> toActivity(MainActivity.class)
+                            dialog1 -> toActivity(MainActivity_.intent(this))
                     );
                     progress.show();
 
@@ -299,13 +301,12 @@ public class MainActivity extends AppCompatActivity implements
         finishAffinity();
     }
 
-    private void toActivity(Class<? extends Activity> activity) {
-        // Set intent
-        Intent intent = new Intent(this, activity);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-
+    private void toActivity(ActivityIntentBuilder intentBuilder) {
         // Go to target activity
-        startActivity(intent);
+        startActivity(
+                intentBuilder
+                .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
+        .get());
         finish();
     }
 

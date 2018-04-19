@@ -22,6 +22,9 @@ import org.androidannotations.annotations.RootContext;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -39,15 +42,14 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
  * @author coolone
  * @since 06.04.18
  */
-@EBean
+@RequiredArgsConstructor
 public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
     private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
 
     // Context
-    @RootContext
-    Context context;
+    private final Context context;
 
     @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
@@ -82,13 +84,6 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
             boolean expanded
     ) {
         holder.bind(section);
-
-        // Set caret image
-        ((HeaderHolder) holder).caret.setImageResource(
-                expanded
-                        ? R.drawable.ic_arrow_up
-                        : R.drawable.ic_arrow_down
-        );
     }
 
     @Override
@@ -109,7 +104,6 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
     public class HeaderHolder
             extends BaseSectionedViewHolder<BaseSectionedHeader>
             implements View.OnClickListener, View.OnLongClickListener {
-        ImageView caret;
         EditText title;
         ImageButton buttonAdd;
         ImageButton buttonRemove;
@@ -117,7 +111,6 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         public HeaderHolder(View v) {
             super(v, itemClickListener, QuestDetailsAddAdapter.this);
             title = v.findViewById(R.id.add_details_head_text);
-            caret = v.findViewById(R.id.add_details_head_caret);
             buttonAdd = v.findViewById(R.id.add_details_head_add);
             buttonRemove = v.findViewById(R.id.add_details_head_remove);
 
@@ -138,9 +131,6 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
                         }
                     }
             );
-
-            caret.setOnClickListener(this);
-            caret.setOnLongClickListener(this);
 
             buttonAdd.setOnClickListener(
                     v1 -> {
@@ -200,12 +190,6 @@ public class QuestDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public void bind(int section) {
             title.setText(sections.get(section).first.getTitle());
-        }
-
-        @Override
-        public void onClick(View view) {
-            toggleSectionExpanded(getRelativePosition().section());
-            super.onClick(view);
         }
     }
 

@@ -455,17 +455,17 @@ abstract public class AbstractAuthActivity
     protected void onAuthSuccess(FirebaseUser user) {
         Log.d(TAG, "Auth success!");
 
-        // Go...
-        Intent intent;
+        // Go to
         if (user.isEmailVerified()) {
-            // ...to main activity
-            intent = new Intent(this, MainActivity_.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            // Main activity
+            MainActivity_.intent(this)
+                    .flags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .start();
         } else {
-            // ...to confirm mail activity
-            intent = new Intent(this, ConfirmMailActivity.class);
+            // Confirm mail activity
+            ConfirmMailActivity_.intent(this)
+                    .start();
         }
-        startActivity(intent);
         finish();
     }
 

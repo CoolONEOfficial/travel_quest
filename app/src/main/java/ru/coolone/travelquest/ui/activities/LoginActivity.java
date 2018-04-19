@@ -1,14 +1,19 @@
 package ru.coolone.travelquest.ui.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
+
+import org.androidannotations.annotations.EActivity;
 
 import ru.coolone.travelquest.R;
 
 /**
  * A login screen that offers login via email/password.
  */
+@SuppressLint("Registered")
+@EActivity
 public class LoginActivity
         extends AbstractAuthActivity {
     static final String TAG = LoginActivity.class.getSimpleName();
