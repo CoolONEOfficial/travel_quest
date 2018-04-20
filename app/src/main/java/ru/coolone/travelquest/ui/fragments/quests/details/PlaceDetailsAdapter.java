@@ -12,26 +12,24 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import lombok.Setter;
-import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
-public class QuestDetailsAdapter
+public class PlaceDetailsAdapter
         extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
-    private static final String TAG = QuestDetailsFragment.class.getSimpleName();
+    private static final String TAG = PlaceDetailsFragment.class.getSimpleName();
     @Setter
     protected OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
 
     @Setter
-    protected OnClickListener<BaseSectionedHeader, QuestDetailsAdapter.HeaderHolder> headerClickListener;
+    protected OnClickListener<BaseSectionedHeader, PlaceDetailsAdapter.HeaderHolder> headerClickListener;
 
     @Override
     public BaseSectionedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -100,7 +98,7 @@ public class QuestDetailsAdapter
         TextView title;
 
         public HeaderHolder(View v) {
-            super(v, headerClickListener, QuestDetailsAdapter.this);
+            super(v, headerClickListener, PlaceDetailsAdapter.this);
             title = v.findViewById(R.id.details_head_text);
             caret = v.findViewById(R.id.details_head_caret);
 
@@ -125,7 +123,7 @@ public class QuestDetailsAdapter
         TextView text;
 
         ItemHolderText(View v) {
-            super(v, itemClickListener, QuestDetailsAdapter.this);
+            super(v, itemClickListener, PlaceDetailsAdapter.this);
 
             this.text = v.findViewById(R.id.details_item_text);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -146,7 +144,7 @@ public class QuestDetailsAdapter
         RecyclerView recyclerView;
 
         ItemHolderRecycler(View v, Context context) {
-            super(v, itemClickListener, QuestDetailsAdapter.this);
+            super(v, itemClickListener, PlaceDetailsAdapter.this);
 
             this.recyclerView = v.findViewById(R.id.details_item_recycler);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));

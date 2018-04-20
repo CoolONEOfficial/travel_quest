@@ -4,7 +4,7 @@
     <string name="place_autocomplete_hint">Search</string>
 
     <!-- Navigation menu -->
-    <string name="nav_quests">Quests</string>
+    <string name="nav_places">Map</string>
     <string name="nav_settings">Settings</string>
     <string name="nav_about">About</string>
     <string name="nav_logout">Logout</string>
@@ -17,7 +17,12 @@
     <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
     <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
 
-    <!-- Greeting -->
-    <string name="alert_greetings_title" translatable="true">Greetings</string>
-    <string name="alert_greetings_text" translatable="true">Welcome to Travel Quest - an application for exploring Nizhny Novgorod! Here you can find out the description of any historical object, its history, facts about it, and other interesting information. For information about the object, find it on the map, or use the search that is on top, and click on the object. Good luck!</string>
+    <!-- Alerts -->
+    <string name="alert_button_text">Next</string>
+    <string name="alert_greetings_title">Greetings</string>
+    <string name="alert_greetings_text">Welcome to Travel Quest - an application for exploring Nizhny Novgorod! Here you can find out the description of any historical object, its history, facts about it,and other interesting information.</string>
+    <string name="alert_places_title">Places</string>
+    <string name="alert_places_text">For information about the object, tap on it.</string>
+    <string name="alert_search_title">Search</string>
+    <string name="alert_search_text">To search for objects, enter keywords in the search box.</string>
 </resources>

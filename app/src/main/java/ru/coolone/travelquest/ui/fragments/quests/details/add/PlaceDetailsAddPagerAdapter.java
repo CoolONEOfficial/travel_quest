@@ -11,17 +11,17 @@ import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
  * @author coolone
  * @since 30.03.18
  */
-public class QuestDetailsAddPagerAdapter extends FragmentPagerAdapter {
-    private QuestDetailsAddFragment tabFragments[] =
-            new QuestDetailsAddFragment[SupportLang.values().length];
+public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
+    private PlaceDetailsAddFragment tabFragments[] =
+            new PlaceDetailsAddFragment[SupportLang.values().length];
     private Context context;
 
-    public QuestDetailsAddPagerAdapter(FragmentManager fm, String placeId, Context context) {
+    public PlaceDetailsAddPagerAdapter(FragmentManager fm, String placeId, Context context) {
         super(fm);
         this.context = context;
 
         for (int mTabFragmentId = 0; mTabFragmentId < tabFragments.length; mTabFragmentId++) {
-            tabFragments[mTabFragmentId] = QuestDetailsAddFragment_.builder()
+            tabFragments[mTabFragmentId] = PlaceDetailsAddFragment_.builder()
                     .lang(SupportLang.values()[mTabFragmentId])
                     .placeId(placeId)
                     .build();

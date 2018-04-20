@@ -17,8 +17,6 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -35,8 +33,8 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
  * @since 30.03.18
  */
 @EFragment(R.layout.fragment_add_details_page)
-public class QuestDetailsAddFragment extends Fragment {
-    private static final String TAG = QuestDetailsAddFragment.class.getSimpleName();
+public class PlaceDetailsAddFragment extends Fragment {
+    private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
 
     // Arguments
     public enum ArgKeys {
@@ -64,7 +62,7 @@ public class QuestDetailsAddFragment extends Fragment {
     // Description recycler view
     @ViewById(R.id.add_details_page_details_recycler)
     public RecyclerView recycler;
-    QuestDetailsAddAdapter recyclerAdapter;
+    PlaceDetailsAddAdapter recyclerAdapter;
 
     // Add section button
     @ViewById(R.id.add_details_page_add_section_button)
@@ -79,10 +77,10 @@ public class QuestDetailsAddFragment extends Fragment {
         // Recycle view
         setDetailsRecyclerView(
                 recycler,
-                QuestDetailsAddAdapter.class,
+                PlaceDetailsAddAdapter.class,
                 getContext()
         );
-        recyclerAdapter = (QuestDetailsAddAdapter) recycler.getAdapter();
+        recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
 
         // Add section button
         addSectionButton.setOnClickListener(

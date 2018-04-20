@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,9 +45,9 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
 
 @EFragment
-public class QuestDetailsFragment extends Fragment {
+public class PlaceDetailsFragment extends Fragment {
 
-    static final String TAG = QuestDetailsFragment.class.getSimpleName();
+    static final String TAG = PlaceDetailsFragment.class.getSimpleName();
 
     // Arguments
     public enum ArgKeys {
@@ -143,7 +142,7 @@ public class QuestDetailsFragment extends Fragment {
         // Recycle view
         setDetailsRecyclerView(
                 detailsRecyclerView,
-                QuestDetailsAdapter.class,
+                PlaceDetailsAdapter.class,
                 getContext()
         );
 
@@ -171,7 +170,7 @@ public class QuestDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_quest_details,
+        View view = inflater.inflate(R.layout.fragment_place_details,
                 container,
                 false);
 
@@ -184,9 +183,9 @@ public class QuestDetailsFragment extends Fragment {
     /**
      * @param place   Google maps place with details data
      * @param context @{@link Context}
-     * @return @{@link QuestDetailsFragment}
+     * @return @{@link PlaceDetailsFragment}
      */
-    public static QuestDetailsFragment newInstance(com.google.android.gms.location.places.Place place, Context context) {
+    public static PlaceDetailsFragment newInstance(com.google.android.gms.location.places.Place place, Context context) {
         // Convert List<Place types ids> to List<Place types>
         List<Integer> placeTypeIds = place.getPlaceTypes();
         ArrayList<String> placeTypes = new ArrayList<>();
@@ -197,7 +196,7 @@ public class QuestDetailsFragment extends Fragment {
                 placeTypes.add(mPlaceType);
         }
 
-        return QuestDetailsFragment_.builder()
+        return PlaceDetailsFragment_.builder()
                 .title(place.getName().toString())
                 .phone(place.getPhoneNumber().toString())
                 .url(place.getWebsiteUri() != null
@@ -475,9 +474,9 @@ public class QuestDetailsFragment extends Fragment {
 
     static private class PhotoTask extends AsyncTask<String, Integer, Void> {
 
-        QuestDetailsFragment parent;
+        PlaceDetailsFragment parent;
 
-        PhotoTask(QuestDetailsFragment parent) {
+        PhotoTask(PlaceDetailsFragment parent) {
             this.parent = parent;
         }
 

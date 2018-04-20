@@ -8,7 +8,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
@@ -43,6 +42,8 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType;
@@ -51,12 +52,11 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.api.builder.ActivityIntentBuilder;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
-import ru.coolone.travelquest.ui.fragments.quests.QuestsFragment;
+import ru.coolone.travelquest.ui.fragments.quests.PlacesFragment;
 import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 
 @SuppressLint("Registered")
@@ -64,8 +64,8 @@ import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
-        QuestsFragment.SlidingUpPanelListener,
-        QuestsFragment.AutocompleteTextViewGetter {
+        PlacesFragment.SlidingUpPanelListener,
+        PlacesFragment.AutocompleteTextViewGetter {
     static final String TAG = MainActivity.class.getSimpleName();
     static final int NAV_MENU_DEFAULT_ID = R.id.nav_quests;
 
@@ -74,6 +74,9 @@ public class MainActivity extends AppCompatActivity implements
 
     // Api client
     private static GoogleApiClient apiClient;
+
+    // First run bool
+    public static boolean firstRun = false;
 
     // Action bar drawer toggle
     ActionBarDrawerToggle toggle;
@@ -150,13 +153,28 @@ public class MainActivity extends AppCompatActivity implements
         if (user != null) {
             if (!user.isEmailVerified() && !user.isAnonymous())
                 // To confirm mail screen
-                toActivity(ConfirmMailActivity_.intent(this));
+                ConfirmMailActivity_.intent(this)
+                        .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
+                        .start();
         } else {
-            showAuthDialog();
+            showAuthDialog(this,
+                    task -> {
+                        if (task.isSuccessful())
+                            MainActivity_.intent(this)
+                                    .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    .start();
+                    });
         }
 
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
+        if (settings.getBoolean("firstrun", true)) {
+            settings.edit().putBoolean("firstrun", false).apply();
+            firstRun = true;
+
+            // On first run
+            startTour();
+        }
 
         // Google api client
         apiClient = new GoogleApiClient
@@ -201,53 +219,46 @@ public class MainActivity extends AppCompatActivity implements
         );
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        if (settings.getBoolean("firstrun", true)) {
-            settings.edit().putBoolean("firstrun", false).apply();
-
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(getString(R.string.alert_greetings_title))
-                    .setMessage(getString(R.string.alert_greetings_text))
-                    .setCancelable(false)
-                    .setNegativeButton("OK",
-                            (dialog, id) -> dialog.cancel());
-            AlertDialog alert = builder.create();
-            alert.show();
-        }
+    private void startTour() {
+        IntroActivity_.intent(this).start();
     }
 
-    private void showAuthDialog() {
-        AlertDialog.Builder ad = new AlertDialog.Builder(this);
-        ad.setCancelable(false);
-        ad.setTitle(getString(R.string.alert_splash_title));
-        ad.setMessage(getString(R.string.alert_splash_text));
-        ad.setPositiveButton(getString(R.string.alert_splash_button_auth),
-                (dialog, which) -> toActivity(LoginActivity_.intent(this))
-        );
-        ad.setNegativeButton(getString(R.string.alert_splash_button_anonymous),
+    public static void showAuthDialog(Activity activity, OnCompleteListener<AuthResult> listener) {
+        AlertDialog.Builder ad = new AlertDialog.Builder(activity);
+        ad.setTitle(activity.getString(R.string.alert_splash_title));
+        ad.setMessage(activity.getString(R.string.alert_splash_text));
+        ad.setPositiveButton(activity.getString(R.string.alert_splash_button_auth),
                 (dialog, which) -> {
-                    final ProgressDialog progress = new ProgressDialog(this);
-                    progress.setTitle(getString(R.string.login_progress));
+                    LoginActivity_.intent(activity)
+                            .start();
+                    activity.finish();
+                }
+        );
+        ad.setNegativeButton(activity.getString(R.string.alert_splash_button_anonymous),
+                (dialog, which) -> {
+                    final ProgressDialog progress = new ProgressDialog(activity);
+                    progress.setTitle(activity.getString(R.string.login_progress));
                     progress.setCancelable(true);
-                    progress.setOnCancelListener(
-                            dialog1 -> toActivity(MainActivity_.intent(this))
-                    );
                     progress.show();
 
                     FirebaseAuth.getInstance().signInAnonymously()
-                            .addOnCompleteListener(this, task -> {
-                                if (task.isSuccessful()) {
-                                    Log.d(TAG, "signInAnonymously:success");
-                                } else {
-                                    Log.w(TAG, "signInAnonymously:failure", task.getException());
-                                    Toast.makeText(this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                                progress.dismiss();
-                            });
+                            .addOnCompleteListener(activity,
+                                    task -> {
+                                        if (task.isSuccessful()) {
+                                            Log.d(TAG, "signInAnonymously:success");
+
+                                            MainActivity_.intent(activity)
+                                                    .start();
+                                            activity.finish();
+                                        } else {
+                                            Log.w(TAG, "signInAnonymously:failure", task.getException());
+                                            Toast.makeText(activity, "Authentication failed.",
+                                                    Toast.LENGTH_SHORT).show();
+                                        }
+                                        progress.dismiss();
+                                    }
+                            )
+                            .addOnCompleteListener(listener);
                 }
         );
         ad.show();
@@ -301,15 +312,6 @@ public class MainActivity extends AppCompatActivity implements
         finishAffinity();
     }
 
-    private void toActivity(ActivityIntentBuilder intentBuilder) {
-        // Go to target activity
-        startActivity(
-                intentBuilder
-                .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
-        .get());
-        finish();
-    }
-
     private void setToolbarColors(int color) {
         // Autocomplete text view
         autocompleteTextView.setTextColor(color);
@@ -340,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements
                     fragment = new AboutFragment();
                     break;
                 case QUESTS:
-                    fragment = new QuestsFragment();
+                    fragment = new PlacesFragment();
                     break;
                 case SETTINGS:
                     fragment = new SettingsFragment();
@@ -420,7 +422,7 @@ public class MainActivity extends AppCompatActivity implements
                 Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
             else Log.d(TAG, "Signout user is null!");
 
-            showAuthDialog();
+            showAuthDialog(this, null);
         } else {
             // To fragment
             val fragTrans = getSupportFragmentManager().beginTransaction();

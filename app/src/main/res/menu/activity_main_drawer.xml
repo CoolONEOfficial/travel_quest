@@ -9,7 +9,7 @@
         <item
             android:id="@+id/nav_quests"
             android:icon="@drawable/ic_menu_quests"
-            android:title="@string/nav_quests"
+            android:title="@string/nav_places"
             android:checked="true" />
         <item
             android:id="@+id/nav_about"

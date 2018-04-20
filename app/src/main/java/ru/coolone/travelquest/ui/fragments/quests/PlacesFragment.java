@@ -34,14 +34,14 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
-import ru.coolone.travelquest.ui.fragments.quests.details.QuestDetailsFragment;
+import ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment;
 
-public class QuestsFragment extends Fragment
+public class PlacesFragment extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
-        QuestDetailsFragment.FragmentListener {
+        PlaceDetailsFragment.FragmentListener {
 
-    static final String TAG = QuestsFragment.class.getSimpleName();
+    static final String TAG = PlacesFragment.class.getSimpleName();
 
     // Map
     public GoogleMap map;
@@ -52,7 +52,7 @@ public class QuestsFragment extends Fragment
     // Sliding panel
     private SlidingUpPanelLayout slidingPanel;
 
-    public QuestsFragment() {
+    public PlacesFragment() {
         // Required empty public constructor
     }
 
@@ -76,7 +76,7 @@ public class QuestsFragment extends Fragment
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_quests, container, false);
+        View view = inflater.inflate(R.layout.fragment_places, container, false);
 
         // Sliding layout
         slidingLayout = view.findViewById(R.id.sliding_container);
@@ -277,13 +277,13 @@ public class QuestsFragment extends Fragment
                         );
 
                         // Create details fragment
-                        QuestDetailsFragment questDetailsFragment = QuestDetailsFragment.newInstance(place, getContext());
-                        questDetailsFragment.setFragmentListener(QuestsFragment.this);
+                        PlaceDetailsFragment placeDetailsFragment = PlaceDetailsFragment.newInstance(place, getContext());
+                        placeDetailsFragment.setFragmentListener(PlacesFragment.this);
 
                         // Set
                         FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
                         fragTrans.replace(R.id.sliding_container,
-                                questDetailsFragment);
+                                placeDetailsFragment);
                         fragTrans.commit();
                     }
                 });

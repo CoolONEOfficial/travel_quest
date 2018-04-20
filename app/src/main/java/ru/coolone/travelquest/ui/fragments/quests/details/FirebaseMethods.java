@@ -19,7 +19,7 @@ import java.util.Random;
 import lombok.val;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddAdapter;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
@@ -376,7 +376,7 @@ public class FirebaseMethods {
             val adapter = (BaseSectionedAdapter)
                     (recyclerView.getAdapter() != null
                             ? (BaseSectionedAdapter) recyclerView.getAdapter() :
-                            (adapterClass == QuestDetailsAddAdapter.class)
+                            (adapterClass == PlaceDetailsAddAdapter.class)
                                     ? adapterClass.getDeclaredConstructor
                                     (
                                             Context.class

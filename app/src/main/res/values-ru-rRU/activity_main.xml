@@ -6,13 +6,20 @@
     <!-- Navigation menu -->
     <string name="nav_about">Обратная связь</string>
     <string name="nav_settings">Настройки</string>
-    <string name="nav_quests">Квесты</string>
+    <string name="nav_places">Карта</string>
     <string name="nav_logout">Выйти</string>
 
     <!-- Menu bar -->
     <string name="menu_bar_subtitle">Приложение для туристов, позволяющее узнать историю Нижнего Новгорода</string>
 
-    <!-- Greeting -->
-    <string name="alert_greetings_title" translatable="true">Приветствие</string>
-    <string name="alert_greetings_text" translatable="true">Добро пожаловать в Travel Quest - приложение для изучения Нижнего Новгорода! Здесь вы сможете узнать описание любого исторического обьекта, его историю, факты о нем, и другую интересную информацию. Для получения информации о обьекте, найдите его на карте, или используйте поиск, который находится сверху, и нажмите на обьект. Удачи!</string>
+    <!-- Alerts -->
+    <string name="alert_button_text">Продолжить</string>
+    <string name="alert_greetings_title">Приветствие</string>
+    <string name="alert_greetings_text">Добро пожаловать в Travel Quest - приложение для изучения Нижнего Новгорода! Здесь вы сможете узнать описание любого исторического обьекта, его историю, факты о нем, и другую интересную информацию.</string>
+    <string name="alert_places_title">Исторические обьекты</string>
+    <string name="alert_places_text">Для получения информации о обьекте, тапните по нему.</string>
+    <string name="alert_add_details_title">Добавление информации</string>
+    <string name="alert_add_details_text">При желании, Вы можете добавить свою информацию к любому из обьектов.</string>
+    <string name="alert_search_title">Поиск</string>
+    <string name="alert_search_text">Для поиска обьектов введите ключевые слова в строку поиска.</string>
 </resources>

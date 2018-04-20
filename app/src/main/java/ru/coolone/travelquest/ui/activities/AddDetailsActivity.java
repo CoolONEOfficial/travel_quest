@@ -25,8 +25,8 @@ import org.androidannotations.annotations.ViewById;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddFragment;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.QuestDetailsAddPagerAdapter;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddFragment;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddPagerAdapter;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.serializeDetails;
 
@@ -63,7 +63,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     // View pager
     @ViewById(R.id.add_details_viewpager)
     ViewPager viewPager;
-    QuestDetailsAddPagerAdapter pagerAdapter;
+    PlaceDetailsAddPagerAdapter pagerAdapter;
 
     // Tab layout
     @ViewById(R.id.add_details_sliding_tabs)
@@ -74,7 +74,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     @AfterViews
     void afterViews() {
         // View pager
-        pagerAdapter = new QuestDetailsAddPagerAdapter(
+        pagerAdapter = new PlaceDetailsAddPagerAdapter(
                 getSupportFragmentManager(),
                 placeId,
                 this
@@ -126,7 +126,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 .getInstance();
 
         for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-            QuestDetailsAddFragment mFrag = (QuestDetailsAddFragment) pagerAdapter.getItem(mFragId);
+            PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
 
             serializeDetails(
                     db
