@@ -84,9 +84,6 @@ public class MainActivity extends AppCompatActivity implements
     // Firebase user
     public static FirebaseUser firebaseUser;
 
-    // Firestore
-    public static FirebaseFirestore firestore;
-
     // Action bar drawer toggle
     ActionBarDrawerToggle toggle;
 
@@ -155,9 +152,6 @@ public class MainActivity extends AppCompatActivity implements
                         .detectLeakedClosableObjects()
                         .penaltyLog()
                         .build());
-
-        // Firestore
-        firestore = FirebaseFirestore.getInstance();
 
         // Switch last login method
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -231,7 +225,7 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public static DocumentReference getQuestsRoot(String lang) {
-        return firestore
+        return FirebaseFirestore.getInstance()
                 .collection(lang)
                 .document("quests");
     }
@@ -279,6 +273,17 @@ public class MainActivity extends AppCompatActivity implements
                 }
         );
         ad.show();
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        for (int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
+            val mFragKey = fragmentArr.keyAt(mFragId);
+            val mFragVal = fragmentArr.get(mFragKey);
+            if (mFragVal != null)
+                mFragVal.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     static public int getAppHeight(Activity activity) {

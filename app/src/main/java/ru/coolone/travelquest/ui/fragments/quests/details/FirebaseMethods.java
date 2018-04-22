@@ -262,16 +262,13 @@ public class FirebaseMethods {
                             }
                         }
                 )
-                .
-
-                        addOnFailureListener(
-                                e ->
-
-                                {
-                                    listener.onFailure(e);
-                                    Log.e(TAG, "Error while getting cards order by score", e);
-                                }
-                        );
+                .addOnFailureListener(
+                        e -> {
+                            listener.onCompleted();
+                            listener.onFailure(e);
+                            Log.e(TAG, "Error while getting cards order by score", e);
+                        }
+                );
     }
 
     public static boolean parseDetailsHeaders(

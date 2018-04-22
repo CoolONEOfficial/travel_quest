@@ -20,18 +20,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/card_details_rank"
+                android:layout_toLeftOf="@id/card_details_likes"
                 android:text="...@..."
                 android:textSize="24sp" />
 
             <TextView
-                android:id="@+id/card_details_rank"
+                android:id="@+id/card_details_likes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@id/card_details_star"
                 android:gravity="end"
-                android:text="#"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -42,6 +41,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:visibility="invisible"
+                app:is_enabled="false"
                 app:icon_type="star" />
 
         </RelativeLayout>

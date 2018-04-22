@@ -1,7 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.quests;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -34,12 +33,16 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment;
+
+import static android.app.Activity.RESULT_OK;
+import static ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment.REQUEST_CODE_ADD_DETAILS;
 
 @EFragment(R.layout.fragment_places)
 public class PlacesFragment extends Fragment
@@ -61,6 +64,13 @@ public class PlacesFragment extends Fragment
     // Sliding panel
     @ViewById(R.id.places_sliding_panel)
     SlidingUpPanelLayout slidingPanel;
+
+    // Fragment details
+    PlaceDetailsFragment placeDetailsFragment;
+
+    // Place
+    Place currentPlace;
+    PointOfInterest currentPoi;
 
     @AfterViews
     void afterViews() {
@@ -97,7 +107,7 @@ public class PlacesFragment extends Fragment
                         break;
                     case COLLAPSED:
                         map.setPadding(0, getActionBarHeight(),
-                                0, panel.findViewById(R.id.layout_details_header)
+                                0, panel.findViewById(R.id.details_layout_header)
                                         .getHeight());
                         break;
                 }
@@ -232,31 +242,25 @@ public class PlacesFragment extends Fragment
         // Get style
         String mapStyle = MainActivity.settings.getString(
                 getResources().getString(R.string.settings_map_style_key),
-                null
+                "retro"
         );
 
-        if (mapStyle != null) {
-            // Add prefix
-            mapStyle = "map_" + mapStyle;
+        // Add prefix
+        mapStyle = "map_" + mapStyle;
 
-            // Set style
-            try {
-                if (!map.setMapStyle(
-                        MapStyleOptions.loadRawResourceStyle(
-                                getActivity().getApplicationContext(),
-                                getResources().getIdentifier(
-                                        mapStyle,
-                                        "raw",
-                                        getActivity().getPackageName())
-                        )))
-                    Log.e(TAG, "Parse style failed");
-            } catch (Resources.NotFoundException e) {
-                Log.e(TAG, "Find style \"" + mapStyle + "\" failed", e);
-            }
-        } else {
-            Log.d(TAG, "Map style by "
-                    + getResources().getString(R.string.settings_map_style_key)
-                    + " not found!\nUsing default map style...");
+        // Set style
+        try {
+            if (!map.setMapStyle(
+                    MapStyleOptions.loadRawResourceStyle(
+                            getActivity().getApplicationContext(),
+                            getResources().getIdentifier(
+                                    mapStyle,
+                                    "raw",
+                                    getActivity().getPackageName())
+                    )))
+                Log.e(TAG, "Parse style failed");
+        } catch (Resources.NotFoundException e) {
+            Log.e(TAG, "Find style \"" + mapStyle + "\" failed", e);
         }
     }
 
@@ -264,22 +268,24 @@ public class PlacesFragment extends Fragment
     public void onPoiClick(PointOfInterest poi) {
         Log.d(TAG, "Poi " + poi.name + " clicked!");
 
+        currentPoi = poi;
+
         // Find place by id (from poi)
         Places.GeoDataApi.getPlaceById(MainActivity.getApiClient(), poi.placeId)
                 .setResultCallback(places -> {
                     if (places.getStatus().isSuccess() &&
                             places.getCount() > 0) {
                         // Select place
-                        final Place place = places.get(0);
+                        currentPlace = places.get(0);
                         Log.d(TAG,
                                 "Place selected:" + '\n' +
-                                        "name: " + place.getName() + '\n' +
-                                        "unical id: " + place.getId() + '\n' +
-                                        "types: " + place.getPlaceTypes()
+                                        "name: " + currentPlace.getName() + '\n' +
+                                        "unical id: " + currentPlace.getId() + '\n' +
+                                        "types: " + currentPlace.getPlaceTypes()
                         );
 
                         // Create details fragment
-                        PlaceDetailsFragment placeDetailsFragment = PlaceDetailsFragment.newInstance(place, getContext());
+                        placeDetailsFragment = PlaceDetailsFragment.newInstance(currentPlace, getContext());
                         placeDetailsFragment.setFragmentListener(PlacesFragment.this);
 
                         // Set
@@ -306,9 +312,12 @@ public class PlacesFragment extends Fragment
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    @OnActivityResult(REQUEST_CODE_ADD_DETAILS)
+    void onResult(int result) {
+        if (result == RESULT_OK && placeDetailsFragment != null) {
+            onPoiClick(currentPoi);
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+        }
     }
 
     @Override
@@ -320,7 +329,7 @@ public class PlacesFragment extends Fragment
                 () -> {
                     // Set panel height
                     slidingPanel.setPanelHeight(
-                            view.findViewById(R.id.layout_details_header)
+                            view.findViewById(R.id.details_layout_header)
                                     .getHeight());
 
                     // Show if hidden
@@ -330,9 +339,9 @@ public class PlacesFragment extends Fragment
         );
 
         // Set on click header
-        view.findViewById(R.id.layout_details_header).setOnClickListener(
+        view.findViewById(R.id.details_layout_header).setOnClickListener(
                 v -> {
-                    slidingPanel.setMinimumHeight(view.findViewById(R.id.layout_details_header)
+                    slidingPanel.setMinimumHeight(view.findViewById(R.id.details_layout_header)
                             .getHeight());
 
                     // Click header event

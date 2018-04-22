@@ -29,7 +29,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
-import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
 import java.text.DecimalFormat;
@@ -42,7 +41,6 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 
-import static android.app.Activity.RESULT_OK;
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsCards;
 
@@ -115,7 +113,7 @@ public class PlaceDetailsFragment extends Fragment {
     @ViewById(R.id.details_photos_scroll)
     HorizontalScrollView photosScroll;
 
-    @ViewById(R.id.layout_details_body)
+    @ViewById(R.id.details_layout_body)
     RelativeLayout bodyLayout;
 
     @AfterViews
@@ -147,13 +145,7 @@ public class PlaceDetailsFragment extends Fragment {
     /**
      * Activities request codes
      */
-    private static final int REQUEST_CODE_ADD_DETAILS = 0;
-
-    @OnActivityResult(REQUEST_CODE_ADD_DETAILS)
-    void onResult(int result) {
-        if (result == RESULT_OK)
-            refresh();
-    }
+    public static final int REQUEST_CODE_ADD_DETAILS = 0;
 
     void refresh() {
         setTitle(title);
@@ -292,7 +284,7 @@ public class PlaceDetailsFragment extends Fragment {
     }
 
     private void setDescriptionVisibility(int visibility) {
-        int errorVisibility = (visibility == View.VISIBLE
+        val errorVisibility = (visibility == View.VISIBLE
                 ? View.GONE
                 : View.VISIBLE);
 
@@ -385,6 +377,10 @@ public class PlaceDetailsFragment extends Fragment {
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
 
+        // Clear cards
+        val adapter = (PlaceCardDetailsAdapter) detailsRecyclerView.getAdapter();
+        adapter.dataset.clear();
+
         val collRef =
                 MainActivity.getQuestsRoot(MainActivity.getLocale(getContext()).lang)
                         .collection(placeId);
@@ -412,7 +408,7 @@ public class PlaceDetailsFragment extends Fragment {
                     // Parse details
                     parseDetailsCards(
                             task,
-                            (PlaceCardDetailsAdapter) detailsRecyclerView.getAdapter(),
+                            adapter,
                             getContext(),
                             new FirebaseMethods.FirestoreListener() {
                                 @Override

@@ -16,13 +16,13 @@
         android:scrollbars="none">
 
         <LinearLayout
-            android:id="@+id/details_details"
+            android:id="@+id/details_layout_root"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
             <RelativeLayout
-                android:id="@+id/layout_details_header"
+                android:id="@+id/details_layout_header"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/accent"
@@ -79,7 +79,7 @@
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/layout_details_body"
+                android:id="@+id/details_layout_body"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
@@ -101,7 +101,7 @@
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="match_parent"
                     android:layout_below="@id/details_photos_scroll">
                 </android.support.v7.widget.RecyclerView>
 
