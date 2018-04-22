@@ -12,6 +12,7 @@ import android.widget.ProgressBar;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
@@ -20,13 +21,15 @@ import java.util.ArrayList;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsHeaders;
 
 /**
  * @author coolone
@@ -36,21 +39,9 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 public class PlaceDetailsAddFragment extends Fragment {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
 
-    // Arguments
-    public enum ArgKeys {
-        PLACE_ID("placeId"),
-        LANG("lang");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return val;
-        }
+    public enum ResultCode {
+        SUCCESS,
+        CANCELED
     }
 
     @FragmentArg
@@ -75,24 +66,24 @@ public class PlaceDetailsAddFragment extends Fragment {
     @AfterViews
     void afterViews() {
         // Recycle view
-        setDetailsRecyclerView(
+        initDetailsRecyclerView(
                 recycler,
                 PlaceDetailsAddAdapter.class,
                 getContext()
         );
         recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
 
-        // Add section button
-        addSectionButton.setOnClickListener(
-                v -> recyclerAdapter.addSection(
-                        new Pair<>(
-                                new BaseSectionedHeader(),
-                                new ArrayList<>()
-                        )
+        refreshDetails();
+    }
+
+    @Click(R.id.add_details_page_add_section_button)
+    void onAddSection() {
+        recyclerAdapter.addSection(
+                new Pair<>(
+                        new BaseSectionedHeader(),
+                        new ArrayList<>()
                 )
         );
-
-        refreshDetails();
     }
 
     private void createTemplateDetails() {
@@ -115,7 +106,9 @@ public class PlaceDetailsAddFragment extends Fragment {
                     db
                             .collection(lang.lang)
                             .document("quests")
-                            .collection(placeId);
+                            .collection(placeId)
+                            .document(MainActivity.firebaseUser.getUid())
+                            .collection("coll");
 
             // Parse details
 
@@ -134,13 +127,12 @@ public class PlaceDetailsAddFragment extends Fragment {
             collRef.get().addOnSuccessListener(
                     task -> {
                         // Parse details
-                        if (!parseDetails(
+                        if (!parseDetailsHeaders(
                                 task,
-                                recycler,
+                                (BaseSectionedAdapter) recycler.getAdapter(),
                                 this.getContext()
                         ))
                             createTemplateDetails();
-
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()

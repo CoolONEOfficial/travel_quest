@@ -5,18 +5,12 @@ import android.support.annotation.Nullable;
 
 import com.takisoft.fix.support.v7.preference.PreferenceFragmentCompat;
 
+import org.androidannotations.annotations.EFragment;
+
 import ru.coolone.travelquest.R;
 
+@EFragment
 public class SettingsFragment extends PreferenceFragmentCompat {
-
-    public SettingsFragment() {
-        // Required empty public constructor
-    }
-
-    public static SettingsFragment newInstance() {
-        return new SettingsFragment();
-    }
-
     @Override
     public void onCreatePreferencesFix(@Nullable Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);

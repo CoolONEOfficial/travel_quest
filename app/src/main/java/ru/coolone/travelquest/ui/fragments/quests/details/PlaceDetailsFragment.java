@@ -5,13 +5,13 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -24,11 +24,12 @@ import com.google.android.gms.location.places.PlacePhotoMetadata;
 import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
 import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
+import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
 import java.text.DecimalFormat;
@@ -41,34 +42,14 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetails;
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
+import static android.app.Activity.RESULT_OK;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsCards;
 
 @EFragment
 public class PlaceDetailsFragment extends Fragment {
 
     static final String TAG = PlaceDetailsFragment.class.getSimpleName();
-
-    // Arguments
-    public enum ArgKeys {
-        TITLE("title"),
-        PHONE("phone"),
-        URL("url"),
-        RATING("rating"),
-        TYPES("types"),
-        PLACE_ID("placeId");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        public String toString() {
-            return val;
-        }
-    }
 
     private FragmentListener fragmentListener;
 
@@ -76,7 +57,7 @@ public class PlaceDetailsFragment extends Fragment {
     RecyclerView detailsRecyclerView;
 
     @ViewById(R.id.details_details_add_button)
-    Button detailsAddButton;
+    FloatingActionButton detailsAddButton;
 
     @FragmentArg
     @Getter
@@ -139,22 +120,39 @@ public class PlaceDetailsFragment extends Fragment {
 
     @AfterViews
     void afterViews() {
-        // Recycle view
-        setDetailsRecyclerView(
-                detailsRecyclerView,
-                PlaceDetailsAdapter.class,
-                getContext()
-        );
+        // Recycler view
+        initDetailsRecyclerView(detailsRecyclerView, PlaceCardDetailsAdapter.class, getContext());
 
         // Add details button
-        detailsAddButton.setOnClickListener(
-                // To add place activity
-                v -> AddDetailsActivity_.intent(getContext())
-                        .placeId(placeId)
-                        .start()
+        detailsAddButton.setVisibility(
+                (MainActivity.firebaseUser != null) ?
+                        MainActivity.firebaseUser.isAnonymous() ?
+                                View.GONE
+                                : View.VISIBLE
+                        : View.GONE
         );
 
         refresh();
+    }
+
+    @Click(R.id.details_details_add_button)
+    void onAddButtonClicked() {
+        // To add place activity
+        AddDetailsActivity_
+                .intent(getContext())
+                .placeId(placeId)
+                .startForResult(REQUEST_CODE_ADD_DETAILS);
+    }
+
+    /**
+     * Activities request codes
+     */
+    private static final int REQUEST_CODE_ADD_DETAILS = 0;
+
+    @OnActivityResult(REQUEST_CODE_ADD_DETAILS)
+    void onResult(int result) {
+        if (result == RESULT_OK)
+            refresh();
     }
 
     void refresh() {
@@ -387,13 +385,8 @@ public class PlaceDetailsFragment extends Fragment {
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
 
-        FirebaseFirestore db = FirebaseFirestore
-                .getInstance();
-
         val collRef =
-                db
-                        .collection(MainActivity.getLocale(getContext()).lang)
-                        .document("quests")
+                MainActivity.getQuestsRoot(MainActivity.getLocale(getContext()).lang)
                         .collection(placeId);
 
         // Parse details
@@ -405,7 +398,7 @@ public class PlaceDetailsFragment extends Fragment {
                 ViewGroup.LayoutParams.WRAP_CONTENT
         );
         params.addRule(
-            RelativeLayout.CENTER_IN_PARENT
+                RelativeLayout.CENTER_IN_PARENT
         );
         bar.setLayoutParams(params);
         bodyLayout.addView(bar);
@@ -417,12 +410,25 @@ public class PlaceDetailsFragment extends Fragment {
                     setDescriptionVisibility(View.VISIBLE);
 
                     // Parse details
-                    if (!parseDetails(
+                    parseDetailsCards(
                             task,
-                            detailsRecyclerView,
-                            getContext()
-                    ))
-                        detailsError("Docs not valid or empty");
+                            (PlaceCardDetailsAdapter) detailsRecyclerView.getAdapter(),
+                            getContext(),
+                            new FirebaseMethods.FirestoreListener() {
+                                @Override
+                                public void onSuccess() {
+                                }
+
+                                @Override
+                                public void onFailure(Exception e) {
+                                    detailsError(e);
+                                }
+
+                                @Override
+                                public void onCompleted() {
+                                }
+                            }
+                    );
                 })
                 .addOnFailureListener(this::detailsError)
                 .addOnCompleteListener(

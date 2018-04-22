@@ -6,16 +6,17 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
 
+import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
@@ -32,33 +33,32 @@ public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
     private static int startedTasks;
-
     private static int startedDeleteTasks;
 
-    private static void checkEndTask(SerializeDetailsListener listener) {
+    private static void checkEndTask(FirestoreListener listener) {
         startedTasks--;
 
         Log.d(TAG, "checkEndTask started, tasks count: " + startedTasks);
 
         if (startedTasks == 0) {
             Log.d(TAG, "All serialize tasks ended!");
-            listener.onSerializeDetailsCompleted();
-            listener.onSerializeDetailsSuccess();
+            listener.onCompleted();
+            listener.onSuccess();
         }
     }
 
-    public interface SerializeDetailsListener {
-        void onSerializeDetailsSuccess();
+    public interface FirestoreListener {
+        void onSuccess();
 
-        void onSerializeDetailsError(Exception e);
+        void onFailure(Exception e);
 
-        void onSerializeDetailsCompleted();
+        void onCompleted();
     }
 
     static public void serializeDetails(
             CollectionReference coll,
             RecyclerView recyclerView,
-            SerializeDetailsListener listener
+            FirestoreListener listener
     ) {
         startedTasks++;
         coll.get().addOnSuccessListener(
@@ -80,21 +80,22 @@ public class FirebaseMethods {
                                             e -> {
                                                 Log.e(TAG, "Error while delete doc " + mDoc.getId());
 
-                                                listener.onSerializeDetailsCompleted();
-                                                listener.onSerializeDetailsError(e);
+                                                listener.onCompleted();
+                                                listener.onFailure(e);
                                             }
                                     )
                                     .addOnSuccessListener(
                                             task -> {
                                                 startedDeleteTasks--;
 
-                                                // Start serialize docs
-                                                serializeDetails(
-                                                        coll,
-                                                        (BaseSectionedAdapter) recyclerView.getAdapter(),
-                                                        0,
-                                                        listener
-                                                );
+                                                if (startedDeleteTasks == 0)
+                                                    // Start serialize docs
+                                                    serializeDetails(
+                                                            coll,
+                                                            (BaseSectionedAdapter) recyclerView.getAdapter(),
+                                                            0,
+                                                            listener
+                                                    );
                                             }
                                     );
                     }
@@ -121,7 +122,7 @@ public class FirebaseMethods {
             CollectionReference coll,
             BaseSectionedAdapter adapter,
             int startId,
-            SerializeDetailsListener listener
+            FirestoreListener listener
     ) {
         Log.d(TAG, "--- Started serialize details ---");
 
@@ -152,8 +153,8 @@ public class FirebaseMethods {
             ).addOnFailureListener(
                     e -> {
                         Log.e(TAG, "Create firebase doument with title error", e);
-                        listener.onSerializeDetailsCompleted();
-                        listener.onSerializeDetailsError(e);
+                        listener.onCompleted();
+                        listener.onFailure(e);
                     }
             ).addOnCompleteListener(
                     task -> checkEndTask(listener)
@@ -168,35 +169,36 @@ public class FirebaseMethods {
                         + '\n' + " class: " + mItem.getClass().getSimpleName()
                 );
 
-                if (mItem instanceof QuestDetailsItemText &&
-                        !((QuestDetailsItemText) mItem).getText().isEmpty()) {
+                if (mItem instanceof QuestDetailsItemText) {
+                    val mItemText = (QuestDetailsItemText) mItem;
                     Log.d(TAG, "mItem is text");
 
-                    startedTasks++;
-                    nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
-                            new HashMap<String, Object>() {{
-                                put(
-                                        "text",
-                                        ((QuestDetailsItemText) mItem).getText()
-                                );
-                            }}
-                    ).addOnSuccessListener(
-                            taskTextComplete -> Log.d(TAG, "Adding text " + ((QuestDetailsItemText) mItem).getText() + " ended")
-                    ).addOnFailureListener(
-                            e -> {
-                                Log.e(TAG, "Create firebase doument with text error", e);
-                                listener.onSerializeDetailsCompleted();
-                                listener.onSerializeDetailsError(e);
-                            }
-                    ).addOnCompleteListener(
-                            task -> checkEndTask(listener)
-                    );
+                    if (!mItemText.getText().isEmpty()) {
+                        startedTasks++;
+                        nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
+                                new HashMap<String, Object>() {{
+                                    put(
+                                            "text",
+                                            mItemText.getText()
+                                    );
+                                }}
+                        ).addOnSuccessListener(
+                                taskTextComplete -> Log.d(TAG, "Adding text " + mItemText.getText() + " ended")
+                        ).addOnFailureListener(
+                                e -> {
+                                    Log.e(TAG, "Create firebase doument with text error", e);
+                                    listener.onCompleted();
+                                    listener.onFailure(e);
+                                }
+                        ).addOnCompleteListener(
+                                task -> checkEndTask(listener)
+                        );
+                    }
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
-                    Log.d(TAG, "mItem is recycler");
+                    val mItemRecycler = (QuestDetailsItemRecycler) mItem;
+                    Log.d(TAG, "mItem is recyclerView");
 
-                    val mItemRecycler = ((QuestDetailsItemRecycler) mItem).getRecyclerView();
-
-                    val mItemAdapter = (BaseSectionedAdapter) mItemRecycler.getAdapter();
+                    val mItemAdapter = (BaseSectionedAdapter) mItemRecycler.getRecyclerView().getAdapter();
 
                     serializeDetails(
                             nextColl,
@@ -211,40 +213,87 @@ public class FirebaseMethods {
         Log.d(TAG, "--- Ended serialize details ---");
     }
 
-    static public boolean parseDetails(
+    public static void parseDetailsCards(
             QuerySnapshot coll,
-            RecyclerView recyclerView,
-            Context context
+            PlaceCardDetailsAdapter adapter,
+            Context context,
+            FirestoreListener listener
     ) {
-        return parseDetailsHeaders(
-                coll,
-                recyclerView,
-                context
-        );
+        coll.getQuery()
+                .orderBy("score")
+                .limit(5)
+                .get()
+                .addOnSuccessListener(
+                        collRef -> {
+                            for (val mDoc : collRef.getDocuments()) {
+                                val recycler = new RecyclerView(context);
+                                val nextAdapter = new PlaceDetailsAdapter();
+                                recycler.setAdapter(nextAdapter);
+
+                                adapter.dataset.add(
+                                        new PlaceCardDetailsAdapter.Item(
+                                                mDoc.getId(),
+                                                recycler,
+                                                mDoc
+                                        )
+                                );
+                                adapter.notifyDataSetChanged();
+
+                                mDoc.getReference().collection("coll").get()
+                                        .addOnSuccessListener(
+                                                collDetails -> {
+                                                    if (parseDetailsHeaders(
+                                                            collDetails,
+                                                            nextAdapter,
+                                                            context
+                                                    ))
+                                                        listener.onSuccess();
+                                                    else
+                                                        listener.onFailure(new Exception("Error while parsing card details"));
+                                                }
+                                        )
+                                        .addOnFailureListener(
+                                                listener::onFailure
+                                        )
+                                        .addOnCompleteListener(
+                                                task -> listener.onCompleted()
+                                        );
+
+                            }
+                        }
+                )
+                .
+
+                        addOnFailureListener(
+                                e ->
+
+                                {
+                                    listener.onFailure(e);
+                                    Log.e(TAG, "Error while getting cards order by score", e);
+                                }
+                        );
     }
 
-    static private boolean parseDetailsHeaders(
+    public static boolean parseDetailsHeaders(
             QuerySnapshot coll,
-            RecyclerView recyclerView,
+            BaseSectionedAdapter adapter,
             Context context
     ) {
-        Log.d(TAG, "--- Started parse details headers ---");
-
         boolean result = false;
 
-        BaseSectionedAdapter adapter = (BaseSectionedAdapter) recyclerView.getAdapter();
+        Log.d(TAG, "--- Started parse details headers ---");
 
         for (DocumentSnapshot mDoc : coll.getDocuments()) {
             if (mDoc.contains("title")) {
                 // Recycler view
-                final RecyclerView recycler = new RecyclerView(context);
-                setDetailsRecyclerView(recycler, adapter.getClass(), context);
+                val recycler = new RecyclerView(context);
+                initDetailsRecyclerView(recycler, adapter.getClass(), context);
 
                 // Recycler item
-                final QuestDetailsItemRecycler itemRecycler = new QuestDetailsItemRecycler(recycler);
+                val itemRecycler = new QuestDetailsItemRecycler(recycler);
 
                 // Section
-                final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
+                val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
                         new BaseSectionedHeader(mDoc.getString("title")),
                         new ArrayList<BaseQuestDetailsItem>() {{
                             add(itemRecycler);
@@ -255,19 +304,18 @@ public class FirebaseMethods {
                 adapter.addSection(
                         nextSection
                 );
+                adapter.notifyDataSetChanged();
 
                 mDoc.getReference().collection("coll").get()
-                        .addOnCompleteListener(
+                        .addOnSuccessListener(
                                 task -> {
-                                    if (task.isSuccessful()) {
-                                        // Parse details
-                                        parseDetailsSections(
-                                                task.getResult(),
-                                                nextSection,
-                                                adapter,
-                                                context
-                                        );
-                                    }
+                                    // Parse details
+                                    parseDetailsSections(
+                                            task,
+                                            nextSection,
+                                            adapter,
+                                            context
+                                    );
                                 }
                         );
 
@@ -305,7 +353,7 @@ public class FirebaseMethods {
 
                 // Recycler view
                 final RecyclerView recycler = new RecyclerView(context);
-                setDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
+                initDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
                 final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
 
                 // Recycler item
@@ -357,40 +405,37 @@ public class FirebaseMethods {
         Log.d(TAG, "--- Ended parse details sections ---");
     }
 
-    static public void setDetailsRecyclerView(
+    @SneakyThrows
+    static public void initDetailsRecyclerView(
             RecyclerView recyclerView,
-            Class<? extends BaseSectionedAdapter> adapterClass,
+            Class<? extends RecyclerView.Adapter> adapterClass,
             Context context
     ) {
-        recyclerView.setNestedScrollingEnabled(false);
-
         // Recycler view
-        recyclerView.setHasFixedSize(false);
+        recyclerView.setHasFixedSize(true);
 
         // Layout manager
         val detailsLayoutManager = new LinearLayoutManager(context);
         recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter
-        try {
-            val adapter = (BaseSectionedAdapter)
-                    (recyclerView.getAdapter() != null
-                            ? (BaseSectionedAdapter) recyclerView.getAdapter() :
-                            (adapterClass == PlaceDetailsAddAdapter.class)
-                                    ? adapterClass.getDeclaredConstructor
-                                    (
-                                            Context.class
-                                    ).newInstance(context)
-                                    : adapterClass.getConstructor()
-                                    .newInstance()
-                    );
-            adapter.shouldShowHeadersForEmptySections(true);
-            recyclerView.setAdapter(adapter);
-        } catch (IllegalAccessException
-                | java.lang.InstantiationException
-                | NoSuchMethodException
-                | InvocationTargetException e) {
-            e.printStackTrace();
+
+        val adapter = (RecyclerView.Adapter)
+                (recyclerView.getAdapter() != null
+                        ? (BaseSectionedAdapter) recyclerView.getAdapter() :
+                        (adapterClass == PlaceDetailsAddAdapter.class ||
+                                adapterClass == PlaceCardDetailsAdapter.class)
+                                ? adapterClass.getDeclaredConstructor(Context.class)
+                                .newInstance(context)
+                                : adapterClass.getConstructor()
+                                .newInstance()
+                );
+
+        if (adapter instanceof SectionedRecyclerViewAdapter) {
+            val sectionedAdapter = (SectionedRecyclerViewAdapter) adapter;
+            sectionedAdapter.shouldShowHeadersForEmptySections(true);
         }
+
+        recyclerView.setAdapter(adapter);
     }
 }

@@ -101,10 +101,9 @@
                 <android.support.v7.widget.RecyclerView
                     android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_below="@id/details_photos_scroll"
-                    android:paddingLeft="@dimen/content_inset"
-                    android:paddingRight="@dimen/content_inset" />
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/details_photos_scroll">
+                </android.support.v7.widget.RecyclerView>
 
                 <ImageView
                     android:id="@+id/details_details_unknown_text_smile"
@@ -139,19 +138,22 @@
                     android:textColor="@color/secondary_text_inverse"
                     android:textSize="18sp"
                     android:visibility="gone" />
-
-                <Button
-                    android:id="@+id/details_details_add_button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:text="@string/details_add_details"/>
-
             </RelativeLayout>
 
         </LinearLayout>
 
     </ScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/details_details_add_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/details_details_scroll"
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_edit_place"
+        android:visibility="visible" />
 
     <LinearLayout
         android:id="@+id/details_bottom"
@@ -176,11 +178,11 @@
             android:id="@+id/details_phone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="end"
             android:layout_marginBottom="@dimen/content_inset"
             android:layout_marginEnd="@dimen/content_inset"
             android:layout_marginTop="@dimen/content_inset"
             android:layout_weight="1"
+            android:gravity="end"
             android:textColor="@color/primary_text"
             android:textSize="18sp"
             tools:ignore="HardcodedText" />

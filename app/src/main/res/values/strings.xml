@@ -11,4 +11,7 @@
     <!-- Fragment titles -->
     <string name="error_google_api">Connection to Google API failed</string>
     <string name="title_activity_test">TestActivity</string>
+
+    <!-- Errors -->
+    <string name="error_network">An error occurred while connecting to the network. Please check the connection and try again.</string>
 </resources>

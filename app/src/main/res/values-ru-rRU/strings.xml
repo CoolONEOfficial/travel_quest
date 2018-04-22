@@ -9,4 +9,7 @@
 
     <!-- Fragment titles -->
     <string name="error_google_api">Ошибка соединения с Google API</string>
+
+    <!-- Errors -->
+    <string name="error_network">Произошла ошибка при подключении к сети. Проверьте подключение и повторите попытку.</string>
 </resources>

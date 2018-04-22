@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.fragments.quests;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,7 +10,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -32,10 +32,16 @@ import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 import com.seatgeek.placesautocomplete.model.PlaceDetails;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
+
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment;
 
+@EFragment(R.layout.fragment_places)
 public class PlacesFragment extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
@@ -44,46 +50,28 @@ public class PlacesFragment extends Fragment
     static final String TAG = PlacesFragment.class.getSimpleName();
 
     // Map
+    @ViewById(R.id.places_map)
+    public MapView mapView;
     public GoogleMap map;
 
     // Sliding layout
-    private FrameLayout slidingLayout;
+    @ViewById(R.id.places_sliding_container)
+    FrameLayout slidingLayout;
 
     // Sliding panel
-    private SlidingUpPanelLayout slidingPanel;
+    @ViewById(R.id.places_sliding_panel)
+    SlidingUpPanelLayout slidingPanel;
 
-    public PlacesFragment() {
-        // Required empty public constructor
-    }
-
-    static public float getPanelAnchoredOffset(Activity activity) {
-        return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
-                / MainActivity.getAppHeightWithoutBar(activity);
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    private int getActionBarHeight() {
-        TypedValue tv = new TypedValue();
-        if (getActivity().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-            return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
-        return 0;
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_places, container, false);
-
-        // Sliding layout
-        slidingLayout = view.findViewById(R.id.sliding_container);
-
+    @AfterViews
+    void afterViews() {
         // Sliding panel
-        slidingPanel = view.findViewById(R.id.sliding_panel);
-        final SlidingUpPanelListener parentListener = ((SlidingUpPanelListener) getActivity());
+
+        // Hide quest panel if empty
+        if (slidingLayout == null || slidingLayout.getChildCount() == 0)
+            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+
+        // Add listeners
+        val parentListener = (SlidingUpPanelListener) getActivity();
         slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
             @Override
             public void onPanelSlide(View panel, float slideOffset) {
@@ -124,18 +112,16 @@ public class PlacesFragment extends Fragment
                 .getAutocompleteTextView();
         autocompleteTextView.setOnPlaceSelectedListener(
                 place -> {
+                    // Create progress bar
                     ProgressBar progressBar = new ProgressBar(
-                            getContext(),
-                            null,
-                            android.R.attr.progressBarStyleLarge
+                            getContext()
                     );
-                    progressBar.setIndeterminate(true);
-                    progressBar.setVisibility(View.VISIBLE);
                     FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(100, 100);
                     params.gravity = Gravity.CENTER;
+                    progressBar.setLayoutParams(params);
 
-                    final MapView mapView = getView().findViewById(R.id.quests_map);
-                    mapView.addView(progressBar, params);
+                    // Add progress bar
+                    mapView.addView(progressBar);
 
                     autocompleteTextView.getDetailsFor(place,
                             new DetailsCallback() {
@@ -167,14 +153,30 @@ public class PlacesFragment extends Fragment
                                             Toast.LENGTH_SHORT
                                     ).show();
 
+                                    // Remove progress bar
                                     mapView.removeView(progressBar);
                                 }
                             }
                     );
                 }
         );
+    }
 
-        return view;
+    static public float getPanelAnchoredOffset(Activity activity) {
+        return activity.getResources().getDimension(R.dimen.details_photos_size_anchored)
+                / MainActivity.getAppHeightWithoutBar(activity);
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
+
+    private int getActionBarHeight() {
+        TypedValue tv = new TypedValue();
+        if (getActivity().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+            return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        return 0;
     }
 
     private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
@@ -195,7 +197,7 @@ public class PlacesFragment extends Fragment
         super.onViewCreated(view, savedInstanceState);
 
         // Map view
-        MapView mapView = view.findViewById(R.id.quests_map);
+        MapView mapView = view.findViewById(R.id.places_map);
         mapView.onCreate(null);
         mapView.onResume();
         mapView.getMapAsync(this);
@@ -282,7 +284,7 @@ public class PlacesFragment extends Fragment
 
                         // Set
                         FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
-                        fragTrans.replace(R.id.sliding_container,
+                        fragTrans.replace(R.id.places_sliding_container,
                                 placeDetailsFragment);
                         fragTrans.commit();
                     }
@@ -295,12 +297,18 @@ public class PlacesFragment extends Fragment
 
         // Hide quest panel if empty
         if (slidingLayout == null || slidingLayout.getChildCount() == 0)
-            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+            if (slidingPanel != null)
+                slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
         // Update map
         if (map != null) {
             updateMapStyle();
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

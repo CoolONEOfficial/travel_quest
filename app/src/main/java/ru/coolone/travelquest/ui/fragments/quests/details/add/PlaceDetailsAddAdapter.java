@@ -30,7 +30,7 @@ import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetails
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.setDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
 
 /**
  * @author coolone
@@ -144,7 +144,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                     switch (item) {
                                         case 0:
                                             RecyclerView recycler = new RecyclerView(context);
-                                            setDetailsRecyclerView(
+                                            initDetailsRecyclerView(
                                                     recycler,
                                                     PlaceDetailsAddAdapter.class,
                                                     context

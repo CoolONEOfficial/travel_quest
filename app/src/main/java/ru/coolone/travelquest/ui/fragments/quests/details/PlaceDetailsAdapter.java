@@ -24,7 +24,7 @@ public class PlaceDetailsAdapter
         extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
-    private static final String TAG = PlaceDetailsFragment.class.getSimpleName();
+    private static final String TAG = PlaceDetailsAdapter.class.getSimpleName();
     @Setter
     protected OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
 
@@ -149,7 +149,7 @@ public class PlaceDetailsAdapter
             this.recyclerView = v.findViewById(R.id.details_item_recycler);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            Log.d(TAG, "Item recycler holder created:\n\tsize: "
+            Log.d(TAG, "Item recyclerView holder created:\n\tsize: "
                     + String.valueOf(recyclerView.getChildCount())
                     + "\n\titem view:" + String.valueOf(v)
                     + "\n\tadapter" + String.valueOf(recyclerView.getAdapter()));
@@ -157,7 +157,7 @@ public class PlaceDetailsAdapter
 
         @Override
         public void bind(QuestDetailsItemRecycler recycler) {
-            Log.d(TAG, "item recycler binded!\n\tItem: "
+            Log.d(TAG, "item recyclerView binded!\n\tItem: "
                     + String.valueOf(recycler));
             recyclerView.setAdapter(recycler.getRecyclerView().getAdapter());
             recyclerView.invalidate();

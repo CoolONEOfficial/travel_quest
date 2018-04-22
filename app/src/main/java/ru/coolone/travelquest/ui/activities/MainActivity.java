@@ -45,6 +45,9 @@ import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.seatgeek.placesautocomplete.PlacesAutocompleteTextView;
 import com.seatgeek.placesautocomplete.model.AutocompleteResultType;
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
@@ -55,17 +58,17 @@ import org.androidannotations.annotations.ViewById;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.about.AboutFragment;
-import ru.coolone.travelquest.ui.fragments.quests.PlacesFragment;
-import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment;
+import ru.coolone.travelquest.ui.fragments.about.AboutFragment_;
+import ru.coolone.travelquest.ui.fragments.quests.PlacesFragment_;
+import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment_;
 
 @SuppressLint("Registered")
 @EActivity
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
-        PlacesFragment.SlidingUpPanelListener,
-        PlacesFragment.AutocompleteTextViewGetter {
+        PlacesFragment_.SlidingUpPanelListener,
+        PlacesFragment_.AutocompleteTextViewGetter {
     static final String TAG = MainActivity.class.getSimpleName();
     static final int NAV_MENU_DEFAULT_ID = R.id.nav_quests;
 
@@ -77,6 +80,12 @@ public class MainActivity extends AppCompatActivity implements
 
     // First run bool
     public static boolean firstRun = false;
+
+    // Firebase user
+    public static FirebaseUser firebaseUser;
+
+    // Firestore
+    public static FirebaseFirestore firestore;
 
     // Action bar drawer toggle
     ActionBarDrawerToggle toggle;
@@ -147,11 +156,13 @@ public class MainActivity extends AppCompatActivity implements
                         .penaltyLog()
                         .build());
 
+        // Firestore
+        firestore = FirebaseFirestore.getInstance();
 
         // Switch last login method
-        val user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user != null) {
-            if (!user.isEmailVerified() && !user.isAnonymous())
+        firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (firebaseUser != null) {
+            if (!firebaseUser.isEmailVerified() && !firebaseUser.isAnonymous())
                 // To confirm mail screen
                 ConfirmMailActivity_.intent(this)
                         .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -217,6 +228,12 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 }
         );
+    }
+
+    public static DocumentReference getQuestsRoot(String lang) {
+        return firestore
+                .collection(lang)
+                .document("quests");
     }
 
     private void startTour() {
@@ -339,13 +356,13 @@ public class MainActivity extends AppCompatActivity implements
         if (fragment == null) {
             switch (fragmentId) {
                 case ABOUT:
-                    fragment = new AboutFragment();
+                    fragment = new AboutFragment_();
                     break;
                 case QUESTS:
-                    fragment = new PlacesFragment();
+                    fragment = new PlacesFragment_();
                     break;
                 case SETTINGS:
-                    fragment = new SettingsFragment();
+                    fragment = new SettingsFragment_();
                     break;
             }
             if (fragment != null)

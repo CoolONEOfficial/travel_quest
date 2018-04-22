@@ -14,8 +14,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.firebase.firestore.FirebaseFirestore;
-
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
@@ -23,6 +21,11 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddFragment;
@@ -33,7 +36,7 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 @SuppressLint("Registered")
 @EActivity
 @OptionsMenu(R.menu.activity_add_place_actions)
-public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.SerializeDetailsListener {
+public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.FirestoreListener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
     // Arguments
@@ -113,6 +116,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     @OptionsItem(android.R.id.home)
     void homeSelected() {
+        setResult(RESULT_CANCELED);
         finish();
     }
 
@@ -122,37 +126,52 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         viewPager.setVisibility(View.GONE);
         rootLayout.addView(progressBar);
 
-        FirebaseFirestore db = FirebaseFirestore
-                .getInstance();
+        Map<String, Object> defaultVals = new HashMap<>();
+        defaultVals.put("score", new ArrayList<String>());
 
         for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
             PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
 
-            serializeDetails(
-                    db
-                            .collection(mFrag.lang.lang)
-                            .document("quests")
-                            .collection(placeId),
-                    mFrag.recycler,
-                    this
+            val mLang = mFrag.lang.lang;
+            val docRef = MainActivity.getQuestsRoot(mLang)
+                    .collection(placeId)
+                    .document(MainActivity.firebaseUser.getUid());
+
+            docRef.set(defaultVals)
+            .addOnSuccessListener(
+                    aVoid -> serializeDetails(
+                            docRef.collection("coll"),
+                            mFrag.recycler,
+                            this
+                    )
+            ).addOnFailureListener(
+                    e -> {
+                        onFailure(e);
+                        onCompleted();
+                    }
             );
         }
     }
 
     @Override
-    public void onSerializeDetailsSuccess() {
+    public void onSuccess() {
+        setResult(RESULT_OK);
         finish();
     }
 
     @Override
-    public void onSerializeDetailsCompleted() {
+    public void onCompleted() {
         rootLayout.removeView(progressBar);
         tabLayout.setVisibility(View.VISIBLE);
         viewPager.setVisibility(View.VISIBLE);
     }
 
     @Override
-    public void onSerializeDetailsError(Exception e) {
-        Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
+    public void onFailure(Exception e) {
+        Toast.makeText(
+                AddDetailsActivity.this,
+                e.getLocalizedMessage(),
+                Toast.LENGTH_SHORT
+        ).show();
     }
 }

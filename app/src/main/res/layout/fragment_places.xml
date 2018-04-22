@@ -1,7 +1,7 @@
 <com.sothree.slidinguppanel.SlidingUpPanelLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:sothree="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/sliding_panel"
+    android:id="@+id/places_sliding_panel"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="bottom"
@@ -10,13 +10,13 @@
     tools:context=".ui.fragments.quests.PlacesFragment">
 
     <com.google.android.gms.maps.MapView
-        android:id="@+id/quests_map"
+        android:id="@+id/places_map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center" />
 
     <FrameLayout
-        android:id="@+id/sliding_container"
+        android:id="@+id/places_sliding_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center|top" />

@@ -5,7 +5,6 @@ import android.view.View;
 import com.afollestad.sectionedrecyclerview.SectionedViewHolder;
 
 import lombok.val;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
 
 /**
  * Created by radiationx on 14.09.17.
@@ -79,15 +78,4 @@ public class BaseSectionedViewHolder<T>
         }
         return false;
     }
-
-//    @Override
-//    public void onClick(View view) {
-//        if (onClickListener != null)
-//            onClickListener.onClick(view);
-//    }
-//
-//    @Override
-//    public boolean onLongClick(View view) {
-//        return onLongClickListener != null && onLongClickListener.onLongClick(view);
-//    }
 }

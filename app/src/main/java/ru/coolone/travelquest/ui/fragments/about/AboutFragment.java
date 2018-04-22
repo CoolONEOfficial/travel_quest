@@ -2,37 +2,23 @@ package ru.coolone.travelquest.ui.fragments.about;
 
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ImageView;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.ViewById;
 
 import ru.coolone.travelquest.R;
 
+@EFragment(R.layout.fragment_about)
 public class AboutFragment extends Fragment {
+    @ViewById(R.id.about_logo)
+    ImageView logo;
 
-    public AboutFragment() {
-        // Required empty public constructor
-    }
-
-    public static AboutFragment newInstance() {
-        return new AboutFragment();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.fragment_about, container, false);
-
-        v.findViewById(R.id.about_logo).setOnClickListener(
+    @AfterViews
+    void afterViews() {
+        logo.setOnClickListener(
                 view -> {
                     Intent browserIntent = new Intent(
                             Intent.ACTION_VIEW,
@@ -41,7 +27,5 @@ public class AboutFragment extends Fragment {
                     startActivity(browserIntent);
                 }
         );
-
-        return v;
     }
 }
