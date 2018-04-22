@@ -3,22 +3,17 @@ package ru.coolone.travelquest.ui.activities;
 import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import com.github.paolorotolo.appintro.AppIntro;
 import com.github.paolorotolo.appintro.AppIntroFragment;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 
 import org.androidannotations.annotations.EActivity;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 
 /**
  * @author coolone
@@ -79,14 +74,15 @@ public class IntroActivity extends AppIntro {
                 )
         );
 
-        val listener = (View.OnClickListener) v -> MainActivity.showAuthDialog(this,
+        val listener = (View.OnClickListener) v -> MainActivity.getAuthDialog(
+                this,
                 task -> {
-                    if(task.isSuccessful()) {
+                    if (task.isSuccessful()) {
                         MainActivity_.intent(this).start();
                         finish();
                     }
                 }
-        );
+        ).show();
 
         skipButton.setOnClickListener(listener);
         doneButton.setOnClickListener(listener);

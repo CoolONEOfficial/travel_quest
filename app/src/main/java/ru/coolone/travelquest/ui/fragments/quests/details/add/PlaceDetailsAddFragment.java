@@ -107,7 +107,11 @@ public class PlaceDetailsAddFragment extends Fragment {
                             .collection(lang.lang)
                             .document("quests")
                             .collection(placeId)
-                            .document(MainActivity.firebaseUser.getUid())
+                            .document(
+                                    MainActivity.firebaseUser.getUid() +
+                                            '_' +
+                                             MainActivity.firebaseUser.getDisplayName()
+                            )
                             .collection("coll");
 
             // Parse details

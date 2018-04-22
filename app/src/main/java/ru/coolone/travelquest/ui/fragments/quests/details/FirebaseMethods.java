@@ -225,16 +225,25 @@ public class FirebaseMethods {
                 .get()
                 .addOnSuccessListener(
                         collRef -> {
+                            if(collRef.getDocuments().isEmpty()) {
+                                listener.onCompleted();
+                                listener.onFailure(new Exception("No cards"));
+                                Log.d(TAG, "No cards");
+                            }
+
                             for (val mDoc : collRef.getDocuments()) {
                                 val recycler = new RecyclerView(context);
                                 val nextAdapter = new PlaceDetailsAdapter();
                                 recycler.setAdapter(nextAdapter);
 
+                                int delimIndex = mDoc.getId().indexOf('_');
+
                                 adapter.dataset.add(
                                         new PlaceCardDetailsAdapter.Item(
-                                                mDoc.getId(),
+                                                mDoc.getId().substring(delimIndex + 1), // delim to end is name
                                                 recycler,
-                                                mDoc
+                                                mDoc,
+                                                mDoc.getId().substring(0, delimIndex) // 0 to delim is id
                                         )
                                 );
                                 adapter.notifyDataSetChanged();

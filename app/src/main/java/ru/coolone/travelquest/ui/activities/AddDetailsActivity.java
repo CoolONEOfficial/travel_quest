@@ -135,16 +135,20 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
             val mLang = mFrag.lang.lang;
             val docRef = MainActivity.getQuestsRoot(mLang)
                     .collection(placeId)
-                    .document(MainActivity.firebaseUser.getUid());
+                    .document(
+                            MainActivity.firebaseUser.getUid() +
+                                    '_' +
+                                     MainActivity.firebaseUser.getDisplayName()
+                    );
 
             docRef.set(defaultVals)
-            .addOnSuccessListener(
-                    aVoid -> serializeDetails(
-                            docRef.collection("coll"),
-                            mFrag.recycler,
-                            this
-                    )
-            ).addOnFailureListener(
+                    .addOnSuccessListener(
+                            aVoid -> serializeDetails(
+                                    docRef.collection("coll"),
+                                    mFrag.recycler,
+                                    this
+                            )
+                    ).addOnFailureListener(
                     e -> {
                         onFailure(e);
                         onCompleted();

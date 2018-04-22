@@ -162,13 +162,15 @@ public class MainActivity extends AppCompatActivity implements
                         .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
                         .start();
         } else {
-            showAuthDialog(this,
+            getAuthDialog(this,
                     task -> {
                         if (task.isSuccessful())
                             MainActivity_.intent(this)
                                     .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
                                     .start();
-                    });
+                    })
+                    .setCancelable(false)
+                    .show();
         }
 
         // Get settings
@@ -234,45 +236,44 @@ public class MainActivity extends AppCompatActivity implements
         IntroActivity_.intent(this).start();
     }
 
-    public static void showAuthDialog(Activity activity, OnCompleteListener<AuthResult> listener) {
-        AlertDialog.Builder ad = new AlertDialog.Builder(activity);
-        ad.setTitle(activity.getString(R.string.alert_splash_title));
-        ad.setMessage(activity.getString(R.string.alert_splash_text));
-        ad.setPositiveButton(activity.getString(R.string.alert_splash_button_auth),
-                (dialog, which) -> {
-                    LoginActivity_.intent(activity)
-                            .start();
-                    activity.finish();
-                }
-        );
-        ad.setNegativeButton(activity.getString(R.string.alert_splash_button_anonymous),
-                (dialog, which) -> {
-                    final ProgressDialog progress = new ProgressDialog(activity);
-                    progress.setTitle(activity.getString(R.string.login_progress));
-                    progress.setCancelable(true);
-                    progress.show();
+    public static AlertDialog.Builder getAuthDialog(Activity activity, OnCompleteListener<AuthResult> listener) {
+        return new AlertDialog.Builder(activity)
+                .setTitle(activity.getString(R.string.alert_splash_title))
+                .setMessage(activity.getString(R.string.alert_splash_text))
+                .setPositiveButton(activity.getString(R.string.alert_splash_button_auth),
+                        (dialog, which) -> {
+                            LoginActivity_.intent(activity)
+                                    .start();
+                            activity.finish();
+                        }
+                )
+                .setNegativeButton(activity.getString(R.string.alert_splash_button_anonymous),
+                        (dialog, which) -> {
+                            final ProgressDialog progress = new ProgressDialog(activity);
+                            progress.setTitle(activity.getString(R.string.login_progress));
+                            progress.setCancelable(true);
+                            progress.show();
 
-                    FirebaseAuth.getInstance().signInAnonymously()
-                            .addOnCompleteListener(activity,
-                                    task -> {
-                                        if (task.isSuccessful()) {
-                                            Log.d(TAG, "signInAnonymously:success");
+                            FirebaseAuth.getInstance().signInAnonymously()
+                                    .addOnCompleteListener(activity,
+                                            task -> {
+                                                if (task.isSuccessful()) {
+                                                    Log.d(TAG, "signInAnonymously:success");
 
-                                            MainActivity_.intent(activity)
-                                                    .start();
-                                            activity.finish();
-                                        } else {
-                                            Log.w(TAG, "signInAnonymously:failure", task.getException());
-                                            Toast.makeText(activity, "Authentication failed.",
-                                                    Toast.LENGTH_SHORT).show();
-                                        }
-                                        progress.dismiss();
-                                    }
-                            )
-                            .addOnCompleteListener(listener);
-                }
-        );
-        ad.show();
+                                                    MainActivity_.intent(activity)
+                                                            .start();
+                                                    activity.finish();
+                                                } else {
+                                                    Log.w(TAG, "signInAnonymously:failure", task.getException());
+                                                    Toast.makeText(activity, "Authentication failed.",
+                                                            Toast.LENGTH_SHORT).show();
+                                                }
+                                                progress.dismiss();
+                                            }
+                                    )
+                                    .addOnCompleteListener(listener);
+                        }
+                );
     }
 
     @Override
@@ -444,7 +445,9 @@ public class MainActivity extends AppCompatActivity implements
                 Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
             else Log.d(TAG, "Signout user is null!");
 
-            showAuthDialog(this, null);
+            getAuthDialog(this, null)
+                    .setCancelable(false)
+                    .show();
         } else {
             // To fragment
             val fragTrans = getSupportFragmentManager().beginTransaction();

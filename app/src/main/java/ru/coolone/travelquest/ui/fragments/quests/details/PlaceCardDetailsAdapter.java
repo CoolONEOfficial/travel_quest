@@ -55,15 +55,18 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
         String title;
         RecyclerView recyclerView;
         DocumentSnapshot rootDoc;
+        String uId;
 
         public Item(
                 String title,
                 RecyclerView recyclerView,
-                DocumentSnapshot rootDoc
+                DocumentSnapshot rootDoc,
+                String uId
         ) {
             this.title = title;
             this.recyclerView = recyclerView;
             this.rootDoc = rootDoc;
+            this.uId = uId;
         }
     }
 
@@ -85,7 +88,10 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
         val likedUsers = (ArrayList<String>) mItem.rootDoc.get("score");
         holder.likeButton.setLiked(likedUsers.contains(userName));
         holder.likeButton.setVisibility(View.VISIBLE);
-        holder.likeButton.setEnabled(!MainActivity.firebaseUser.isAnonymous());
+        holder.likeButton.setEnabled(
+                !MainActivity.firebaseUser.isAnonymous() && // user registered
+                        !mItem.uId.equals(MainActivity.firebaseUser.getUid()) // not self card
+        );
         holder.likeButton.setOnClickListener(
                 v -> {
                     val button = (LikeButton) v;
