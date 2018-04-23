@@ -225,7 +225,7 @@ public class FirebaseMethods {
                 .get()
                 .addOnSuccessListener(
                         collRef -> {
-                            if(collRef.getDocuments().isEmpty()) {
+                            if (collRef.getDocuments().isEmpty()) {
                                 listener.onCompleted();
                                 listener.onFailure(new Exception("No cards"));
                                 Log.d(TAG, "No cards");
@@ -392,9 +392,7 @@ public class FirebaseMethods {
                                 }
                         )
                         .addOnFailureListener(
-                                e -> {
-                                    // TODO: FAILURE
-                                }
+                                e -> Log.e(TAG, "Error while getting coll in mDoc", e)
                         );
             } else {
                 Log.e(TAG, "Unknown doc! (" + mDoc.getId() + ") " + mDoc);

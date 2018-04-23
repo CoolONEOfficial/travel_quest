@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="intro_button_text">Продолжить</string>
+
+    <string name="intro_greetings_title">Приветствие</string>
+    <string name="intro_greetings_text">Добро пожаловать в Travel Quest - приложение для изучения Нижнего Новгорода! Здесь вы сможете узнать описание любого исторического обьекта, его историю, факты о нем, и другую интересную информацию.</string>
+    <string name="intro_places_title">Исторические обьекты</string>
+    <string name="intro_places_text">Для получения информации о обьекте, тапните по нему.</string>
+    <string name="intro_add_details_title">Добавление информации</string>
+    <string name="intro_add_details_text">При желании, Вы можете добавить свою информацию к любому из обьектов.</string>
+    <string name="intro_search_title">Поиск</string>
+    <string name="intro_search_text">Для поиска обьектов введите ключевые слова в строку поиска.</string>
+</resources>

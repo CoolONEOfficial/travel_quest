@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="intro_button_text">Next</string>
+
+    <string name="intro_greetings_title">Greetings</string>
+    <string name="intro_greetings_text">Welcome to Travel Quest - an application for exploring Nizhny Novgorod! Here you can find out the description of any historical object, its history, facts about it,and other interesting information.</string>
+    <string name="intro_places_title">Places</string>
+    <string name="intro_places_text">For information about the object, tap on it.</string>
+    <string name="intro_add_details_title">Adding information</string>
+    <string name="intro_add_details_text">If desired, you can add your information to any of the objects.</string>
+    <string name="intro_search_title">Search</string>
+    <string name="intro_search_text">To search for objects, enter keywords in the search box.</string>
+</resources>

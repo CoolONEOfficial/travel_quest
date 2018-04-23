@@ -8,12 +8,13 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 
 import com.github.paolorotolo.appintro.AppIntro;
-import com.github.paolorotolo.appintro.AppIntroFragment;
 
 import org.androidannotations.annotations.EActivity;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.fragments.IntroFragment_;
+import ru.coolone.travelquest.ui.fragments.about.AboutFragment_;
 
 /**
  * @author coolone
@@ -26,35 +27,32 @@ public class IntroActivity extends AppIntro {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Instead of fragments, you can also use our default slide
-        // Just set a title, description, background and image. AppIntro will do the rest.
-        addSlide(AppIntroFragment.newInstance(
-                getString(R.string.alert_greetings_title),
-                getString(R.string.alert_greetings_text),
-                R.mipmap.ic_launcher_round,
-                ContextCompat.getColor(this, R.color.primary)
-        ));
+        // Frags
+        addSlide(AboutFragment_.builder().build());
 
-        addSlide(AppIntroFragment.newInstance(
-                getString(R.string.alert_places_title),
-                getString(R.string.alert_places_text),
-                R.drawable.ic_place,
-                ContextCompat.getColor(this, R.color.primary)
-        ));
+        addSlide(
+                IntroFragment_.builder()
+                        .image(R.drawable.intro_places)
+                        .title(getString(R.string.intro_places_title))
+                        .text(getString(R.string.intro_places_text))
+                        .build()
+        );
 
-        addSlide(AppIntroFragment.newInstance(
-                getString(R.string.alert_add_details_title),
-                getString(R.string.alert_add_details_text),
-                R.drawable.ic_edit_place,
-                ContextCompat.getColor(this, R.color.primary)
-        ));
+        addSlide(
+                IntroFragment_.builder()
+                        .image(R.drawable.intro_add_details)
+                        .title(getString(R.string.intro_add_details_title))
+                        .text(getString(R.string.intro_add_details_text))
+                        .build()
+        );
 
-        addSlide(AppIntroFragment.newInstance(
-                getString(R.string.alert_search_title),
-                getString(R.string.alert_search_text),
-                R.drawable.ic_search,
-                ContextCompat.getColor(this, R.color.primary)
-        ));
+        addSlide(
+                IntroFragment_.builder()
+                        .image(R.drawable.intro_search)
+                        .title(getString(R.string.intro_search_title))
+                        .text(getString(R.string.intro_search_text))
+                        .build()
+        );
 
         // Override bar/separator color.
         setBarColor(ContextCompat.getColor(this, R.color.primary_dark));
