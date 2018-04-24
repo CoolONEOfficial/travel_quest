@@ -7,9 +7,13 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.Gravity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -19,6 +23,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.OptionsMenuItem;
 import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
@@ -30,30 +35,19 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddFragment;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddPagerAdapter;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.serializeDetails;
 
 @SuppressLint("Registered")
 @EActivity
-@OptionsMenu(R.menu.activity_add_place_actions)
-public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.FirestoreListener {
+@OptionsMenu(R.menu.activity_add_details_actions)
+public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.TaskListener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
-    // Arguments
-    public enum ArgKeys {
-        PLACE_ID("placeId");
-
-        private final String val;
-
-        ArgKeys(String val) {
-            this.val = val;
-        }
-
-        @Override
-        final public String toString() {
-            return val;
-        }
-    }
+    @OptionsMenuItem(R.id.add_details_action_send)
+    MenuItem sendItem;
 
     // Google map place id
     @Extra
@@ -72,6 +66,8 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     @ViewById(R.id.add_details_sliding_tabs)
     TabLayout tabLayout;
 
+    ImageButton sendView;
+
     ProgressBar progressBar;
 
     @AfterViews
@@ -83,9 +79,101 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 this
         );
         viewPager.setAdapter(pagerAdapter);
+        ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
+                .setListener(
+                        () -> {
+                            val dismissText = getString(R.string.add_details_intro_dismiss_button);
+                            val frag = (PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem());
+
+                            frag.recycler.post(
+                                    () -> {
+                                        val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
+
+                                        // Intro
+                                        ShowcaseConfig config = new ShowcaseConfig();
+                                        config.setDelay(100);
+
+                                        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+
+                                        sequence.setConfig(config);
+
+                                        sequence.addSequenceItem(
+                                                frag.addSectionButton,
+                                                getString(R.string.add_details_intro_add_header),
+                                                dismissText
+                                        );
+
+                                        sequence.addSequenceItem(
+                                                firstHolder.findViewById(R.id.add_details_head_add),
+                                                getString(R.string.add_details_intro_add),
+                                                dismissText
+                                        );
+
+                                        sequence.addSequenceItem(
+                                                firstHolder.findViewById(R.id.add_details_head_remove),
+                                                getString(R.string.add_details_intro_remove),
+                                                dismissText
+                                        );
+
+                                        sequence.addSequenceItem(
+                                                sendView,
+                                                getString(R.string.add_details_intro_send),
+                                                dismissText
+                                        );
+
+                                        sequence.start();
+                                    }
+                            );
+                        }
+                );
 
         // Tab layout
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    public boolean onCreateOptionsMenu(Menu menu) {
+        sendView = (ImageButton) menu.findItem(R.id.add_details_action_send).getActionView();
+        sendView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_check));
+        sendView.getBackground().setAlpha(0);
+        sendView.setOnClickListener(
+                v -> {
+                    tabLayout.setVisibility(View.GONE);
+                    viewPager.setVisibility(View.GONE);
+                    rootLayout.addView(progressBar);
+
+                    Map<String, Object> defaultVals = new HashMap<>();
+                    defaultVals.put("score", new ArrayList<String>());
+
+                    for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+                        PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
+
+                        val mLang = mFrag.lang.lang;
+                        val docRef = MainActivity.getQuestsRoot(mLang)
+                                .collection(placeId)
+                                .document(
+                                        MainActivity.firebaseUser.getUid() +
+                                                '_' +
+                                                MainActivity.firebaseUser.getDisplayName()
+                                );
+
+                        docRef.set(defaultVals)
+                                .addOnSuccessListener(
+                                        aVoid -> serializeDetails(
+                                                docRef.collection("coll"),
+                                                mFrag.recycler,
+                                                this
+                                        )
+                                ).addOnFailureListener(
+                                e -> {
+                                    onFailure(e);
+                                    onCompleted();
+                                }
+                        );
+                    }
+                }
+        );
+
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
@@ -118,43 +206,6 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     void homeSelected() {
         setResult(RESULT_CANCELED);
         finish();
-    }
-
-    @OptionsItem(R.id.add_details_action_send)
-    void sendSelected() {
-        tabLayout.setVisibility(View.GONE);
-        viewPager.setVisibility(View.GONE);
-        rootLayout.addView(progressBar);
-
-        Map<String, Object> defaultVals = new HashMap<>();
-        defaultVals.put("score", new ArrayList<String>());
-
-        for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-            PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
-
-            val mLang = mFrag.lang.lang;
-            val docRef = MainActivity.getQuestsRoot(mLang)
-                    .collection(placeId)
-                    .document(
-                            MainActivity.firebaseUser.getUid() +
-                                    '_' +
-                                     MainActivity.firebaseUser.getDisplayName()
-                    );
-
-            docRef.set(defaultVals)
-                    .addOnSuccessListener(
-                            aVoid -> serializeDetails(
-                                    docRef.collection("coll"),
-                                    mFrag.recycler,
-                                    this
-                            )
-                    ).addOnFailureListener(
-                    e -> {
-                        onFailure(e);
-                        onCompleted();
-                    }
-            );
-        }
     }
 
     @Override

@@ -587,8 +587,8 @@ public class MainActivity extends AppCompatActivity implements
      * Languages info
      */
     public enum SupportLang {
-        RUSSIAN("RU", R.string.add_place_tab_russian_title),
-        ENGLISH("US", R.string.add_place_tab_english_title);
+        RUSSIAN("RU", R.string.add_details_tab_russian_title),
+        ENGLISH("US", R.string.add_details_tab_english_title);
 
         public final String lang;
         public final int titleId;

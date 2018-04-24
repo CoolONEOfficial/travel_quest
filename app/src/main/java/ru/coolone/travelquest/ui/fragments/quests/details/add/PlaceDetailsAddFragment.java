@@ -19,6 +19,7 @@ import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
 
+import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
@@ -39,11 +40,6 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 public class PlaceDetailsAddFragment extends Fragment {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
 
-    public enum ResultCode {
-        SUCCESS,
-        CANCELED
-    }
-
     @FragmentArg
     public SupportLang lang;
 
@@ -57,11 +53,18 @@ public class PlaceDetailsAddFragment extends Fragment {
 
     // Add section button
     @ViewById(R.id.add_details_page_add_section_button)
-    FloatingActionButton addSectionButton;
+    public FloatingActionButton addSectionButton;
 
     // Root layout
     @ViewById(R.id.add_details_page_root_layout)
     FrameLayout frameLayout;
+
+    @Setter
+    private Listener listener;
+
+    public interface Listener {
+        void onSectionsAdded();
+    }
 
     @AfterViews
     void afterViews() {
@@ -77,7 +80,7 @@ public class PlaceDetailsAddFragment extends Fragment {
     }
 
     @Click(R.id.add_details_page_add_section_button)
-    void onAddSection() {
+    void onAddHeaderClick() {
         recyclerAdapter.addSection(
                 new Pair<>(
                         new BaseSectionedHeader(),
@@ -110,7 +113,7 @@ public class PlaceDetailsAddFragment extends Fragment {
                             .document(
                                     MainActivity.firebaseUser.getUid() +
                                             '_' +
-                                             MainActivity.firebaseUser.getDisplayName()
+                                            MainActivity.firebaseUser.getDisplayName()
                             )
                             .collection("coll");
 
@@ -135,8 +138,11 @@ public class PlaceDetailsAddFragment extends Fragment {
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
                                 this.getContext()
-                        ))
+                        )) {
                             createTemplateDetails();
+                        }
+                        if (listener != null)
+                            listener.onSectionsAdded();
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()

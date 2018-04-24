@@ -5,7 +5,7 @@
     <string name="title_activity_login">Log in</string>
     <string name="title_activity_signin">Sign in</string>
     <string name="title_activity_confirm_mail">Confirm title</string>
-    <string name="title_activity_add_place">Add a place details</string>
+    <string name="title_activity_add_details">Add a place details</string>
     <string name="title_activity_intro">Introduction</string>
 
     <!-- Fragment titles -->

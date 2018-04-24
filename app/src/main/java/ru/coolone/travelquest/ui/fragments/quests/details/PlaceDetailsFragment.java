@@ -410,7 +410,7 @@ public class PlaceDetailsFragment extends Fragment {
                             task,
                             adapter,
                             getContext(),
-                            new FirebaseMethods.FirestoreListener() {
+                            new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onSuccess() {
                                 }

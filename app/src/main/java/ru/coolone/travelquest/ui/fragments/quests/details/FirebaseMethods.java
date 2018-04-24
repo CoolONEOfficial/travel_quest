@@ -35,7 +35,7 @@ public class FirebaseMethods {
     private static int startedTasks;
     private static int startedDeleteTasks;
 
-    private static void checkEndTask(FirestoreListener listener) {
+    private static void checkEndTask(TaskListener listener) {
         startedTasks--;
 
         Log.d(TAG, "checkEndTask started, tasks count: " + startedTasks);
@@ -47,7 +47,7 @@ public class FirebaseMethods {
         }
     }
 
-    public interface FirestoreListener {
+    public interface TaskListener {
         void onSuccess();
 
         void onFailure(Exception e);
@@ -58,7 +58,7 @@ public class FirebaseMethods {
     static public void serializeDetails(
             CollectionReference coll,
             RecyclerView recyclerView,
-            FirestoreListener listener
+            TaskListener listener
     ) {
         startedTasks++;
         coll.get().addOnSuccessListener(
@@ -122,7 +122,7 @@ public class FirebaseMethods {
             CollectionReference coll,
             BaseSectionedAdapter adapter,
             int startId,
-            FirestoreListener listener
+            TaskListener listener
     ) {
         Log.d(TAG, "--- Started serialize details ---");
 
@@ -217,7 +217,7 @@ public class FirebaseMethods {
             QuerySnapshot coll,
             PlaceCardDetailsAdapter adapter,
             Context context,
-            FirestoreListener listener
+            TaskListener listener
     ) {
         coll.getQuery()
                 .orderBy("score")

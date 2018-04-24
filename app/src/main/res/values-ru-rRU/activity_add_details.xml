@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="add_details_title_hint">Введите заголовок…</string>
+    <string name="add_details_text_hint">Введите текст…</string>
+
+    <string name="add_details_tab_russian_title" translatable="true">Русский</string>
+    <string name="add_details_tab_english_title" translatable="true">Английский</string>
+
+    <string name="add_details_details_hint" translatable="true">Описание</string>
+
+    <string name="add_details_action_send_title" translatable="true">Отправить</string>
+
+    <string name="add_details_add_dialog_title">Что Вы хотите добавить?</string>
+
+    <string name="add_details_add_dialog_text">Текст</string>
+    <string name="add_details_add_dialog_section">Заголовок</string>
+
+    <string name="add_details_intro_send">И отправьте это</string>
+    <string name="add_details_intro_add_header">Добавляйте заголовки</string>
+    <string name="add_details_intro_add">Добавляйте текста и подзаголовки</string>
+    <string name="add_details_intro_remove">Удаляйте любые элементы</string>
+    <string name="add_details_intro_dismiss_button">Далее</string>
+</resources>

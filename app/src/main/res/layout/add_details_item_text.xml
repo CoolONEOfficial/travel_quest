@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginStart="@dimen/content_inset"
@@ -9,18 +9,20 @@
 
     <EditText
         android:id="@+id/add_details_item_text"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_toStartOf="@id/add_details_item_text_remove"
-        android:hint="@string/add_place_text_hint"
+        android:layout_weight="1"
+        android:hint="@string/add_details_text_hint"
         android:inputType="textMultiLine"
         android:scrollbars="vertical" />
 
     <ImageButton
         android:id="@+id/add_details_item_text_remove"
+        style="?android:attr/borderlessButtonStyle"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_centerVertical="true"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter"
         android:src="@drawable/ic_remove" />
-</RelativeLayout>
+</LinearLayout>

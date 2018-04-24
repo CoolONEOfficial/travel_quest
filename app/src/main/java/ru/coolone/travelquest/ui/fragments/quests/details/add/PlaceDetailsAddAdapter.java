@@ -129,12 +129,12 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
             buttonAdd.setOnClickListener(
                     v1 -> {
                         val builder = new AlertDialog.Builder(context);
-                        builder.setTitle(context.getString(R.string.add_place_add_dialog_title));
+                        builder.setTitle(context.getString(R.string.add_details_add_dialog_title));
 
                         builder.setItems(
                                 new String[]{
-                                        context.getString(R.string.add_place_add_dialog_section),
-                                        context.getString(R.string.add_place_add_dialog_text)
+                                        context.getString(R.string.add_details_add_dialog_section),
+                                        context.getString(R.string.add_details_add_dialog_text)
                                 }, (dialog, item) -> {
                                     final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section =
                                             getSection(getRelativePosition().section());

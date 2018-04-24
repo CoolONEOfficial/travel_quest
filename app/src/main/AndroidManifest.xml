@@ -42,7 +42,7 @@
             android:launchMode="singleTask" />
         <activity
             android:name=".ui.activities.AddDetailsActivity_"
-            android:label="@string/title_activity_add_place"
+            android:label="@string/title_activity_add_details"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".ui.activities.ConfirmMailActivity_"
