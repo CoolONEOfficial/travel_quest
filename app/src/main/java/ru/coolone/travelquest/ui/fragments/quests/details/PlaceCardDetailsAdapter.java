@@ -84,13 +84,13 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
         val mItem = dataset.get(position);
         holder.title.setText(mItem.title);
 
-        val userName = MainActivity.firebaseUser.getDisplayName();
+        val userUid = MainActivity.firebaseUser.getUid();
         val likedUsers = (ArrayList<String>) mItem.rootDoc.get("score");
-        holder.likeButton.setLiked(likedUsers.contains(userName));
+        holder.likeButton.setLiked(likedUsers.contains(userUid));
         holder.likeButton.setVisibility(View.VISIBLE);
         holder.likeButton.setEnabled(
                 !MainActivity.firebaseUser.isAnonymous() && // user registered
-                        !mItem.uId.equals(MainActivity.firebaseUser.getUid()) // not self card
+                        !mItem.uId.equals(userUid) // not self card
         );
         holder.likeButton.setOnClickListener(
                 v -> {
@@ -109,10 +109,10 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
                     button.setEnabled(false);
 
                     // Add / Remove user
-                    if (likedUsers.contains(userName)) {
-                        likedUsers.remove(userName);
+                    if (likedUsers.contains(userUid)) {
+                        likedUsers.remove(userUid);
                     } else {
-                        likedUsers.add(userName);
+                        likedUsers.add(userUid);
                     }
 
                     // Update likes counter

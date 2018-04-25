@@ -19,7 +19,6 @@ import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
 
-import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
@@ -59,11 +58,23 @@ public class PlaceDetailsAddFragment extends Fragment {
     @ViewById(R.id.add_details_page_root_layout)
     FrameLayout frameLayout;
 
-    @Setter
-    private Listener listener;
+    private ArrayList<Listener> listeners = new ArrayList<>();
+
+    public void addListener(Listener listener) {
+        listeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        listeners.remove(listener);
+    }
 
     public interface Listener {
         void onSectionsAdded();
+    }
+
+    public void restoreDetails() {
+        recyclerAdapter.clear();
+        refreshDetails();
     }
 
     @AfterViews
@@ -141,8 +152,10 @@ public class PlaceDetailsAddFragment extends Fragment {
                         )) {
                             createTemplateDetails();
                         }
-                        if (listener != null)
-                            listener.onSectionsAdded();
+
+                        for (val mListener : listeners)
+                            if (mListener != null)
+                                mListener.onSectionsAdded();
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()

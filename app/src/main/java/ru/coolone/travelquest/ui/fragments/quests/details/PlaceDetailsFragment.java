@@ -40,6 +40,8 @@ import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
+import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
 import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsCards;
@@ -52,7 +54,7 @@ public class PlaceDetailsFragment extends Fragment {
     private FragmentListener fragmentListener;
 
     @ViewById(R.id.details_details_recycler)
-    RecyclerView detailsRecyclerView;
+    public RecyclerView detailsRecyclerView;
 
     @ViewById(R.id.details_details_add_button)
     FloatingActionButton detailsAddButton;
@@ -130,7 +132,14 @@ public class PlaceDetailsFragment extends Fragment {
                         : View.GONE
         );
 
-        refresh();
+        setTitle(title);
+        setPhone(phone);
+        setUrl(url);
+        setRating(rating);
+        setTypes(types);
+
+        // Photos
+        new PhotoTask(this).execute(placeId);
     }
 
     @Click(R.id.details_details_add_button)
@@ -146,15 +155,6 @@ public class PlaceDetailsFragment extends Fragment {
      * Activities request codes
      */
     public static final int REQUEST_CODE_ADD_DETAILS = 0;
-
-    void refresh() {
-        setTitle(title);
-        setPlaceId(placeId);
-        setPhone(phone);
-        setUrl(url);
-        setRating(rating);
-        setTypes(types);
-    }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -413,6 +413,46 @@ public class PlaceDetailsFragment extends Fragment {
                             new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onSuccess() {
+                                    // Intro
+                                    val config = new ShowcaseConfig();
+                                    config.setDelay(100);
+
+                                    val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
+                                    sequence.setConfig(config);
+
+                                    val skipButton = getString(R.string.add_details_intro_dismiss_button);
+                                    val logon = !MainActivity.firebaseUser.isAnonymous();
+
+                                    sequence.addSequenceItem(
+                                            detailsRecyclerView.findViewHolderForAdapterPosition(0).itemView,
+                                            getString(R.string.details_intro_details),
+                                            skipButton
+                                    );
+
+                                    sequence.addSequenceItem(
+                                            detailsRecyclerView.findViewHolderForAdapterPosition(0).itemView
+                                                    .findViewById(R.id.card_details_star),
+                                            getString(
+                                                    logon
+                                                            ? R.string.details_intro_star_registered
+                                                            : R.string.details_intro_star_not_registered
+                                            ),
+                                            skipButton
+                                    );
+
+                                    sequence.addSequenceItem(
+                                            logon
+                                                    ? detailsAddButton
+                                                    : new View(getContext()),
+                                            getString(
+                                                    logon
+                                                            ? R.string.details_intro_add_registered
+                                                            : R.string.details_intro_add_not_registered
+                                            ),
+                                            skipButton
+                                    );
+
+                                    sequence.start();
                                 }
 
                                 @Override
@@ -430,9 +470,6 @@ public class PlaceDetailsFragment extends Fragment {
                 .addOnCompleteListener(
                         task -> bodyLayout.removeView(bar)
                 );
-
-        // Photos
-        new PhotoTask(this).execute(placeId);
     }
 
     public void setTypes(String[] types) {
@@ -468,8 +505,11 @@ public class PlaceDetailsFragment extends Fragment {
     }
 
     public interface FragmentListener {
-        void onQuestDetailsCreateView(@NonNull View view, ViewGroup container,
-                                      Bundle savedInstanceState);
+        void onQuestDetailsCreateView(
+                @NonNull View view,
+                ViewGroup container,
+                Bundle savedInstanceState
+        );
 
         void onPhotosLoadingStarted();
     }

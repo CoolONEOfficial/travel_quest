@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.settings;
+package ru.coolone.travelquest.ui.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

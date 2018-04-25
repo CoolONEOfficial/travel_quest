@@ -18,6 +18,8 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
@@ -46,8 +48,8 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.TaskListener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
-    @OptionsMenuItem(R.id.add_details_action_send)
-    MenuItem sendItem;
+    ImageButton sendView;
+    ImageButton restoreView;
 
     // Google map place id
     @Extra
@@ -66,8 +68,6 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     @ViewById(R.id.add_details_sliding_tabs)
     TabLayout tabLayout;
 
-    ImageButton sendView;
-
     ProgressBar progressBar;
 
     @AfterViews
@@ -80,7 +80,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         );
         viewPager.setAdapter(pagerAdapter);
         ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
-                .setListener(
+                .addListener(
                         () -> {
                             val dismissText = getString(R.string.add_details_intro_dismiss_button);
                             val frag = (PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem());
@@ -118,6 +118,12 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                         sequence.addSequenceItem(
                                                 sendView,
                                                 getString(R.string.add_details_intro_send),
+                                                dismissText
+                                        );
+
+                                        sequence.addSequenceItem(
+                                                restoreView,
+                                                getString(R.string.add_details_intro_restore),
                                                 dismissText
                                         );
 
@@ -169,6 +175,19 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                     onCompleted();
                                 }
                         );
+                    }
+                }
+        );
+
+        restoreView = (ImageButton) menu.findItem(R.id.add_details_action_restore).getActionView();
+        restoreView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_restore));
+        restoreView.getBackground().setAlpha(0);
+        restoreView.setOnClickListener(
+                v -> {
+                    for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+                        PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
+
+                        mFrag.restoreDetails();
                     }
                 }
         );

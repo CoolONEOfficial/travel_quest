@@ -1,7 +1,13 @@
-<menu xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android" >
-    <item android:id="@+id/add_details_action_send"
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/add_details_action_restore"
+        android:title="@string/add_details_action_restore_title"
+        app:actionViewClass="android.widget.ImageButton"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/add_details_action_send"
         android:title="@string/add_details_action_send_title"
-        app:showAsAction="ifRoom"
-        app:actionViewClass="android.widget.ImageButton"/>
+        app:actionViewClass="android.widget.ImageButton"
+        app:showAsAction="ifRoom" />
 </menu>

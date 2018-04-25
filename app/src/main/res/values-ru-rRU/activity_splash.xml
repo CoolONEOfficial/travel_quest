@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="alert_splash_title" translatable="true">Авторизация</string>
-    <string name="alert_splash_text" translatable="true">Для использования всех возможностей приложения требуется регистрация, но вы можете войти анонимно для ознакомления с функционалом этого приложения.</string>
-    <string name="alert_splash_button_auth" translatable="true">Вход / Регистрация</string>
-    <string name="alert_splash_button_anonymous" translatable="true">Анонимный вход</string>
+    <string name="alert_splash_title">Авторизация</string>
+    <string name="alert_splash_text">Для использования всех возможностей приложения требуется регистрация, но вы можете войти анонимно для ознакомления с функционалом этого приложения.</string>
+    <string name="alert_splash_button_auth">Вход / Регистрация</string>
+    <string name="alert_splash_button_anonymous">Анонимный вход</string>
 </resources>

@@ -72,6 +72,9 @@ public class PlacesFragment extends Fragment
     Place currentPlace;
     PointOfInterest currentPoi;
 
+    // Details loaded
+    boolean detailsLoaded = false;
+
     @AfterViews
     void afterViews() {
         // Sliding panel
@@ -109,6 +112,13 @@ public class PlacesFragment extends Fragment
                         map.setPadding(0, getActionBarHeight(),
                                 0, panel.findViewById(R.id.details_layout_header)
                                         .getHeight());
+                        break;
+                    case EXPANDED:
+                        if (!detailsLoaded) {
+                            // Load details
+                            detailsLoaded = true;
+                            placeDetailsFragment.setPlaceId(placeDetailsFragment.getPlaceId());
+                        }
                         break;
                 }
 
@@ -286,6 +296,7 @@ public class PlacesFragment extends Fragment
 
                         // Create details fragment
                         placeDetailsFragment = PlaceDetailsFragment.newInstance(currentPlace, getContext());
+                        detailsLoaded = false;
                         placeDetailsFragment.setFragmentListener(PlacesFragment.this);
 
                         // Set

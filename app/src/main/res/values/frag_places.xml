@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="map_place_autocomplete_error">An error occurred while trying to get the coordinates of this place</string>
+
+    <!-- Map default zoom -->
+    <dimen name="map_zoom">14px</dimen>
+</resources>

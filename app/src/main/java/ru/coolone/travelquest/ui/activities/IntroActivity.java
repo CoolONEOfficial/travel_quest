@@ -14,7 +14,7 @@ import org.androidannotations.annotations.EActivity;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.IntroFragment_;
-import ru.coolone.travelquest.ui.fragments.about.AboutFragment_;
+import ru.coolone.travelquest.ui.fragments.AboutFragment_;
 
 /**
  * @author coolone

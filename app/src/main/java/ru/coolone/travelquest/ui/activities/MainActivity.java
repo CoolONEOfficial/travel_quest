@@ -58,9 +58,9 @@ import org.androidannotations.annotations.ViewById;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.about.AboutFragment_;
+import ru.coolone.travelquest.ui.fragments.SettingsFragment_;
+import ru.coolone.travelquest.ui.fragments.AboutFragment_;
 import ru.coolone.travelquest.ui.fragments.quests.PlacesFragment_;
-import ru.coolone.travelquest.ui.fragments.settings.SettingsFragment_;
 
 @SuppressLint("Registered")
 @EActivity
@@ -251,7 +251,7 @@ public class MainActivity extends AppCompatActivity implements
                         (dialog, which) -> {
                             final ProgressDialog progress = new ProgressDialog(activity);
                             progress.setTitle(activity.getString(R.string.login_progress));
-                            progress.setCancelable(true);
+                            progress.setCancelable(false);
                             progress.show();
 
                             FirebaseAuth.getInstance().signInAnonymously()

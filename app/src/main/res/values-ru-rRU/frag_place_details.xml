@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unknown title -->
+    <string name="details_unknown">Описания не доступны\nили их пока что никто не добавил</string>
+    <string name="details_add_details">Добавить/Изменить описание</string>
+
+    <string name="details_intro_details">Это один из вариантов описания обьекта</string>
+    <string name="details_intro_star_registered">Вы можете оценить любое из вариантов описаний. Наиболее оцененные из них будут показываться выше других.</string>
+    <string name="details_intro_star_not_registered">Если вы зарегистрируетесь то сможете оценить любое из вариантов описаний. Наиболее оцененные из них будут показываться выше других.</string>
+    <string name="details_intro_add_registered">Если Вы хотите добавить свой вариант описания нажмите на эту кнопку.</string>
+    <string name="details_intro_add_not_registered">Если вы зарегистрируетесь то сможете добавить свой вариант описания.</string>
+</resources>

@@ -3,21 +3,23 @@
     <string name="add_details_title_hint">Enter title…</string>
     <string name="add_details_text_hint">Enter text…</string>
 
-    <string name="add_details_tab_russian_title" translatable="true">Russian</string>
-    <string name="add_details_tab_english_title" translatable="true">English</string>
+    <string name="add_details_tab_russian_title">Russian</string>
+    <string name="add_details_tab_english_title">English</string>
 
-    <string name="add_details_details_hint" translatable="true">Description</string>
+    <string name="add_details_details_hint">Description</string>
     
-    <string name="add_details_action_send_title" translatable="true">Send</string>
+    <string name="add_details_action_send_title">Send</string>
+    <string name="add_details_action_restore_title">Reload</string>
 
     <string name="add_details_add_dialog_title">What do you want to add?</string>
 
     <string name="add_details_add_dialog_text">Text</string>
     <string name="add_details_add_dialog_section">Title</string>
 
-    <string name="add_details_intro_send">And send it</string>
+    <string name="add_details_intro_send">And send your own description</string>
     <string name="add_details_intro_add_header">Add headers</string>
     <string name="add_details_intro_add">Add texts or subtitles</string>
+    <string name="add_details_intro_restore">To undo unsent changes, click this button</string>
     <string name="add_details_intro_remove">Remove any items</string>
     <string name="add_details_intro_dismiss_button">Next</string>
 </resources>

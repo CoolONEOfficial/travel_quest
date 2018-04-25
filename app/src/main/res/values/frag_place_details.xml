@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Unknown -->
+    <string name="details_unknown">Descriptions are not available\nor have not been added yet</string>
+    <string name="details_add_details">Add/Change details</string>
+
+    <string name="details_intro_details">This is one of the options for describing the object</string>
+    <string name="details_intro_star_registered">You can evaluate any of the descriptions. The most appreciated of them will be displayed above the others.</string>
+    <string name="details_intro_star_not_registered">If you register, you can evaluate any of the descriptions. The most appreciated of them will be displayed above the others.</string>
+    <string name="details_intro_add_registered">If you want to add your own description, click this button.</string>
+    <string name="details_intro_add_not_registered">If you register, you can add your own description.</string>
+
+    <dimen name="details_tab">10dp</dimen>
+
+    <!-- Photos line height -->
+    <dimen name="details_photos_size_anchored">200dp</dimen>
+</resources>

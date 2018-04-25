@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.about;
+package ru.coolone.travelquest.ui.fragments;
 
 import android.content.Intent;
 import android.net.Uri;
