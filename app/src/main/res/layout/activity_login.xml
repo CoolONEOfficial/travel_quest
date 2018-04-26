@@ -1,4 +1,4 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -90,7 +90,14 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/login_text_view_signin" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/oauth_form"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_gravity="bottom">
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -102,9 +109,8 @@
             android:id="@+id/login_oauth_google"
             android:layout_width="60dp"
             android:layout_height="60dp"
-            android:layout_marginTop="@dimen/content_inset"
             android:src="@drawable/ic_auth_google"
             android:clickable="true"
             android:focusable="true" />
     </LinearLayout>
-</LinearLayout>
+</FrameLayout>

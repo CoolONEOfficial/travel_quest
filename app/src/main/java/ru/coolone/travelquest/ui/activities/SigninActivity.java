@@ -31,6 +31,7 @@ public class SigninActivity extends AbstractAuthActivity {
         passwordView = findViewById(R.id.signin_text_password);
         authButton = findViewById(R.id.signin_button_signin);
         authFormView = findViewById(R.id.signin_form);
+        oauthFormView = findViewById(R.id.oauth_form);
         oauthGoogleView = findViewById(R.id.signin_oauth_google);
         progressLayout = findViewById(R.id.signin_progress_layout);
         progressBar = findViewById(R.id.signin_progress_bar);

@@ -70,6 +70,8 @@ abstract public class AbstractAuthActivity
     // --- Ui references ---
     // Auth form
     protected View authFormView;
+    // OAuth form
+    protected View oauthFormView;
     // Progress
     protected RelativeLayout progressLayout;
     protected ProgressBar progressBar;
@@ -239,6 +241,11 @@ abstract public class AbstractAuthActivity
                             ? View.GONE
                             : View.VISIBLE
             );
+            oauthFormView.setVisibility(
+                    visibility
+                            ? View.GONE
+                            : View.VISIBLE
+            );
             authFormView
                     .animate()
                     .setDuration(shortAnimTime)
@@ -250,6 +257,11 @@ abstract public class AbstractAuthActivity
                     new AnimatorListenerAdapter() {
                         @Override
                         public void onAnimationEnd(Animator animation) {
+                            oauthFormView.setVisibility(
+                                    visibility
+                                            ? View.GONE
+                                            : View.VISIBLE
+                            );
                             authFormView.setVisibility(
                                     visibility
                                             ? View.GONE
