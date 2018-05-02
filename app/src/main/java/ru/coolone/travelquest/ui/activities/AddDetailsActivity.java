@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
@@ -70,6 +71,8 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     ProgressBar progressBar;
 
+    Fragment[] frags;
+
     @AfterViews
     void afterViews() {
         // View pager
@@ -78,6 +81,9 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 placeId,
                 this
         );
+        if(frags != null) {
+            pagerAdapter.tabFragments = (PlaceDetailsAddFragment[]) frags;
+        }
         viewPager.setAdapter(pagerAdapter);
         ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
                 .addListener(
@@ -219,6 +225,30 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                         )
                 )
         );
+
+        // Restore frags
+        if(savedInstanceState != null) {
+            frags = new Fragment[MainActivity.SupportLang.values().length];
+            for(val mLang: MainActivity.SupportLang.values()) {
+                frags[mLang.ordinal()] = getSupportFragmentManager().getFragment(
+                        savedInstanceState,
+                        mLang.lang
+                );
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        for(val mLang: MainActivity.SupportLang.values()) {
+            getSupportFragmentManager().putFragment(
+                    outState,
+                    mLang.lang,
+                    pagerAdapter.getItem(mLang.ordinal())
+            );
+        }
     }
 
     @OptionsItem(android.R.id.home)

@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.google.android.gms.dynamic.SupportFragmentWrapper;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -197,7 +196,7 @@ public class PlacesFragment extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             placeDetailsFragment = (PlaceDetailsFragment) context.getSupportFragmentManager().getFragment(
                     savedInstanceState,
                     FRAG_PLACE_DETAILS_ID
@@ -210,11 +209,12 @@ public class PlacesFragment extends Fragment
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        context.getSupportFragmentManager().putFragment(
-                outState,
-                FRAG_PLACE_DETAILS_ID,
-                placeDetailsFragment
-        );
+        if (placeDetailsFragment != null)
+            context.getSupportFragmentManager().putFragment(
+                    outState,
+                    FRAG_PLACE_DETAILS_ID,
+                    placeDetailsFragment
+            );
     }
 
     @Override

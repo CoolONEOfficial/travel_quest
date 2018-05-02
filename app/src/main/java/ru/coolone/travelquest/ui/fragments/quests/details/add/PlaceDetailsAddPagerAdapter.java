@@ -12,7 +12,7 @@ import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
  * @since 30.03.18
  */
 public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
-    private PlaceDetailsAddFragment tabFragments[] =
+    public PlaceDetailsAddFragment tabFragments[] =
             new PlaceDetailsAddFragment[SupportLang.values().length];
     private Context context;
 

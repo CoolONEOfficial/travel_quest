@@ -429,36 +429,40 @@ public class PlaceDetailsFragment extends Fragment {
                                     val skipButton = getString(R.string.add_details_intro_dismiss_button);
                                     val logon = !MainActivity.firebaseUser.isAnonymous();
 
-                                    sequence.addSequenceItem(
-                                            detailsRecyclerView.findViewHolderForAdapterPosition(0).itemView,
-                                            getString(R.string.details_intro_details),
-                                            skipButton
-                                    );
+                                    val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
+                                    if(firstAdapter != null) {
+                                        sequence.addSequenceItem(
+                                                firstAdapter.itemView,
+                                                getString(R.string.details_intro_details),
+                                                skipButton
+                                        );
 
-                                    sequence.addSequenceItem(
-                                            detailsRecyclerView.findViewHolderForAdapterPosition(0).itemView
-                                                    .findViewById(R.id.card_details_star),
-                                            getString(
-                                                    logon
-                                                            ? R.string.details_intro_star_registered
-                                                            : R.string.details_intro_star_not_registered
-                                            ),
-                                            skipButton
-                                    );
+                                        sequence.addSequenceItem(
+                                                firstAdapter.itemView
+                                                        .findViewById(R.id.card_details_star),
+                                                getString(
+                                                        logon
+                                                                ? R.string.details_intro_star_registered
+                                                                : R.string.details_intro_star_not_registered
+                                                ),
+                                                skipButton
+                                        );
 
-                                    sequence.addSequenceItem(
-                                            logon
-                                                    ? detailsAddButton
-                                                    : new View(getContext()),
-                                            getString(
-                                                    logon
-                                                            ? R.string.details_intro_add_registered
-                                                            : R.string.details_intro_add_not_registered
-                                            ),
-                                            skipButton
-                                    );
+                                        sequence.addSequenceItem(
+                                                logon
+                                                        ? detailsAddButton
+                                                        : new View(getContext()),
+                                                getString(
+                                                        logon
+                                                                ? R.string.details_intro_add_registered
+                                                                : R.string.details_intro_add_not_registered
+                                                ),
+                                                skipButton
+                                        );
 
-                                    sequence.start();
+
+                                        sequence.start();
+                                    }
                                 }
 
                                 @Override
