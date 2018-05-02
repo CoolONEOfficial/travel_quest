@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -78,9 +79,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // Api client
     private static GoogleApiClient apiClient;
-
-    // First run bool
-    public static boolean firstRun = false;
 
     // Firebase user
     public static FirebaseUser firebaseUser;
@@ -178,7 +176,6 @@ public class MainActivity extends AppCompatActivity implements
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         if (settings.getBoolean("firstrun", true)) {
             settings.edit().putBoolean("firstrun", false).apply();
-            firstRun = true;
 
             // On first run
             startTour();
@@ -225,6 +222,31 @@ public class MainActivity extends AppCompatActivity implements
                     }
                 }
         );
+
+        // Restore
+        if(savedInstanceState != null) {
+            for(val mFragId: FragmentId.values()) {
+                val mFrag = getSupportFragmentManager().getFragment(
+                        savedInstanceState,
+                        Integer.toString(mFragId.ordinal())
+                );
+
+                if(mFrag != null) {
+                    fragmentArr.put(mFragId.ordinal(), mFrag);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        for(int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
+            val mKey = fragmentArr.keyAt(mFragId);
+            val mFrag = fragmentArr.get(mKey);
+            getSupportFragmentManager().putFragment(outState, Integer.toString(mKey), mFrag);
+        }
     }
 
     public static DocumentReference getQuestsRoot(String lang) {
@@ -280,6 +302,8 @@ public class MainActivity extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
+        // Retranslate results to frags
         for (int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
             val mFragKey = fragmentArr.keyAt(mFragId);
             val mFragVal = fragmentArr.get(mFragKey);

@@ -4,8 +4,8 @@ import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +29,6 @@ import com.google.android.gms.location.places.Places;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
@@ -40,6 +39,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
@@ -55,7 +55,8 @@ public class PlaceDetailsFragment extends Fragment {
 
     static final String TAG = PlaceDetailsFragment.class.getSimpleName();
 
-    FragmentListener fragmentListener;
+    @Setter
+    private FragmentListener fragmentListener;
 
     @ViewById(R.id.details_details_recycler)
     public RecyclerView detailsRecyclerView;
@@ -169,7 +170,8 @@ public class PlaceDetailsFragment extends Fragment {
                 false);
 
         // Call listener
-        fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
+        if (fragmentListener != null)
+            fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
     }
@@ -502,10 +504,6 @@ public class PlaceDetailsFragment extends Fragment {
                     "Parent activity must implements FragmentListener"
             );
         }
-    }
-
-    public void setFragmentListener(FragmentListener fragmentListener) {
-        this.fragmentListener = fragmentListener;
     }
 
     public interface FragmentListener {

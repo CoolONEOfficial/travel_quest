@@ -1,10 +1,12 @@
 package ru.coolone.travelquest.ui.fragments.quests;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.util.TypedValue;
@@ -16,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.android.gms.dynamic.SupportFragmentWrapper;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -66,11 +69,14 @@ public class PlacesFragment extends Fragment
     SlidingUpPanelLayout slidingPanel;
 
     // Fragment details
+    private static final String FRAG_PLACE_DETAILS_ID = "placeDetails";
     PlaceDetailsFragment placeDetailsFragment;
 
     // Place
     Place currentPlace;
     PointOfInterest currentPoi;
+
+    private FragmentActivity context;
 
     // Details loaded
     boolean detailsLoaded = false;
@@ -190,6 +196,31 @@ public class PlacesFragment extends Fragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null) {
+            placeDetailsFragment = (PlaceDetailsFragment) context.getSupportFragmentManager().getFragment(
+                    savedInstanceState,
+                    FRAG_PLACE_DETAILS_ID
+            );
+            placeDetailsFragment.setFragmentListener(this);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        context.getSupportFragmentManager().putFragment(
+                outState,
+                FRAG_PLACE_DETAILS_ID,
+                placeDetailsFragment
+        );
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        this.context = (FragmentActivity) context;
+        super.onAttach(context);
     }
 
     private int getActionBarHeight() {
