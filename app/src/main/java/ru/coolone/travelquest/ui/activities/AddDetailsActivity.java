@@ -36,6 +36,7 @@ import java.util.Map;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
+import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddFragment;
 import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddPagerAdapter;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
@@ -71,7 +72,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     ProgressBar progressBar;
 
-    Fragment[] frags;
+    PlaceDetailsAddFragment[] frags;
 
     @AfterViews
     void afterViews() {
@@ -82,9 +83,10 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 this
         );
         if(frags != null) {
-            pagerAdapter.tabFragments = (PlaceDetailsAddFragment[]) frags;
+            pagerAdapter.tabFragments = frags;
         }
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
         ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
                 .addListener(
                         () -> {
@@ -228,12 +230,15 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
         // Restore frags
         if(savedInstanceState != null) {
-            frags = new Fragment[MainActivity.SupportLang.values().length];
+            frags = new PlaceDetailsAddFragment[MainActivity.SupportLang.values().length];
             for(val mLang: MainActivity.SupportLang.values()) {
-                frags[mLang.ordinal()] = getSupportFragmentManager().getFragment(
+                frags[mLang.ordinal()] = (PlaceDetailsAddFragment) getSupportFragmentManager().getFragment(
                         savedInstanceState,
                         mLang.lang
                 );
+            }
+            if(pagerAdapter != null) {
+                pagerAdapter.tabFragments = frags;
             }
         }
     }

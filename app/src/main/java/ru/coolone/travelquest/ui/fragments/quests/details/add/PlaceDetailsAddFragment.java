@@ -1,5 +1,9 @@
 package ru.coolone.travelquest.ui.fragments.quests.details.add;
 
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
@@ -17,7 +21,9 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -38,6 +44,12 @@ import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods
 @EFragment(R.layout.fragment_add_details_page)
 public class PlaceDetailsAddFragment extends Fragment {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
+
+    private static final String KEY_RECYCLER_INSTANCE = "recyclerInstance";
+    private static final String KEY_RECYCLER_SECTIONS = "recyclerInstance";
+
+    private Parcelable recyclerInstance;
+    private List<Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>> recyclerSections;
 
     @FragmentArg
     public SupportLang lang;
@@ -87,7 +99,30 @@ public class PlaceDetailsAddFragment extends Fragment {
         );
         recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
 
-        refreshDetails();
+        if (recyclerInstance == null && recyclerSections == null)
+            refreshDetails();
+        else {
+            recyclerAdapter.setSections(recyclerSections);
+            recycler.getLayoutManager().onRestoreInstanceState(recyclerInstance);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putParcelable(KEY_RECYCLER_INSTANCE, recycler.getLayoutManager().onSaveInstanceState());
+        outState.putSerializable(KEY_RECYCLER_SECTIONS, (Serializable) recyclerAdapter.getSections());
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if(savedInstanceState != null) {
+            recyclerInstance = savedInstanceState.getParcelable(KEY_RECYCLER_INSTANCE);
+            recyclerSections = (List<Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>>) savedInstanceState.getSerializable(KEY_RECYCLER_SECTIONS);
+        }
     }
 
     @Click(R.id.add_details_page_add_section_button)

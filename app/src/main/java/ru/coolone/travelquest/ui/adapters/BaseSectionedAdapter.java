@@ -11,6 +11,9 @@ import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * Created by radiationx on 14.09.17.
  */
@@ -19,6 +22,8 @@ public class BaseSectionedAdapter<
         H extends BaseSectionedHeader, HVH extends BaseSectionedViewHolder,
         I, IVH extends BaseSectionedViewHolder>
         extends SectionedRecyclerViewAdapter<IVH> {
+    @Getter
+    @Setter
     protected List<Pair<H, List<I>>> sections = new ArrayList<>();
 
     public void addSection(Pair<H, List<I>> item) {

@@ -201,7 +201,9 @@ public class PlacesFragment extends Fragment
                     savedInstanceState,
                     FRAG_PLACE_DETAILS_ID
             );
-            placeDetailsFragment.setFragmentListener(this);
+            if(placeDetailsFragment != null) {
+                placeDetailsFragment.setFragmentListener(this);
+            }
         }
     }
 
