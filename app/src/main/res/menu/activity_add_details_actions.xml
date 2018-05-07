@@ -6,6 +6,11 @@
         app:actionViewClass="android.widget.ImageButton"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/add_details_action_translate"
+        android:title="@string/add_details_action_send_title"
+        app:actionViewClass="android.widget.FrameLayout"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/add_details_action_send"
         android:title="@string/add_details_action_send_title"
         app:actionViewClass="android.widget.ImageButton"

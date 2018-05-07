@@ -10,8 +10,9 @@ android {
         applicationId "ru.coolone.travelquest"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 9
-        versionName "1.8"
+        multiDexEnabled true
+        versionCode 10
+        versionName "1.9"
 
         // Google maps key
         manifestPlaceholders = [googleMapApiKey: GOOGLE_MAPS_API_KEY]
@@ -48,7 +49,7 @@ dependencies {
     }
     ext {
         support = "27.1.1"
-        ps = "15.0.0"
+        ps = "15.0.1"
         lb = "1.16.20"
         aa = "4.4.0"
     }
@@ -66,9 +67,9 @@ dependencies {
     implementation "com.google.android.gms:play-services-places:${ps}"
     implementation "com.google.android.gms:play-services-auth:${ps}"
 
-    implementation "com.google.firebase:firebase-auth:${ps}"
-    implementation "com.google.firebase:firebase-firestore:${ps}"
-    implementation "com.google.firebase:firebase-appindexing:${ps}"
+    implementation "com.google.firebase:firebase-auth:15.1.0"
+    implementation "com.google.firebase:firebase-firestore:16.0.0"
+    implementation "com.google.firebase:firebase-appindexing:15.0.1"
 
     implementation 'com.android.volley:volley:1.0.0'
     implementation 'com.afollestad:sectioned-recyclerview:0.5.0'
@@ -79,6 +80,8 @@ dependencies {
     implementation 'com.github.apl-devs:appintro:v4.2.3'
     implementation 'com.github.jd-alexander:LikeButton:0.2.3'
     implementation 'com.github.deano2390:MaterialShowcaseView:1.2.0'
+    implementation 'com.github.zagum:Android-SwitchIcon:1.3.7'
+    compile 'com.android.support:multidex:1.0.3'
 
     compileOnly "org.projectlombok:lombok:${lb}"
     annotationProcessor "org.projectlombok:lombok:${lb}"
@@ -104,5 +107,18 @@ if (build_param != "dev") {
         if (variant.buildType.name != 'dev') {
             variant.setIgnore(true)
         }
+    }
+}
+
+afterEvaluate {
+    tasks.matching
+    {
+        it.name.startsWith('dex')
+    }.each {dx ->
+        if (dx.additionalParameters == null) {
+            dx.additionalParameters = []
+        }
+        dx.additionalParameters += '--multi-dex'
+        dx.additionalParameters += "--main-dex-list=$projectDir/<filename>".toString()
     }
 }

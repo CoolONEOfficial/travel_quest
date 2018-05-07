@@ -22,4 +22,9 @@
     <string name="add_details_intro_restore">To undo unsent changes, click this button</string>
     <string name="add_details_intro_remove">Remove any items</string>
     <string name="add_details_intro_dismiss_button">Next</string>
+    
+    <string name="add_details_action_send_alert_title">Confirmation of sending</string>
+    <string name="add_details_action_send_alert_text">Are you sure you want to apply the changes?</string>
+    <string name="add_details_action_send_alert_confirm">@android:string/ok</string>
+    <string name="add_details_action_send_alert_cancel">Cancel</string>
 </resources>

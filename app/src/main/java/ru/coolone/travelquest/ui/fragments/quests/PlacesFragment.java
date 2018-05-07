@@ -358,7 +358,7 @@ public class PlacesFragment extends Fragment
 
     @OnActivityResult(REQUEST_CODE_ADD_DETAILS)
     void onResult(int result) {
-        if (result == RESULT_OK && placeDetailsFragment != null) {
+        if (result == RESULT_OK && placeDetailsFragment != null && currentPoi != null) {
             onPoiClick(currentPoi);
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
         }

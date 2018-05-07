@@ -13,7 +13,6 @@ import android.graphics.Color;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -55,13 +54,12 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.InstanceState;
 import org.androidannotations.annotations.ViewById;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.SettingsFragment_;
 import ru.coolone.travelquest.ui.fragments.AboutFragment_;
+import ru.coolone.travelquest.ui.fragments.SettingsFragment_;
 import ru.coolone.travelquest.ui.fragments.quests.PlacesFragment_;
 
 @SuppressLint("Registered")
@@ -245,7 +243,9 @@ public class MainActivity extends AppCompatActivity implements
         for(int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
             val mKey = fragmentArr.keyAt(mFragId);
             val mFrag = fragmentArr.get(mKey);
-            getSupportFragmentManager().putFragment(outState, Integer.toString(mKey), mFrag);
+            if(mFrag.isAdded()) {
+                getSupportFragmentManager().putFragment(outState, Integer.toString(mKey), mFrag);
+            }
         }
     }
 
@@ -412,6 +412,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Open default navigation item
         onNavigationItemSelected(NAV_MENU_DEFAULT_ID);
+        navigationView.getMenu().getItem(0).setChecked(true);
 
         return true;
     }
@@ -462,90 +463,93 @@ public class MainActivity extends AppCompatActivity implements
 
     public void onNavigationItemSelected(int id) {
 
-        if (id == R.id.nav_logout) {
-            // Logout
-            FirebaseAuth.getInstance().signOut();
+        if(!navigationView.getMenu().findItem(id).isChecked()) {
+            if (id == R.id.nav_logout) {
+                // Logout
+                FirebaseAuth.getInstance().signOut();
 
-            if (FirebaseAuth.getInstance().getCurrentUser() != null)
-                Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
-            else Log.d(TAG, "Signout user is null!");
+                if (FirebaseAuth.getInstance().getCurrentUser() != null)
+                    Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
+                else Log.d(TAG, "Signout user is null!");
 
-            getAuthDialog(this, null)
-                    .setCancelable(false)
-                    .show();
-        } else {
-            // To fragment
-            val fragTrans = getSupportFragmentManager().beginTransaction();
-            FragmentId fragId = null;
-            switch (id) {
-                case R.id.nav_quests:
-                    fragId = FragmentId.QUESTS;
-                    break;
-                case R.id.nav_settings:
-                    fragId = FragmentId.SETTINGS;
-                    break;
-                case R.id.nav_about:
-                    fragId = FragmentId.ABOUT;
-                    break;
-            }
-            fragTrans.replace(R.id.fragment_container,
-                    getFragmentById(fragId))
-                    .commit();
-
-            // --- Toolbar ---
-
-            // Transparency
-            setToolbarTransparent(
-                    id == R.id.nav_quests,
-                    id != R.id.nav_quests
-            );
-
-            // Colors
-            val mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
-            val mapBlack = "night".equalsIgnoreCase(mapStyle)
-                    || "solarized".equalsIgnoreCase(mapStyle);
-            setToolbarColors(
-                    id == R.id.nav_quests
-                            ? (
-                            mapBlack
-                                    ? Color.WHITE
-                                    : Color.BLACK
-                    )
-                            : Color.WHITE
-            );
-
-            // Title
-            int titleId = 0;
-            switch (id) {
-                case R.id.nav_settings:
-                    titleId = R.string.nav_settings;
-                    break;
-                case R.id.nav_about:
-                    titleId = R.string.nav_about;
-            }
-            toolbarTitle.setVisibility(
-                    titleId != 0
-                            ? View.VISIBLE
-                            : View.GONE
-            );
-            if (titleId != 0) {
-                setTitle(getResources().getString(titleId));
-            }
-
-            // Autocomplete place text
-            if (id == R.id.nav_quests) {
-                val autocompleteTextViewParams = new FrameLayout.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.MATCH_PARENT
-                );
-                autocompleteTextViewParams.setMarginEnd((int) getResources().getDimension(R.dimen.content_inset));
-                toolbarLayout.addView(autocompleteTextView, autocompleteTextViewParams);
+                getAuthDialog(this, null)
+                        .setCancelable(false)
+                        .show();
             } else {
-                toolbarLayout.removeView(autocompleteTextView);
-            }
+                // To fragment
+                val fragTrans = getSupportFragmentManager().beginTransaction();
+                FragmentId fragId = null;
+                switch (id) {
+                    case R.id.nav_quests:
+                        fragId = FragmentId.QUESTS;
+                        break;
+                    case R.id.nav_settings:
+                        fragId = FragmentId.SETTINGS;
+                        break;
+                    case R.id.nav_about:
+                        fragId = FragmentId.ABOUT;
+                        break;
+                }
+                fragTrans.replace(R.id.fragment_container,
+                        getFragmentById(fragId))
+                        .commit();
 
-            drawer.closeDrawer(GravityCompat.START);
-        }
+                // --- Toolbar ---
+
+                // Transparency
+                setToolbarTransparent(
+                        id == R.id.nav_quests,
+                        id != R.id.nav_quests
+                );
+                setToolbarAlpha(1.0f);
+
+                // Colors
+                val mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
+                val mapBlack = "night".equalsIgnoreCase(mapStyle)
+                        || "solarized".equalsIgnoreCase(mapStyle);
+                setToolbarColors(
+                        id == R.id.nav_quests
+                                ? (
+                                mapBlack
+                                        ? Color.WHITE
+                                        : Color.BLACK
+                        )
+                                : Color.WHITE
+                );
+
+                // Title
+                int titleId = 0;
+                switch (id) {
+                    case R.id.nav_settings:
+                        titleId = R.string.nav_settings;
+                        break;
+                    case R.id.nav_about:
+                        titleId = R.string.nav_about;
+                }
+                toolbarTitle.setVisibility(
+                        titleId != 0
+                                ? View.VISIBLE
+                                : View.GONE
+                );
+                if (titleId != 0) {
+                    setTitle(getResources().getString(titleId));
+                }
+
+                // Autocomplete place text
+                if (id == R.id.nav_quests) {
+                    val autocompleteTextViewParams = new FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                    );
+                    autocompleteTextViewParams.setMarginEnd((int) getResources().getDimension(R.dimen.content_inset));
+                    toolbarLayout.addView(autocompleteTextView, autocompleteTextViewParams);
+                } else {
+                    toolbarLayout.removeView(autocompleteTextView);
+                }
+
+                drawer.closeDrawer(GravityCompat.START);
+            }
+        } else drawer.closeDrawer(GravityCompat.START);
     }
 
     @Override

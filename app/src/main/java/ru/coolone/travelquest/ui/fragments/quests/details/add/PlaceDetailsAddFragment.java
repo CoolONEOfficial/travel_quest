@@ -81,7 +81,7 @@ public class PlaceDetailsAddFragment extends Fragment {
     }
 
     public interface Listener {
-        void onSectionsAdded();
+        void onSectionsLoaded();
     }
 
     public void restoreDetails() {
@@ -190,7 +190,7 @@ public class PlaceDetailsAddFragment extends Fragment {
 
                         for (val mListener : listeners)
                             if (mListener != null)
-                                mListener.onSectionsAdded();
+                                mListener.onSectionsLoaded();
                     })
                     .addOnFailureListener(
                             e -> createTemplateDetails()
