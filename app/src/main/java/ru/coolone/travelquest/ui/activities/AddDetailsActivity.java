@@ -35,13 +35,13 @@ import java.util.Map;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddFragment;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddPagerAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddFragment;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddPagerAdapter;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.serializeDetails;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.serializeDetails;
 
 @SuppressLint("Registered")
 @EActivity

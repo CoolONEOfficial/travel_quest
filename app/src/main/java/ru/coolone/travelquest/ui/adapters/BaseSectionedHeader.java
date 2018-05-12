@@ -1,5 +1,7 @@
 package ru.coolone.travelquest.ui.adapters;
 
+import java.io.Serializable;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +13,7 @@ import lombok.Setter;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public class BaseSectionedHeader {
+public class BaseSectionedHeader implements Serializable {
     @Getter
     @Setter
     private String title;

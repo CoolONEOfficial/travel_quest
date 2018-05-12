@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details;
+package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
 import android.os.Build;
@@ -11,14 +11,16 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.Serializable;
+
 import lombok.Setter;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
 public class PlaceDetailsAdapter
         extends BaseSectionedAdapter<
@@ -81,7 +83,7 @@ public class PlaceDetailsAdapter
         return getItem(section, relativePosition).getListItemId();
     }
 
-    public interface ListItem {
+    public interface ListItem extends Serializable {
         int getListItemId();
 
         enum Id {
@@ -93,7 +95,7 @@ public class PlaceDetailsAdapter
 
     class HeaderHolder
             extends BaseSectionedViewHolder<BaseSectionedHeader>
-            implements View.OnClickListener, View.OnLongClickListener {
+            implements View.OnClickListener, View.OnLongClickListener, Serializable {
         ImageView caret;
         TextView title;
 
@@ -119,7 +121,8 @@ public class PlaceDetailsAdapter
     }
 
     public class ItemHolderText
-            extends BaseSectionedViewHolder<QuestDetailsItemText> {
+            extends BaseSectionedViewHolder<QuestDetailsItemText>
+            implements Serializable {
         TextView text;
 
         ItemHolderText(View v) {
@@ -140,7 +143,9 @@ public class PlaceDetailsAdapter
     }
 
     public class ItemHolderRecycler
-            extends BaseSectionedViewHolder<QuestDetailsItemRecycler> {
+            extends BaseSectionedViewHolder<QuestDetailsItemRecycler>
+            implements Serializable{
+
         RecyclerView recyclerView;
 
         ItemHolderRecycler(View v, Context context) {
@@ -149,7 +154,7 @@ public class PlaceDetailsAdapter
             this.recyclerView = v.findViewById(R.id.details_item_recycler);
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
 
-            Log.d(TAG, "Item recyclerView holder created:\n\tsize: "
+            Log.d(TAG, "Item recyclerAdapter holder created:\n\tsize: "
                     + String.valueOf(recyclerView.getChildCount())
                     + "\n\titem view:" + String.valueOf(v)
                     + "\n\tadapter" + String.valueOf(recyclerView.getAdapter()));
@@ -157,9 +162,9 @@ public class PlaceDetailsAdapter
 
         @Override
         public void bind(QuestDetailsItemRecycler recycler) {
-            Log.d(TAG, "item recyclerView binded!\n\tItem: "
+            Log.d(TAG, "item recyclerAdapter binded!\n\tItem: "
                     + String.valueOf(recycler));
-            recyclerView.setAdapter(recycler.getRecyclerView().getAdapter());
+            recyclerView.setAdapter(recycler.getRecyclerAdapter());
             recyclerView.invalidate();
         }
     }

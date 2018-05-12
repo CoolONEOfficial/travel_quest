@@ -7,7 +7,7 @@
     android:gravity="bottom"
     sothree:umanoInitialState="hidden"
     sothree:umanoOverlay="true"
-    tools:context=".ui.fragments.quests.PlacesFragment">
+    tools:context=".ui.fragments.places.PlacesFragment">
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/places_map"

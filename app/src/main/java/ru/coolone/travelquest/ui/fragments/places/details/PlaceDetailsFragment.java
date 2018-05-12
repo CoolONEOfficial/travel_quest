@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details;
+package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
@@ -44,8 +44,8 @@ import ru.coolone.travelquest.ui.activities.MainActivity;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsCards;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsCards;
 
 @EFragment
 public class PlaceDetailsFragment extends Fragment {

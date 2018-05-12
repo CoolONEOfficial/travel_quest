@@ -1,7 +1,8 @@
-package ru.coolone.travelquest.ui.fragments.quests.details.add;
+package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Parcel;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -15,8 +16,8 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -25,12 +26,12 @@ import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
-import ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsAdapter.ListItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsAdapter.ListItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 
 /**
  * @author coolone
@@ -41,6 +42,11 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        super.writeToParcel(dest, flags);
+    }
 
     // Context
     private final Context context;
@@ -97,7 +103,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
     public class HeaderHolder
             extends BaseSectionedViewHolder<BaseSectionedHeader>
-            implements View.OnClickListener, View.OnLongClickListener {
+            implements View.OnClickListener, View.OnLongClickListener, Serializable {
         EditText title;
         ImageButton buttonAdd;
         ImageButton buttonRemove;
@@ -136,7 +142,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                         context.getString(R.string.add_details_add_dialog_section),
                                         context.getString(R.string.add_details_add_dialog_text)
                                 }, (dialog, item) -> {
-                                    final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section =
+                                    final Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>> section =
                                             getSection(getRelativePosition().section());
 
                                     BaseQuestDetailsItem detailsItem = null;
@@ -157,7 +163,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                                             )
                                                     );
 
-                                            detailsItem = new QuestDetailsItemRecycler(recycler);
+                                            detailsItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
                                             break;
                                         case 1:
                                             detailsItem = new QuestDetailsItemText();
@@ -188,7 +194,8 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     }
 
     public class ItemHolderText
-            extends BaseSectionedViewHolder<QuestDetailsItemText> {
+            extends BaseSectionedViewHolder<QuestDetailsItemText>
+            implements Serializable {
         EditText text;
         ImageButton buttonRemove;
 
@@ -238,7 +245,8 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     }
 
     public class ItemHolderRecycler
-            extends BaseSectionedViewHolder<QuestDetailsItemRecycler> {
+            extends BaseSectionedViewHolder<QuestDetailsItemRecycler>
+            implements Serializable {
         RecyclerView recyclerView;
 
         ItemHolderRecycler(View v, Context context) {
@@ -257,7 +265,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         public void bind(QuestDetailsItemRecycler recycler) {
             Log.d(TAG, "item recycler binded!\n\tItem: "
                     + String.valueOf(recycler));
-            recyclerView.setAdapter(recycler.getRecyclerView().getAdapter());
+            recyclerView.setAdapter(recycler.getRecyclerAdapter());
             recyclerView.invalidate();
         }
     }

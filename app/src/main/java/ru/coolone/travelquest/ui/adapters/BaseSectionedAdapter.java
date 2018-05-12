@@ -1,5 +1,7 @@
 package ru.coolone.travelquest.ui.adapters;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.annotation.LayoutRes;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -9,28 +11,47 @@ import android.view.ViewGroup;
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.val;
 
 /**
  * Created by radiationx on 14.09.17.
  */
 
+@NoArgsConstructor
 public class BaseSectionedAdapter<
         H extends BaseSectionedHeader, HVH extends BaseSectionedViewHolder,
-        I, IVH extends BaseSectionedViewHolder>
-        extends SectionedRecyclerViewAdapter<IVH> {
+        I extends Parcelable, IVH extends BaseSectionedViewHolder>
+        extends SectionedRecyclerViewAdapter<IVH>
+        implements Parcelable {
+
+    public BaseSectionedAdapter(Parcel parcel) {
+        for (int mSectionId = 0; mSectionId < parcel.readInt(); mSectionId++) {
+            sections.add(
+                    new Pair<>(
+                            (H) parcel.readSerializable(),
+                            new ArrayList<>(Arrays.asList(
+                                    (I[]) parcel.readParcelableArray(I.ClassLoaderCreator.class.getClassLoader())
+                            ))
+                    )
+            );
+        }
+    }
+
     @Getter
     @Setter
-    protected List<Pair<H, List<I>>> sections = new ArrayList<>();
+    protected ArrayList<Pair<H, ArrayList<I>>> sections = new ArrayList<>();
 
-    public void addSection(Pair<H, List<I>> item) {
+    public void addSection(Pair<H, ArrayList<I>> item) {
         addSection(sections.size(), item);
     }
 
-    public void addSection(int section, Pair<H, List<I>> item) {
+    public void addSection(int section, Pair<H, ArrayList<I>> item) {
         sections.add(section, item);
         notifyDataSetChanged();
     }
@@ -41,7 +62,7 @@ public class BaseSectionedAdapter<
     }
 
     public void clear() {
-        for (Pair<H, List<I>> section : sections)
+        for (Pair<H, ArrayList<I>> section : sections)
             section.second.clear();
         sections.clear();
     }
@@ -78,7 +99,7 @@ public class BaseSectionedAdapter<
         return getItems(section).get(relativePosition);
     }
 
-    public Pair<H, List<I>> getSection(int section) {
+    public Pair<H, ArrayList<I>> getSection(int section) {
         return sections.get(section);
     }
 
@@ -122,4 +143,31 @@ public class BaseSectionedAdapter<
 
         boolean onLongClick(ME i, MVH i2, int section);
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(sections.size());
+        for (val mSection : sections) {
+            dest.writeSerializable(mSection.first);
+            dest.writeArray(mSection.second.toArray());
+        }
+    }
+
+    public static final Parcelable.Creator<BaseSectionedAdapter> CREATOR = new Parcelable.Creator<BaseSectionedAdapter>() {
+
+        @Override
+        public BaseSectionedAdapter createFromParcel(Parcel source) {
+            return new BaseSectionedAdapter(source);
+        }
+
+        @Override
+        public BaseSectionedAdapter[] newArray(int size) {
+            return new BaseSectionedAdapter[size];
+        }
+    };
 }

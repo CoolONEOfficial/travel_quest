@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests;
+package ru.coolone.travelquest.ui.fragments.places;
 
 import android.app.Activity;
 import android.content.Context;
@@ -41,10 +41,10 @@ import org.androidannotations.annotations.ViewById;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
-import ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment;
+import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFragment;
 
 import static android.app.Activity.RESULT_OK;
-import static ru.coolone.travelquest.ui.fragments.quests.details.PlaceDetailsFragment.REQUEST_CODE_ADD_DETAILS;
+import static ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFragment.REQUEST_CODE_ADD_DETAILS;
 
 @EFragment(R.layout.fragment_places)
 public class PlacesFragment extends Fragment

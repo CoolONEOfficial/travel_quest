@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details;
+package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,10 +20,10 @@ import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.quests.details.add.PlaceDetailsAddAdapter;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemRecycler;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
 /**
  * @author coolone
@@ -196,9 +196,9 @@ public class FirebaseMethods {
                     }
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
                     val mItemRecycler = (QuestDetailsItemRecycler) mItem;
-                    Log.d(TAG, "mItem is recyclerView");
+                    Log.d(TAG, "mItem is recyclerAdapter");
 
-                    val mItemAdapter = (BaseSectionedAdapter) mItemRecycler.getRecyclerView().getAdapter();
+                    val mItemAdapter = (BaseSectionedAdapter) mItemRecycler.getRecyclerAdapter();
 
                     serializeDetails(
                             nextColl,
@@ -293,10 +293,12 @@ public class FirebaseMethods {
             if (mDoc.contains("title")) {
                 // Recycler view
                 val recycler = new RecyclerView(context);
+
                 initDetailsRecyclerView(recycler, adapter.getClass(), context);
 
                 // Recycler item
-                val itemRecycler = new QuestDetailsItemRecycler(recycler);
+
+                val itemRecycler = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
 
                 // Section
                 val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
@@ -363,9 +365,7 @@ public class FirebaseMethods {
                 final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
 
                 // Recycler item
-                mItem = new QuestDetailsItemRecycler(
-                        recycler
-                );
+                mItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
 
                 // Next section
                 final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(

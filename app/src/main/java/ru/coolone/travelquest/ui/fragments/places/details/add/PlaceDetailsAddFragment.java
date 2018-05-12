@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details.add;
+package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -21,9 +21,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
 
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
@@ -31,11 +29,11 @@ import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.quests.details.items.QuestDetailsItemText;
+import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.initDetailsRecyclerView;
-import static ru.coolone.travelquest.ui.fragments.quests.details.FirebaseMethods.parseDetailsHeaders;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
+import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsHeaders;
 
 /**
  * @author coolone
@@ -46,10 +44,9 @@ public class PlaceDetailsAddFragment extends Fragment {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
 
     private static final String KEY_RECYCLER_INSTANCE = "recyclerInstance";
-    private static final String KEY_RECYCLER_SECTIONS = "recyclerInstance";
+    private static final String KEY_RECYCLER_ADAPTER = "recyclerAdapter";
 
     private Parcelable recyclerInstance;
-    private List<Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>> recyclerSections;
 
     @FragmentArg
     public SupportLang lang;
@@ -97,12 +94,13 @@ public class PlaceDetailsAddFragment extends Fragment {
                 PlaceDetailsAddAdapter.class,
                 getContext()
         );
+        if(recyclerAdapter != null)
+            ((BaseSectionedAdapter)recycler.getAdapter()).setSections(recyclerAdapter.getSections());
         recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
 
-        if (recyclerInstance == null && recyclerSections == null)
+        if (recyclerInstance == null)
             refreshDetails();
         else {
-            recyclerAdapter.setSections(recyclerSections);
             recycler.getLayoutManager().onRestoreInstanceState(recyclerInstance);
         }
     }
@@ -112,16 +110,16 @@ public class PlaceDetailsAddFragment extends Fragment {
         super.onSaveInstanceState(outState);
 
         outState.putParcelable(KEY_RECYCLER_INSTANCE, recycler.getLayoutManager().onSaveInstanceState());
-        outState.putSerializable(KEY_RECYCLER_SECTIONS, (Serializable) recyclerAdapter.getSections());
+        outState.putParcelable(KEY_RECYCLER_ADAPTER, recyclerAdapter);
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(savedInstanceState != null) {
+        if (savedInstanceState != null) {
             recyclerInstance = savedInstanceState.getParcelable(KEY_RECYCLER_INSTANCE);
-            recyclerSections = (List<Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>>) savedInstanceState.getSerializable(KEY_RECYCLER_SECTIONS);
+            recyclerAdapter = savedInstanceState.getParcelable(KEY_RECYCLER_ADAPTER);
         }
     }
 

@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details;
+package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

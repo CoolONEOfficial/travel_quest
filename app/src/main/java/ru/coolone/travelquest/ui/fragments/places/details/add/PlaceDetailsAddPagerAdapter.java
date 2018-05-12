@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments.quests.details.add;
+package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
