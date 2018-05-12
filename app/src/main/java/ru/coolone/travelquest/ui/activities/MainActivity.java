@@ -70,7 +70,8 @@ public class MainActivity extends AppCompatActivity implements
         PlacesFragment_.SlidingUpPanelListener,
         PlacesFragment_.AutocompleteTextViewGetter {
     static final String TAG = MainActivity.class.getSimpleName();
-    static final int NAV_MENU_DEFAULT_ID = R.id.nav_quests;
+    static final int NAV_MENU_DEFAULT_MENU_ID = R.id.nav_quests;
+    private static final String KEY_MENU_ID = "menuId";
 
     // Preferences
     public static SharedPreferences settings;
@@ -86,6 +87,8 @@ public class MainActivity extends AppCompatActivity implements
 
     // Fragments array
     SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
+    int savedMenuId = -1;
+    int currentMenuId;
 
     // Drawer layout
     @ViewById(R.id.drawer_layout)
@@ -107,9 +110,6 @@ public class MainActivity extends AppCompatActivity implements
 
     // Autocomplete place
     PlacesAutocompleteTextView autocompleteTextView;
-
-    // Current nav menu id
-    int currentId;
 
     @AfterViews
     void afterViews() {
@@ -226,6 +226,7 @@ public class MainActivity extends AppCompatActivity implements
 
         // Restore
         if (savedInstanceState != null) {
+            savedMenuId = savedInstanceState.getInt(KEY_MENU_ID);
             for (val mFragId : FragmentId.values()) {
                 val mFrag = getSupportFragmentManager().getFragment(
                         savedInstanceState,
@@ -243,6 +244,7 @@ public class MainActivity extends AppCompatActivity implements
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        outState.putInt(KEY_MENU_ID, currentMenuId);
         for (int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
             val mKey = fragmentArr.keyAt(mFragId);
             val mFrag = fragmentArr.get(mKey);
@@ -414,8 +416,11 @@ public class MainActivity extends AppCompatActivity implements
         getMenuInflater().inflate(R.menu.main, menu);
 
         // Open default navigation item
-        onNavigationItemSelected(NAV_MENU_DEFAULT_ID);
-        navigationView.getMenu().getItem(0).setChecked(true);
+        val menuId = savedMenuId != -1
+                ? savedMenuId
+                : NAV_MENU_DEFAULT_MENU_ID;
+        onNavigationItemSelected(menuId);
+        navigationView.getMenu().findItem(menuId).setChecked(true);
 
         return true;
     }
@@ -464,8 +469,8 @@ public class MainActivity extends AppCompatActivity implements
         super.setTitle(title);
     }
 
-    public void onNavigationItemSelected(int id) {
-        if (id == R.id.nav_logout) {
+    public void onNavigationItemSelected(int menuId) {
+        if (menuId == R.id.nav_logout) {
             // Logout
             FirebaseAuth.getInstance().signOut();
 
@@ -477,23 +482,26 @@ public class MainActivity extends AppCompatActivity implements
                     .setCancelable(false)
                     .show();
         } else {
-            if(!navigationView.getMenu().findItem(id).isChecked()) {
+            FragmentId fragId = null;
+            switch (menuId) {
+                case R.id.nav_quests:
+                    fragId = FragmentId.QUESTS;
+                    break;
+                case R.id.nav_settings:
+                    fragId = FragmentId.SETTINGS;
+                    break;
+                case R.id.nav_about:
+                    fragId = FragmentId.ABOUT;
+                    break;
+            }
+            if (currentMenuId != menuId) {
                 // To fragment
-                val fragTrans = getSupportFragmentManager().beginTransaction();
-                FragmentId fragId = null;
-                switch (id) {
-                    case R.id.nav_quests:
-                        fragId = FragmentId.QUESTS;
-                        break;
-                    case R.id.nav_settings:
-                        fragId = FragmentId.SETTINGS;
-                        break;
-                    case R.id.nav_about:
-                        fragId = FragmentId.ABOUT;
-                        break;
-                }
-                fragTrans.replace(R.id.fragment_container,
-                        getFragmentById(fragId))
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(
+                                R.id.fragment_container,
+                                getFragmentById(fragId)
+                        )
                         .commit();
             }
 
@@ -501,8 +509,8 @@ public class MainActivity extends AppCompatActivity implements
 
             // Transparency
             setToolbarTransparent(
-                    id == R.id.nav_quests,
-                    id != R.id.nav_quests
+                    menuId == R.id.nav_quests,
+                    menuId != R.id.nav_quests
             );
             setToolbarAlpha(1.0f);
 
@@ -511,7 +519,7 @@ public class MainActivity extends AppCompatActivity implements
             val mapBlack = "night".equalsIgnoreCase(mapStyle)
                     || "solarized".equalsIgnoreCase(mapStyle);
             setToolbarColors(
-                    id == R.id.nav_quests
+                    menuId == R.id.nav_quests
                             ? (
                             mapBlack
                                     ? Color.WHITE
@@ -522,7 +530,7 @@ public class MainActivity extends AppCompatActivity implements
 
             // Title
             int titleId = 0;
-            switch (id) {
+            switch (menuId) {
                 case R.id.nav_settings:
                     titleId = R.string.nav_settings;
                     break;
@@ -539,18 +547,22 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             // Autocomplete place text
-            if (id == R.id.nav_quests) {
+            if (menuId == R.id.nav_quests) {
                 val autocompleteTextViewParams = new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT
                 );
                 autocompleteTextViewParams.setMarginEnd((int) getResources().getDimension(R.dimen.content_inset));
+                if(menuId == currentMenuId)
+                    toolbarLayout.removeView(autocompleteTextView);
                 toolbarLayout.addView(autocompleteTextView, autocompleteTextViewParams);
             } else {
                 toolbarLayout.removeView(autocompleteTextView);
             }
 
             drawer.closeDrawer(GravityCompat.START);
+
+            currentMenuId = menuId;
         }
     }
 
