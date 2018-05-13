@@ -144,14 +144,16 @@ public class MainActivity extends AppCompatActivity implements
                         .Builder()
                         .detectAll()
                         .penaltyLog()
-                        .build());
+                        .build()
+        );
         StrictMode.setVmPolicy(
                 new StrictMode.VmPolicy
                         .Builder()
                         .detectLeakedSqlLiteObjects()
                         .detectLeakedClosableObjects()
                         .penaltyLog()
-                        .build());
+                        .build()
+        );
 
         // Switch last login method
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -452,7 +454,7 @@ public class MainActivity extends AppCompatActivity implements
             // Margin
             ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
                     .topMargin = fragmentMargin
-                    ? toolbar.getHeight()
+                    ? toolbarMain.getHeight()
                     : 0;
         }
     }
@@ -503,6 +505,8 @@ public class MainActivity extends AppCompatActivity implements
                                 getFragmentById(fragId)
                         )
                         .commit();
+
+                setToolbarAlpha(1.0f);
             }
 
             // --- Toolbar ---
@@ -512,7 +516,6 @@ public class MainActivity extends AppCompatActivity implements
                     menuId == R.id.nav_quests,
                     menuId != R.id.nav_quests
             );
-            setToolbarAlpha(1.0f);
 
             // Colors
             val mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
@@ -553,7 +556,7 @@ public class MainActivity extends AppCompatActivity implements
                         ViewGroup.LayoutParams.MATCH_PARENT
                 );
                 autocompleteTextViewParams.setMarginEnd((int) getResources().getDimension(R.dimen.content_inset));
-                if(menuId == currentMenuId)
+                if (menuId == currentMenuId)
                     toolbarLayout.removeView(autocompleteTextView);
                 toolbarLayout.addView(autocompleteTextView, autocompleteTextViewParams);
             } else {

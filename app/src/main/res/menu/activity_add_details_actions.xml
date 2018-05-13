@@ -9,7 +9,8 @@
         android:id="@+id/add_details_action_translate"
         android:title="@string/add_details_action_send_title"
         app:actionViewClass="android.widget.FrameLayout"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        android:visible="false"/>
     <item
         android:id="@+id/add_details_action_send"
         android:title="@string/add_details_action_send_title"

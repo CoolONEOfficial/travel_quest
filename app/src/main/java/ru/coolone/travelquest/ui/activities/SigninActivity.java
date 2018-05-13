@@ -1,6 +1,6 @@
 package ru.coolone.travelquest.ui.activities;
 
-import android.content.Intent;
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -13,6 +13,7 @@ import org.androidannotations.annotations.EActivity;
 
 import ru.coolone.travelquest.R;
 
+@SuppressLint("Registered")
 @EActivity
 public class SigninActivity extends AbstractAuthActivity {
 
@@ -31,7 +32,7 @@ public class SigninActivity extends AbstractAuthActivity {
         passwordView = findViewById(R.id.signin_text_password);
         authButton = findViewById(R.id.signin_button_signin);
         authFormView = findViewById(R.id.signin_form);
-        oauthFormView = findViewById(R.id.oauth_form);
+        oauthFormView = findViewById(R.id.signin_oauth_form);
         oauthGoogleView = findViewById(R.id.signin_oauth_google);
         progressLayout = findViewById(R.id.signin_progress_layout);
         progressBar = findViewById(R.id.signin_progress_bar);
@@ -40,9 +41,7 @@ public class SigninActivity extends AbstractAuthActivity {
 
         textViewLogin.setOnClickListener(view -> {
             // To login activity
-            Intent intent = new Intent(SigninActivity.this, LoginActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
+            LoginActivity_.intent(this).start();
         });
 
         // Initialize parent views
@@ -70,8 +69,7 @@ public class SigninActivity extends AbstractAuthActivity {
         user.sendEmailVerification().addOnSuccessListener(
                 aVoid -> {
                     // To mail verification
-                    Intent intent = new Intent(this, ConfirmMailActivity.class);
-                    startActivity(intent);
+                    ConfirmMailActivity_.intent(this).start();
                     finish();
                 }
         ).addOnFailureListener(

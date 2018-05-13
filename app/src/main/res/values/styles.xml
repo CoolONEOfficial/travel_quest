@@ -22,9 +22,11 @@
     <style name="AppTheme" parent="BaseAppTheme">
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.BaseNoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+    <style name="AppTheme.NoActionBar" parent="AppTheme.BaseNoActionBar">
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />

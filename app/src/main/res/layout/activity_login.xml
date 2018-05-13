@@ -93,7 +93,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/oauth_form"
+        android:id="@+id/login_oauth_form"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"

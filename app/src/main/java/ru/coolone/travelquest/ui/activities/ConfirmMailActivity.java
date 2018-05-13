@@ -60,9 +60,9 @@ public class ConfirmMailActivity extends AppCompatActivity {
 
         if (user == null) {
             // To login
-            Intent loginIntent = new Intent(this, LoginActivity.class);
-            loginIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-            startActivity(loginIntent);
+            LoginActivity_.intent(this)
+                    .flags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    .start();
             finish();
         }
 

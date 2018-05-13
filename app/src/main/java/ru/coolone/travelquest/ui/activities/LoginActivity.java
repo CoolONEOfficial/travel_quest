@@ -1,7 +1,6 @@
 package ru.coolone.travelquest.ui.activities;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
 
@@ -31,7 +30,7 @@ public class LoginActivity
         passwordView = findViewById(R.id.login_text_password);
         authButton = findViewById(R.id.login_button_login);
         authFormView = findViewById(R.id.login_form);
-        oauthFormView = findViewById(R.id.oauth_form);
+        oauthFormView = findViewById(R.id.login_oauth_form);
         oauthGoogleView = findViewById(R.id.login_oauth_google);
         progressLayout = findViewById(R.id.login_progress_layout);
         progressBar = findViewById(R.id.login_progress_bar);
@@ -40,9 +39,7 @@ public class LoginActivity
 
         signinTextView.setOnClickListener(view -> {
             // To signin activity
-            Intent intent = new Intent(LoginActivity.this, SigninActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
+            SigninActivity_.intent(LoginActivity.this).start();
         });
 
         // Initialize parent views
