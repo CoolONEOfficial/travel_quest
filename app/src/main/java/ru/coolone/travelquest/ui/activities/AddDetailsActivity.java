@@ -158,7 +158,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                         .setMessage(getString(R.string.add_details_action_send_alert_text))
                         .setCancelable(true)
                         .setPositiveButton(
-                                getString(R.string.add_details_action_send_alert_confirm),
+                                getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {
                                     tabLayout.setVisibility(View.GONE);
                                     viewPager.setVisibility(View.GONE);
@@ -196,7 +196,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                 }
                         )
                         .setNegativeButton(
-                                getString(R.string.add_details_action_send_alert_cancel),
+                                getString(R.string.add_details_action_alert_cancel),
                                 (dialog, which) -> dialog.dismiss()
                         )
                         .create()
@@ -208,8 +208,8 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 this,
                 translateViewLayout,
                 Color.WHITE,
-                20,
-                20
+                22,
+                22
         );
         translateView.setOnClickListener(
                 v -> translateView.setIconEnabled(!translateView.isIconEnabled(), true)
@@ -219,13 +219,26 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         restoreView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_restore));
         restoreView.getBackground().setAlpha(0);
         restoreView.setOnClickListener(
-                v -> {
-                    for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-                        val mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
+                v -> new AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.add_details_action_restore_alert_title))
+                        .setMessage(getString(R.string.add_details_action_restore_alert_text))
+                        .setCancelable(true)
+                        .setPositiveButton(
+                                getString(R.string.add_details_action_alert_confirm),
+                                (dialog, which) -> {
+                                    for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+                                        val mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
 
-                        mFrag.restoreDetails();
-                    }
-                }
+                                        mFrag.restoreDetails();
+                                    }
+                                }
+                        )
+                        .setNegativeButton(
+                                getString(R.string.add_details_action_alert_cancel),
+                                (dialog, which) -> dialog.dismiss()
+                        )
+                        .create()
+                        .show()
         );
 
         return super.onCreateOptionsMenu(menu);
