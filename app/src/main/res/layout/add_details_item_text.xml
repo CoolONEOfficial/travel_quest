@@ -16,6 +16,19 @@
         android:inputType="textMultiLine"
         android:scrollbars="vertical" />
 
+    <FrameLayout
+        android:id="@+id/add_details_item_text_translate_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+
+    <View
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginBottom="@dimen/content_inset"
+        android:layout_marginTop="@dimen/content_inset"
+        android:background="#90909090" />
+
     <ImageButton
         android:id="@+id/add_details_item_text_remove"
         style="?android:attr/borderlessButtonStyle"

@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Parcel;
 import android.support.v7.app.AlertDialog;
@@ -14,7 +15,10 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
+
+import com.github.zagum.switchicon.SwitchIconView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.activities.AddDetailsActivity;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
@@ -107,12 +112,26 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         EditText title;
         ImageButton buttonAdd;
         ImageButton buttonRemove;
+        FrameLayout translateLayout;
+        SwitchIconView translate;
 
         public HeaderHolder(View v) {
             super(v, itemClickListener, PlaceDetailsAddAdapter.this);
             title = v.findViewById(R.id.add_details_head_text);
             buttonAdd = v.findViewById(R.id.add_details_head_add);
             buttonRemove = v.findViewById(R.id.add_details_head_remove);
+            translateLayout = v.findViewById(R.id.add_details_head_translate_layout);
+
+            translate = AddDetailsActivity.createTranslateIconView(
+                    context,
+                    translateLayout,
+                    Color.BLACK,
+                    0,
+                    25
+            );
+            translate.setOnClickListener(
+                    v1 -> translate.setIconEnabled(!translate.isIconEnabled(), true)
+            );
 
             title.addTextChangedListener(
                     new TextWatcher() {
@@ -198,12 +217,26 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
             implements Serializable {
         EditText text;
         ImageButton buttonRemove;
+        FrameLayout translateLayout;
+        SwitchIconView translate;
 
         ItemHolderText(View v) {
             super(v, itemClickListener, PlaceDetailsAddAdapter.this);
 
             text = v.findViewById(R.id.add_details_item_text);
             buttonRemove = v.findViewById(R.id.add_details_item_text_remove);
+            translateLayout = v.findViewById(R.id.add_details_item_text_translate_layout);
+
+            translate = AddDetailsActivity.createTranslateIconView(
+                    context,
+                    translateLayout,
+                    Color.BLACK,
+                    0,
+                    20
+            );
+            translate.setOnClickListener(
+                    v1 -> translate.setIconEnabled(!translate.isIconEnabled(), true)
+            );
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);

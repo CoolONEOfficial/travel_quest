@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
@@ -202,30 +203,16 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                         .show()
         );
 
-        translateView = new SwitchIconView(this);
-        translateView.setImageDrawable(
-                ContextCompat.getDrawable(this, R.drawable.ic_translate)
-        );
-        val params = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        translateView.setLayoutParams(
-                params
-        );
-        translateView.setColorFilter(Color.WHITE);
-
         translateViewLayout = (FrameLayout) menu.findItem(R.id.add_details_action_translate).getActionView();
-        translateViewLayout.setOnClickListener(
-                v -> translateView.setIconEnabled(!translateView.isIconEnabled())
+        translateView = createTranslateIconView(
+                this,
+                translateViewLayout,
+                Color.WHITE,
+                20,
+                20
         );
-        val padding = (int) getResources().getDimension(R.dimen.content_inset) * 2;
-        translateViewLayout.setPadding(
-                padding, padding, padding, padding
-        );
-        translateViewLayout.addView(translateView);
         translateView.setOnClickListener(
-                v -> translateViewLayout.callOnClick()
+                v -> translateView.setIconEnabled(!translateView.isIconEnabled(), true)
         );
 
         restoreView = (ImageButton) menu.findItem(R.id.add_details_action_restore).getActionView();
@@ -242,6 +229,38 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         );
 
         return super.onCreateOptionsMenu(menu);
+    }
+
+    public static SwitchIconView createTranslateIconView(
+            Context context,
+            FrameLayout layout,
+            int color,
+            int paddingV,
+            int paddingH
+    ) {
+        val translateIconView = new SwitchIconView(context);
+        translateIconView.setImageDrawable(
+                ContextCompat.getDrawable(context, R.drawable.ic_translate)
+        );
+        val params = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        params.gravity = Gravity.CENTER;
+        translateIconView.setLayoutParams(
+                params
+        );
+        translateIconView.setColorFilter(color);
+
+        layout.setPadding(
+                paddingH, paddingV, paddingH, paddingV
+        );
+        layout.addView(translateIconView);
+        layout.setOnClickListener(
+                v -> translateIconView.callOnClick()
+        );
+
+        return translateIconView;
     }
 
     @Override

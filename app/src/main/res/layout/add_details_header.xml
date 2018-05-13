@@ -21,6 +21,19 @@
         tools:ignore="UnusedAttribute"
         tools:mText="Section 1" />
 
+    <FrameLayout
+        android:id="@+id/add_details_head_translate_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+
+    <View
+        android:layout_width="2dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginBottom="@dimen/content_inset"
+        android:layout_marginTop="@dimen/content_inset"
+        android:background="#90909090" />
+
     <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/add_details_head_remove"
         style="?android:attr/borderlessButtonStyle"
