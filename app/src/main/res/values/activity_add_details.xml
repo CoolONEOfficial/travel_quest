@@ -19,6 +19,7 @@
     <string name="add_details_intro_send">And send your own description</string>
     <string name="add_details_intro_add_header">Add headers</string>
     <string name="add_details_intro_add">Add texts or subtitles</string>
+    <string name="add_details_intro_translate">To enable or disable the description translation for the selected language, click this button</string>
     <string name="add_details_intro_restore">To undo unsent changes, click this button</string>
     <string name="add_details_intro_remove">Remove any items</string>
     <string name="add_details_intro_dismiss_button">Next</string>
@@ -27,7 +28,9 @@
     <string name="add_details_action_send_alert_text">Are you sure you want to apply the changes?</string>
     <string name="add_details_action_restore_alert_title">Confirmation of restoring</string>
     <string name="add_details_action_restore_alert_text">Are you sure you want to restore the changes?</string>
-    <string name="add_details_action_alert_confirm">@android:string/ok</string>
+    <string name="add_details_action_cancel_alert_title">Confirm exit without applying changes</string>
+    <string name="add_details_action_cancel_alert_text">Are you sure you want to exit without applying changes?</string>
+    <string name="add_details_action_alert_confirm" translatable="false">@android:string/ok</string>
     <string name="add_details_action_alert_cancel">Cancel</string>
 
     <dimen name="delim_height">40dp</dimen>

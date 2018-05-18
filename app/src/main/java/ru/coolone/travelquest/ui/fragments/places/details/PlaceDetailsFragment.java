@@ -377,6 +377,8 @@ public class PlaceDetailsFragment extends Fragment {
         setRatingVisibility(visibility);
     }
 
+    static boolean introStarted = false;
+
     public void setPlaceId(String placeId) {
         this.placeId = placeId;
 
@@ -416,49 +418,51 @@ public class PlaceDetailsFragment extends Fragment {
                             new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onSuccess() {
-                                    // Intro
-                                    val config = new ShowcaseConfig();
-                                    config.setDelay(100);
+                                    if(!introStarted) {
+                                        // Intro
+                                        val config = new ShowcaseConfig();
+                                        config.setDelay(100);
 
-                                    val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
-                                    sequence.setConfig(config);
+                                        val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
+                                        sequence.setConfig(config);
 
-                                    val skipButton = getString(R.string.add_details_intro_dismiss_button);
-                                    val logon = !MainActivity.firebaseUser.isAnonymous();
+                                        val skipButton = getString(R.string.add_details_intro_dismiss_button);
+                                        val logon = !MainActivity.firebaseUser.isAnonymous();
 
-                                    val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
-                                    if(firstAdapter != null) {
-                                        sequence.addSequenceItem(
-                                                firstAdapter.itemView,
-                                                getString(R.string.details_intro_details),
-                                                skipButton
-                                        );
+                                        val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
+                                        if (firstAdapter != null) {
+                                            sequence.addSequenceItem(
+                                                    firstAdapter.itemView,
+                                                    getString(R.string.details_intro_details),
+                                                    skipButton
+                                            );
 
-                                        sequence.addSequenceItem(
-                                                firstAdapter.itemView
-                                                        .findViewById(R.id.card_details_star),
-                                                getString(
-                                                        logon
-                                                                ? R.string.details_intro_star_registered
-                                                                : R.string.details_intro_star_not_registered
-                                                ),
-                                                skipButton
-                                        );
+                                            sequence.addSequenceItem(
+                                                    firstAdapter.itemView
+                                                            .findViewById(R.id.card_details_star),
+                                                    getString(
+                                                            logon
+                                                                    ? R.string.details_intro_star_registered
+                                                                    : R.string.details_intro_star_not_registered
+                                                    ),
+                                                    skipButton
+                                            );
 
-                                        sequence.addSequenceItem(
-                                                logon
-                                                        ? detailsAddButton
-                                                        : new View(getContext()),
-                                                getString(
-                                                        logon
-                                                                ? R.string.details_intro_add_registered
-                                                                : R.string.details_intro_add_not_registered
-                                                ),
-                                                skipButton
-                                        );
+                                            sequence.addSequenceItem(
+                                                    logon
+                                                            ? detailsAddButton
+                                                            : new View(getContext()),
+                                                    getString(
+                                                            logon
+                                                                    ? R.string.details_intro_add_registered
+                                                                    : R.string.details_intro_add_not_registered
+                                                    ),
+                                                    skipButton
+                                            );
 
-
-                                        sequence.start();
+                                            introStarted = true;
+                                            sequence.start();
+                                        }
                                     }
                                 }
 

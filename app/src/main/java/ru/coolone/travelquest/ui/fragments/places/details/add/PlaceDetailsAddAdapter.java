@@ -1,7 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Parcel;
 import android.support.v7.app.AlertDialog;
@@ -15,10 +14,7 @@ import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.FrameLayout;
 import android.widget.ImageButton;
-
-import com.github.zagum.switchicon.SwitchIconView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.activities.AddDetailsActivity;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
@@ -61,6 +56,14 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
     @Setter
     private OnClickListener<BaseSectionedHeader, PlaceDetailsAddAdapter.HeaderHolder> headerClickListener;
+
+    @Setter
+    private Listener listener;
+
+    void onSectionsChanged() {
+        if(listener != null)
+            listener.sectionsChanged();
+    }
 
     @Override
     public BaseSectionedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -177,6 +180,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
                                     section.second.add(detailsItem);
                                     notifyDataSetChanged();
+                                    onSectionsChanged();
                                 }
                         );
                         builder.setCancelable(true);
@@ -188,6 +192,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                     v12 -> {
                         removeSection(getRelativePosition().section());
                         notifyDataSetChanged();
+                        onSectionsChanged();
                     }
             );
         }
@@ -237,6 +242,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                 .second
                                 .remove(getRelativePosition().relativePos());
                         notifyDataSetChanged();
+                        onSectionsChanged();
                     }
             );
 
@@ -273,5 +279,9 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
             recyclerView.setAdapter(recycler.getRecyclerAdapter());
             recyclerView.invalidate();
         }
+    }
+
+    interface Listener {
+        void sectionsChanged();
     }
 }

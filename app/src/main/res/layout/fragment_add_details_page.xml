@@ -25,7 +25,9 @@
         <com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout
             android:id="@+id/add_details_page_translate_button_layout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp">
 
             <com.github.zagum.switchicon.SwitchIconView
                 android:id="@+id/add_details_page_translate_button"
@@ -40,7 +42,8 @@
             android:id="@+id/add_details_page_add_section_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
             android:src="@drawable/ic_add_header" />
     </LinearLayout>
 

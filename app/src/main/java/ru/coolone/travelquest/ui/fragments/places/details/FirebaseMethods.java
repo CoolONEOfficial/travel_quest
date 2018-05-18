@@ -18,7 +18,6 @@ import java.util.Random;
 
 import lombok.SneakyThrows;
 import lombok.val;
-import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
@@ -256,6 +255,7 @@ public class FirebaseMethods {
                                                     if (parseDetailsHeaders(
                                                             collDetails,
                                                             nextAdapter,
+                                                            true,
                                                             context
                                                     ))
                                                         listener.onSuccess();
@@ -285,6 +285,7 @@ public class FirebaseMethods {
     public static boolean parseDetailsHeaders(
             QuerySnapshot coll,
             BaseSectionedAdapter adapter,
+            boolean collapseSection,
             Context context
     ) {
         boolean result = false;
@@ -324,6 +325,7 @@ public class FirebaseMethods {
                                             task,
                                             nextSection,
                                             adapter,
+                                            collapseSection,
                                             context
                                     );
                                 }
@@ -342,6 +344,7 @@ public class FirebaseMethods {
             QuerySnapshot coll,
             Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section,
             BaseSectionedAdapter parentAdapter,
+            boolean collapseSection,
             Context context) {
         Log.d(TAG, "--- Started parse details sections ---");
 
@@ -351,7 +354,7 @@ public class FirebaseMethods {
             BaseQuestDetailsItem mItem = null;
 
             if (mDoc.contains("text")) {
-                String mDocText = mDoc.getString("text");
+                val mDocText = mDoc.getString("text");
                 Log.d(TAG, "mDoc is text (" + mDocText + ")");
 
                 mItem = new QuestDetailsItemText(
@@ -362,21 +365,23 @@ public class FirebaseMethods {
                 Log.d(TAG, "mDoc is title (" + mDocTitle + ")");
 
                 // Recycler view
-                final RecyclerView recycler = new RecyclerView(context);
+                val recycler = new RecyclerView(context);
                 initDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
-                final BaseSectionedAdapter adapter = (BaseSectionedAdapter) recycler.getAdapter();
+                val adapter = (BaseSectionedAdapter) recycler.getAdapter();
 
                 // Recycler item
                 mItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
 
                 // Next section
-                final Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> nextSection = new Pair<>(
+                val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
                         new BaseSectionedHeader(mDocTitle),
                         new ArrayList<>()
                 );
 
-                // Add section
+                // Add and collapse section
                 adapter.addSection(nextSection);
+                if (collapseSection)
+                    adapter.collapseAllSections();
 
                 // Get collection
                 mDoc.getReference().collection("coll").get()
@@ -388,6 +393,7 @@ public class FirebaseMethods {
                                                 task.getResult(),
                                                 nextSection,
                                                 parentAdapter,
+                                                collapseSection,
                                                 context
                                         );
                                     }

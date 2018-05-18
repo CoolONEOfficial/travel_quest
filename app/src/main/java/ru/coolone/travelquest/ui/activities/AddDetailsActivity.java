@@ -2,7 +2,6 @@ package ru.coolone.travelquest.ui.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -75,7 +74,9 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     PlaceDetailsAddFragment[] frags;
 
-    boolean introStarted = false;
+    static boolean introStarted = false;
+
+    boolean unsavedChanges = false;
 
     @AfterViews
     void afterViews() {
@@ -92,59 +93,72 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
         ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
                 .addListener(
-                        () -> {
-                            val dismissText = getString(R.string.add_details_intro_dismiss_button);
-                            val frag = (PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem());
+                        new PlaceDetailsAddFragment.Listener() {
+                            @Override
+                            public void onSectionsLoaded() {
+                                val dismissText = getString(R.string.add_details_intro_dismiss_button);
+                                val frag = (PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem());
 
-                            frag.recycler.post(
-                                    () -> {
-                                        if(!introStarted) {
-                                            introStarted = true;
+                                frag.recycler.post(
+                                        () -> {
+                                            if(!introStarted) {
+                                                val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
-                                            val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
+                                                // Intro
+                                                ShowcaseConfig config = new ShowcaseConfig();
+                                                config.setDelay(100);
 
-                                            // Intro
-                                            ShowcaseConfig config = new ShowcaseConfig();
-                                            config.setDelay(100);
+                                                MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
 
-                                            MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+                                                sequence.setConfig(config);
 
-                                            sequence.setConfig(config);
+                                                sequence.addSequenceItem(
+                                                        frag.addSectionButton,
+                                                        getString(R.string.add_details_intro_add_header),
+                                                        dismissText
+                                                );
 
-                                            sequence.addSequenceItem(
-                                                    frag.addSectionButton,
-                                                    getString(R.string.add_details_intro_add_header),
-                                                    dismissText
-                                            );
+                                                sequence.addSequenceItem(
+                                                        frag.translateButtonLayout,
+                                                        getString(R.string.add_details_intro_translate),
+                                                        dismissText
+                                                );
 
-                                            sequence.addSequenceItem(
-                                                    firstHolder.findViewById(R.id.add_details_head_add),
-                                                    getString(R.string.add_details_intro_add),
-                                                    dismissText
-                                            );
+                                                sequence.addSequenceItem(
+                                                        firstHolder.findViewById(R.id.add_details_head_add),
+                                                        getString(R.string.add_details_intro_add),
+                                                        dismissText
+                                                );
 
-                                            sequence.addSequenceItem(
-                                                    firstHolder.findViewById(R.id.add_details_head_remove),
-                                                    getString(R.string.add_details_intro_remove),
-                                                    dismissText
-                                            );
+                                                sequence.addSequenceItem(
+                                                        firstHolder.findViewById(R.id.add_details_head_remove),
+                                                        getString(R.string.add_details_intro_remove),
+                                                        dismissText
+                                                );
 
-                                            sequence.addSequenceItem(
-                                                    sendView,
-                                                    getString(R.string.add_details_intro_send),
-                                                    dismissText
-                                            );
+                                                sequence.addSequenceItem(
+                                                        sendView,
+                                                        getString(R.string.add_details_intro_send),
+                                                        dismissText
+                                                );
 
-                                            sequence.addSequenceItem(
-                                                    restoreView,
-                                                    getString(R.string.add_details_intro_restore),
-                                                    dismissText
-                                            );
+                                                sequence.addSequenceItem(
+                                                        restoreView,
+                                                        getString(R.string.add_details_intro_restore),
+                                                        dismissText
+                                                );
 
-                                            sequence.start();
+                                                introStarted = true;
+                                                sequence.start();
+                                            }
                                         }
-                                    }
-                            );
+                                );
+                            }
+
+                            @Override
+                            public void onSectionsChanged() {
+                                unsavedChanges = true;
+                            }
                         }
                 );
 
@@ -326,8 +340,29 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     @OptionsItem(android.R.id.home)
     void homeSelected() {
-        setResult(RESULT_CANCELED);
-        finish();
+
+        if(unsavedChanges) {
+            new AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.add_details_action_cancel_alert_title))
+                    .setMessage(getString(R.string.add_details_action_cancel_alert_text))
+                    .setCancelable(true)
+                    .setPositiveButton(
+                            getString(R.string.add_details_action_alert_confirm),
+                            (dialog, which) -> {
+                                setResult(RESULT_CANCELED);
+                                finish();
+                            }
+                    )
+                    .setNegativeButton(
+                            getString(R.string.add_details_action_alert_cancel),
+                            (dialog, which) -> dialog.dismiss()
+                    )
+                    .create()
+                    .show();
+        } else {
+            setResult(RESULT_CANCELED);
+            finish();
+        }
     }
 
     @Override

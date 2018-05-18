@@ -42,7 +42,7 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
  * @since 30.03.18
  */
 @EFragment(R.layout.fragment_add_details_page)
-public class PlaceDetailsAddFragment extends Fragment {
+public class PlaceDetailsAddFragment extends Fragment implements PlaceDetailsAddAdapter.Listener {
     private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
 
     private static final String KEY_RECYCLER_INSTANCE = "recyclerInstance";
@@ -85,8 +85,16 @@ public class PlaceDetailsAddFragment extends Fragment {
         listeners.remove(listener);
     }
 
+    @Override
+    public void sectionsChanged() {
+        for(val mListener: listeners)
+            if(mListener != null)
+                mListener.onSectionsChanged();
+    }
+
     public interface Listener {
         void onSectionsLoaded();
+        void onSectionsChanged();
     }
 
     public void restoreDetails() {
@@ -110,6 +118,7 @@ public class PlaceDetailsAddFragment extends Fragment {
         if(recyclerAdapter != null)
             ((BaseSectionedAdapter)recycler.getAdapter()).setSections(recyclerAdapter.getSections());
         recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
+        recyclerAdapter.setListener(this);
 
         if (recyclerInstance == null)
             refreshDetails();
@@ -194,6 +203,7 @@ public class PlaceDetailsAddFragment extends Fragment {
                         if (!parseDetailsHeaders(
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
+                                false,
                                 this.getContext()
                         )) {
                             createTemplateDetails();

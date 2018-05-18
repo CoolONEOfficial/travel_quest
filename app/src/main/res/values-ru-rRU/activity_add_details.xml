@@ -18,8 +18,9 @@
 
     <string name="add_details_intro_send">И отправьте свой вариант описания</string>
     <string name="add_details_intro_add_header">Добавляйте заголовки</string>
-    <string name="add_details_intro_add">Добавляйте текста и подзаголовки</string>
+    <string name="add_details_intro_add">Добавляйте тексты и подзаголовки</string>
     <string name="add_details_intro_restore">Чтобы отменить неотправленные изменения, нажмите на эту кнопку</string>
+    <string name="add_details_intro_translate">Чтобы включить или выключить автоперевод описания для выбранного языка, нажмите на эту кнопку</string>
     <string name="add_details_intro_remove">Удаляйте любые элементы</string>
     <string name="add_details_intro_dismiss_button">Далее</string>
 
@@ -27,5 +28,7 @@
     <string name="add_details_action_send_alert_text">Вы уверены что хотите применить изменения?</string>
     <string name="add_details_action_restore_alert_title">Подтверждение отмены изменений</string>
     <string name="add_details_action_restore_alert_text">Вы уверены что хотите откатить изменения?</string>
+    <string name="add_details_action_cancel_alert_title">Подтверждение выхода без применения изменений</string>
+    <string name="add_details_action_cancel_alert_text">Вы уверены что хотите выйти без применения изменений?</string>
     <string name="add_details_action_alert_cancel">Отмена</string>
 </resources>
