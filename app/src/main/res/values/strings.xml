@@ -7,6 +7,7 @@
     <string name="title_activity_confirm_mail">Confirm title</string>
     <string name="title_activity_add_details">Add a place details</string>
     <string name="title_activity_intro">Introduction</string>
+    <string name="title_activity_auth_choice">Authentication method</string>
 
     <!-- Fragment titles -->
     <string name="error_google_api">Connection to Google API failed</string>

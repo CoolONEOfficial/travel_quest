@@ -40,6 +40,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -129,6 +130,18 @@ public class MainActivity extends AppCompatActivity implements
         navigationView.setNavigationItemSelectedListener(this);
     }
 
+    public boolean isGooglePlayServicesAvailable(Activity activity) {
+        GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
+        int status = googleApiAvailability.isGooglePlayServicesAvailable(activity);
+        if(status != ConnectionResult.SUCCESS) {
+            if(googleApiAvailability.isUserResolvableError(status)) {
+                googleApiAvailability.getErrorDialog(activity, status, 2404).show();
+            }
+            return false;
+        }
+        return true;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "Current locale: "
@@ -154,6 +167,9 @@ public class MainActivity extends AppCompatActivity implements
                         .penaltyLog()
                         .build()
         );
+
+        if(!isGooglePlayServicesAvailable(this))
+            finish();
 
         // Switch last login method
         firebaseUser = FirebaseAuth.getInstance().getCurrentUser();

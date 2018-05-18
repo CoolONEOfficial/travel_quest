@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 
+import com.github.zagum.switchicon.SwitchIconView;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -63,6 +65,12 @@ public class PlaceDetailsAddFragment extends Fragment {
     @ViewById(R.id.add_details_page_add_section_button)
     public FloatingActionButton addSectionButton;
 
+    // Translate button
+    @ViewById(R.id.add_details_page_translate_button_layout)
+    public FloatingActionLayout translateButtonLayout;
+    @ViewById(R.id.add_details_page_translate_button)
+    SwitchIconView translateButton;
+
     // Root layout
     @ViewById(R.id.add_details_page_root_layout)
     FrameLayout frameLayout;
@@ -88,6 +96,11 @@ public class PlaceDetailsAddFragment extends Fragment {
 
     @AfterViews
     void afterViews() {
+        // Translate button
+        translateButtonLayout.setOnClickListener(
+                v -> translateButton.setIconEnabled(!translateButton.isIconEnabled())
+        );
+
         // Recycle view
         initDetailsRecyclerView(
                 recycler,

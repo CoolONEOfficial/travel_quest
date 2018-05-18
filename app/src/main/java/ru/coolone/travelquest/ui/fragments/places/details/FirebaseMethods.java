@@ -18,6 +18,7 @@ import java.util.Random;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
@@ -236,14 +237,15 @@ public class FirebaseMethods {
                                 val nextAdapter = new PlaceDetailsAdapter();
                                 recycler.setAdapter(nextAdapter);
 
-                                int delimIndex = mDoc.getId().indexOf('_');
+                                val mDocId = mDoc.getId();
+                                val delimIndex = mDocId.indexOf('_');
 
                                 adapter.dataset.add(
                                         new PlaceCardDetailsAdapter.Item(
-                                                mDoc.getId().substring(delimIndex + 1), // delim to end is name
+                                                mDocId.substring(delimIndex + 1), // delim to end is name
                                                 recycler,
                                                 mDoc,
-                                                mDoc.getId().substring(0, delimIndex) // 0 to delim is id
+                                                mDocId.substring(0, delimIndex) // 0 to delim is id
                                         )
                                 );
                                 adapter.notifyDataSetChanged();

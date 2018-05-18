@@ -3,39 +3,39 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="@dimen/content_inset"
-    android:gravity="end"
     android:orientation="horizontal">
-
-    <EditText
-        android:id="@+id/add_details_item_text"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:hint="@string/add_details_text_hint"
-        android:inputType="textMultiLine"
-        android:scrollbars="vertical" />
-
-    <FrameLayout
-        android:id="@+id/add_details_item_text_translate_layout"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"/>
 
     <View
         android:layout_width="2dp"
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
-        android:layout_marginBottom="@dimen/content_inset"
-        android:layout_marginTop="@dimen/content_inset"
+        android:layout_marginEnd="@dimen/content_inset"
+        android:layout_marginStart="@dimen/content_inset"
         android:background="#90909090" />
 
-    <ImageButton
-        android:id="@+id/add_details_item_text_remove"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:layout_gravity="center_vertical"
-        android:adjustViewBounds="true"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_remove" />
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/add_details_item_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/add_details_text_hint"
+            android:inputType="textMultiLine"
+            android:scrollbars="vertical" />
+
+        <ImageButton
+            android:id="@+id/add_details_item_text_remove"
+            style="?android:attr/borderlessButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:adjustViewBounds="true"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_remove" />
+    </LinearLayout>
 </LinearLayout>

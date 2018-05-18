@@ -3,6 +3,7 @@
     <!-- Unknown -->
     <string name="details_unknown">Descriptions are not available\nor have not been added yet</string>
     <string name="details_add_details">Add/Change details</string>
+    <string name="details_user_unknown">Unknown author</string>
 
     <string name="details_intro_details">This is one of the options for describing the object</string>
     <string name="details_intro_star_registered">You can evaluate any of the descriptions. The most appreciated of them will be displayed above the others.</string>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/add_details_page_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -11,13 +12,37 @@
         android:layout_height="match_parent"
         android:layout_marginEnd="@dimen/content_inset"
         android:layout_marginStart="@dimen/content_inset"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp"
         android:scrollbars="vertical" />
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/add_details_page_add_section_button"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
         android:layout_gravity="end|bottom"
-        android:src="@drawable/ic_add_header" />
+        android:orientation="horizontal">
+
+        <com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout
+            android:id="@+id/add_details_page_translate_button_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <com.github.zagum.switchicon.SwitchIconView
+                android:id="@+id/add_details_page_translate_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_translate"
+                app:si_tint_color="@android:color/white" />
+        </com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/add_details_page_add_section_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_add_header" />
+    </LinearLayout>
+
+
 </FrameLayout>

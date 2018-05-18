@@ -53,8 +53,6 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     // Toolbar views
     ImageButton sendView;
     ImageButton restoreView;
-    SwitchIconView translateView;
-    FrameLayout translateViewLayout;
 
     // Google map place id
     @Extra
@@ -77,6 +75,8 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     PlaceDetailsAddFragment[] frags;
 
+    boolean introStarted = false;
+
     @AfterViews
     void afterViews() {
         // View pager
@@ -98,47 +98,51 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
                             frag.recycler.post(
                                     () -> {
-                                        val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
+                                        if(!introStarted) {
+                                            introStarted = true;
 
-                                        // Intro
-                                        ShowcaseConfig config = new ShowcaseConfig();
-                                        config.setDelay(100);
+                                            val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
-                                        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+                                            // Intro
+                                            ShowcaseConfig config = new ShowcaseConfig();
+                                            config.setDelay(100);
 
-                                        sequence.setConfig(config);
+                                            MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
 
-                                        sequence.addSequenceItem(
-                                                frag.addSectionButton,
-                                                getString(R.string.add_details_intro_add_header),
-                                                dismissText
-                                        );
+                                            sequence.setConfig(config);
 
-                                        sequence.addSequenceItem(
-                                                firstHolder.findViewById(R.id.add_details_head_add),
-                                                getString(R.string.add_details_intro_add),
-                                                dismissText
-                                        );
+                                            sequence.addSequenceItem(
+                                                    frag.addSectionButton,
+                                                    getString(R.string.add_details_intro_add_header),
+                                                    dismissText
+                                            );
 
-                                        sequence.addSequenceItem(
-                                                firstHolder.findViewById(R.id.add_details_head_remove),
-                                                getString(R.string.add_details_intro_remove),
-                                                dismissText
-                                        );
+                                            sequence.addSequenceItem(
+                                                    firstHolder.findViewById(R.id.add_details_head_add),
+                                                    getString(R.string.add_details_intro_add),
+                                                    dismissText
+                                            );
 
-                                        sequence.addSequenceItem(
-                                                sendView,
-                                                getString(R.string.add_details_intro_send),
-                                                dismissText
-                                        );
+                                            sequence.addSequenceItem(
+                                                    firstHolder.findViewById(R.id.add_details_head_remove),
+                                                    getString(R.string.add_details_intro_remove),
+                                                    dismissText
+                                            );
 
-                                        sequence.addSequenceItem(
-                                                restoreView,
-                                                getString(R.string.add_details_intro_restore),
-                                                dismissText
-                                        );
+                                            sequence.addSequenceItem(
+                                                    sendView,
+                                                    getString(R.string.add_details_intro_send),
+                                                    dismissText
+                                            );
 
-                                        sequence.start();
+                                            sequence.addSequenceItem(
+                                                    restoreView,
+                                                    getString(R.string.add_details_intro_restore),
+                                                    dismissText
+                                            );
+
+                                            sequence.start();
+                                        }
                                     }
                             );
                         }
@@ -146,6 +150,8 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
         // Tab layout
         tabLayout.setupWithViewPager(viewPager);
+
+
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -201,18 +207,6 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                         )
                         .create()
                         .show()
-        );
-
-        translateViewLayout = (FrameLayout) menu.findItem(R.id.add_details_action_translate).getActionView();
-        translateView = createTranslateIconView(
-                this,
-                translateViewLayout,
-                Color.WHITE,
-                22,
-                22
-        );
-        translateView.setOnClickListener(
-                v -> translateView.setIconEnabled(!translateView.isIconEnabled(), true)
         );
 
         restoreView = (ImageButton) menu.findItem(R.id.add_details_action_restore).getActionView();

@@ -59,7 +59,7 @@ public class IntroActivity extends AppIntro {
         setSeparatorColor(ContextCompat.getColor(this, R.color.primary_dark));
 
         // Hide Skip/Done button.
-        showSkipButton(true);
+        showSkipButton(false);
         setProgressButtonEnabled(true);
 
         // Fix action bar color
@@ -72,17 +72,16 @@ public class IntroActivity extends AppIntro {
                 )
         );
 
-        val listener = (View.OnClickListener) v -> MainActivity.getAuthDialog(
-                this,
-                task -> {
-                    if (task.isSuccessful()) {
-                        MainActivity_.intent(this).start();
-                        finish();
-                    }
-                }
-        ).show();
-
-        skipButton.setOnClickListener(listener);
-        doneButton.setOnClickListener(listener);
+        doneButton.setOnClickListener(
+                v -> MainActivity.getAuthDialog(
+                        this,
+                        task -> {
+                            if (task.isSuccessful()) {
+                                MainActivity_.intent(this).start();
+                                finish();
+                            }
+                        }
+                ).show()
+        );
     }
 }

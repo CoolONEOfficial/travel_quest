@@ -3,6 +3,7 @@
     <!-- Unknown title -->
     <string name="details_unknown">Описания не доступны\nили их пока что никто не добавил</string>
     <string name="details_add_details">Добавить/Изменить описание</string>
+    <string name="details_user_unknown">Неизвестный автор</string>
 
     <string name="details_intro_details">Это один из вариантов описания обьекта</string>
     <string name="details_intro_star_registered">Вы можете оценить любое из вариантов описаний. Наиболее оцененные из них будут показываться выше других.</string>
