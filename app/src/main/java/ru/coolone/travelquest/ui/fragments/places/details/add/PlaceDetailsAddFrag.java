@@ -41,9 +41,9 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
  * @author coolone
  * @since 30.03.18
  */
-@EFragment(R.layout.fragment_add_details_page)
-public class PlaceDetailsAddFragment extends Fragment implements PlaceDetailsAddAdapter.Listener {
-    private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
+@EFragment(R.layout.frag_add_details_page)
+public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdapter.Listener {
+    private static final String TAG = PlaceDetailsAddFrag.class.getSimpleName();
 
     private static final String KEY_RECYCLER_INSTANCE = "recyclerInstance";
     private static final String KEY_RECYCLER_ADAPTER = "recyclerAdapter";

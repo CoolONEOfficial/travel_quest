@@ -11,8 +11,8 @@ import org.androidannotations.annotations.ViewById;
 
 import ru.coolone.travelquest.R;
 
-@EFragment(R.layout.fragment_about)
-public class AboutFragment extends Fragment {
+@EFragment(R.layout.frag_about)
+public class AboutFrag extends Fragment {
     @ViewById(R.id.about_logo)
     ImageView logo;
 

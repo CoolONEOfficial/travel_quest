@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/pattern_fill"
-    tools:context="ru.coolone.travelquest.ui.fragments.AboutFragment">
+    tools:context="ru.coolone.travelquest.ui.fragments.AboutFrag">
 
     <LinearLayout
         android:id="@+id/about_root_layout"

@@ -10,7 +10,6 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
-import org.androidannotations.annotations.res.StringRes;
 
 import ru.coolone.travelquest.R;
 
@@ -19,8 +18,8 @@ import ru.coolone.travelquest.R;
  * @since 22.04.18
  */
 
-@EFragment(R.layout.fragment_intro)
-public class IntroFragment extends Fragment {
+@EFragment(R.layout.frag_intro)
+public class IntroFrag extends Fragment {
     /**
      * Title
      */

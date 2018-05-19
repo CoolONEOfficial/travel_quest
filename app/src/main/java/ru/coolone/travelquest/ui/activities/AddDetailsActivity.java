@@ -36,7 +36,7 @@ import java.util.Map;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods;
-import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddFragment;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddFrag;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddPagerAdapter;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
@@ -72,7 +72,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     ProgressBar progressBar;
 
-    PlaceDetailsAddFragment[] frags;
+    PlaceDetailsAddFrag[] frags;
 
     static boolean introStarted = false;
 
@@ -91,13 +91,13 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         }
         viewPager.setAdapter(pagerAdapter);
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
-        ((PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem()))
+        ((PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem()))
                 .addListener(
-                        new PlaceDetailsAddFragment.Listener() {
+                        new PlaceDetailsAddFrag.Listener() {
                             @Override
                             public void onSectionsLoaded() {
                                 val dismissText = getString(R.string.add_details_intro_dismiss_button);
-                                val frag = (PlaceDetailsAddFragment) pagerAdapter.getItem(viewPager.getCurrentItem());
+                                val frag = (PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem());
 
                                 frag.recycler.post(
                                         () -> {
@@ -188,7 +188,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                     defaultVals.put("score", new ArrayList<String>());
 
                                     for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-                                        PlaceDetailsAddFragment mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
+                                        PlaceDetailsAddFrag mFrag = (PlaceDetailsAddFrag) pagerAdapter.getItem(mFragId);
 
                                         val mLang = mFrag.lang.lang;
                                         val docRef = MainActivity.getQuestsRoot(mLang)
@@ -235,7 +235,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                 getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {
                                     for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-                                        val mFrag = (PlaceDetailsAddFragment) pagerAdapter.getItem(mFragId);
+                                        val mFrag = (PlaceDetailsAddFrag) pagerAdapter.getItem(mFragId);
 
                                         mFrag.restoreDetails();
                                     }
@@ -312,9 +312,9 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
         // Restore frags
         if (savedInstanceState != null) {
-            frags = new PlaceDetailsAddFragment[MainActivity.SupportLang.values().length];
+            frags = new PlaceDetailsAddFrag[MainActivity.SupportLang.values().length];
             for (val mLang : MainActivity.SupportLang.values()) {
-                frags[mLang.ordinal()] = (PlaceDetailsAddFragment) getSupportFragmentManager().getFragment(
+                frags[mLang.ordinal()] = (PlaceDetailsAddFrag) getSupportFragmentManager().getFragment(
                         savedInstanceState,
                         mLang.lang
                 );

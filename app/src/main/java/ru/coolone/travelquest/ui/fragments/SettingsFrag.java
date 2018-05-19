@@ -10,7 +10,7 @@ import org.androidannotations.annotations.EFragment;
 import ru.coolone.travelquest.R;
 
 @EFragment
-public class SettingsFragment extends PreferenceFragmentCompat {
+public class SettingsFrag extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferencesFix(@Nullable Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.settings, rootKey);

@@ -4,7 +4,6 @@ import android.animation.ObjectAnimator;
 import android.animation.StateListAnimator;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -23,7 +22,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
@@ -43,8 +41,6 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -59,17 +55,17 @@ import org.androidannotations.annotations.ViewById;
 
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.AboutFragment_;
-import ru.coolone.travelquest.ui.fragments.SettingsFragment_;
-import ru.coolone.travelquest.ui.fragments.places.PlacesFragment_;
+import ru.coolone.travelquest.ui.fragments.AboutFrag_;
+import ru.coolone.travelquest.ui.fragments.SettingsFrag_;
+import ru.coolone.travelquest.ui.fragments.places.PlacesFrag_;
 
 @SuppressLint("Registered")
 @EActivity
 public class MainActivity extends AppCompatActivity implements
         NavigationView.OnNavigationItemSelectedListener,
         GoogleApiClient.OnConnectionFailedListener,
-        PlacesFragment_.SlidingUpPanelListener,
-        PlacesFragment_.AutocompleteTextViewGetter {
+        PlacesFrag_.SlidingUpPanelListener,
+        PlacesFrag_.AutocompleteTextViewGetter {
     static final String TAG = MainActivity.class.getSimpleName();
     static final int NAV_MENU_DEFAULT_MENU_ID = R.id.nav_quests;
     private static final String KEY_MENU_ID = "menuId";
@@ -177,18 +173,11 @@ public class MainActivity extends AppCompatActivity implements
             if (!firebaseUser.isEmailVerified() && !firebaseUser.isAnonymous())
                 // To confirm mail screen
                 ConfirmMailActivity_.intent(this)
-                        .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
                         .start();
         } else {
-            getAuthDialog(this,
-                    task -> {
-                        if (task.isSuccessful())
-                            MainActivity_.intent(this)
-                                    .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    .start();
-                    })
-                    .setCancelable(false)
-                    .show();
+            AuthChoiceActivity_.intent(this)
+                    .start();
+            finish();
         }
 
         // Get settings
@@ -282,46 +271,6 @@ public class MainActivity extends AppCompatActivity implements
         IntroActivity_.intent(this).start();
     }
 
-    public static AlertDialog.Builder getAuthDialog(Activity activity, OnCompleteListener<AuthResult> listener) {
-        return new AlertDialog.Builder(activity)
-                .setTitle(activity.getString(R.string.alert_splash_title))
-                .setMessage(activity.getString(R.string.alert_splash_text))
-                .setPositiveButton(activity.getString(R.string.alert_splash_button_auth),
-                        (dialog, which) -> {
-                            LoginActivity_.intent(activity)
-                                    .start();
-                            activity.finish();
-                        }
-                )
-                .setNegativeButton(activity.getString(R.string.alert_splash_button_anonymous),
-                        (dialog, which) -> {
-                            final ProgressDialog progress = new ProgressDialog(activity);
-                            progress.setTitle(activity.getString(R.string.login_progress));
-                            progress.setCancelable(false);
-                            progress.show();
-
-                            FirebaseAuth.getInstance().signInAnonymously()
-                                    .addOnCompleteListener(activity,
-                                            task -> {
-                                                if (task.isSuccessful()) {
-                                                    Log.d(TAG, "signInAnonymously:success");
-
-                                                    MainActivity_.intent(activity)
-                                                            .start();
-                                                    activity.finish();
-                                                } else {
-                                                    Log.w(TAG, "signInAnonymously:failure", task.getException());
-                                                    Toast.makeText(activity, "Authentication failed.",
-                                                            Toast.LENGTH_SHORT).show();
-                                                }
-                                                progress.dismiss();
-                                            }
-                                    )
-                                    .addOnCompleteListener(listener);
-                        }
-                );
-    }
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -410,13 +359,13 @@ public class MainActivity extends AppCompatActivity implements
         if (fragment == null) {
             switch (fragmentId) {
                 case ABOUT:
-                    fragment = new AboutFragment_();
+                    fragment = new AboutFrag_();
                     break;
                 case QUESTS:
-                    fragment = new PlacesFragment_();
+                    fragment = new PlacesFrag_();
                     break;
                 case SETTINGS:
-                    fragment = new SettingsFragment_();
+                    fragment = new SettingsFrag_();
                     break;
             }
             if (fragment != null)
@@ -496,9 +445,10 @@ public class MainActivity extends AppCompatActivity implements
                 Log.d(TAG, "Signout provider id: " + FirebaseAuth.getInstance().getCurrentUser().getProviderId());
             else Log.d(TAG, "Signout user is null!");
 
-            getAuthDialog(this, null)
-                    .setCancelable(false)
-                    .show();
+            AuthChoiceActivity_.intent(this)
+                    .flags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK)
+                    .start();
+            finish();
         } else {
             FragmentId fragId = null;
             switch (menuId) {

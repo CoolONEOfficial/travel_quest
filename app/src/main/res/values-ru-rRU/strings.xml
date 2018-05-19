@@ -6,7 +6,7 @@
     <string name="title_activity_confirm_mail">Подтверждение почты</string>
     <string name="title_activity_add_details">Добавить описание места</string>
     <string name="title_activity_intro">Введение</string>
-    <string name="title_activity_auth_choice">Метод входа</string>
+    <string name="title_activity_auth_choice">Способ авторизации</string>
 
     <!-- Fragment titles -->
     <string name="error_google_api">Ошибка соединения с Google API</string>

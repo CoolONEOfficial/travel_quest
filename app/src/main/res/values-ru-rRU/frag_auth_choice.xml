@@ -1,2 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources></resources>
+<resources>
+    <string name="frag_auth_choice_text">Выберите способ\nавторизации:</string>
+    <string name="frag_auth_choice_normal_title">Регистрация и вход</string>
+    <string name="frag_auth_choice_normal_text"><b>Пользуйтесь</b> всеми возможностями Travel Quest. Добавляйте, смотрите, оценивайте пользовательские описания обьектов.</string>
+    <string name="frag_auth_choice_anonymous_title">Анонимный вход</string>
+    <string name="frag_auth_choice_anonymous_text"><b>Ознакомьтесь</b> с возможностями Travel Quest. Вы сможете просматривать пользовательские описания обьектов, но не сможете оценить их или добавить свое.</string>
+</resources>

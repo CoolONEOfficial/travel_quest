@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/pattern_fill"
     android:orientation="vertical"
-    tools:context=".ui.fragments.IntroFragment">
+    tools:context=".ui.fragments.IntroFrag">
 
     <TextView
         android:id="@+id/intro_title"

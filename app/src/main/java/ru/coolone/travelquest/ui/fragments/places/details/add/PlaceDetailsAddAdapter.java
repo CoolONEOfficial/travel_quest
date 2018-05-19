@@ -41,7 +41,7 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
 public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
-    private static final String TAG = PlaceDetailsAddFragment.class.getSimpleName();
+    private static final String TAG = PlaceDetailsAddFrag.class.getSimpleName();
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {

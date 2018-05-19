@@ -41,18 +41,18 @@ import org.androidannotations.annotations.ViewById;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
-import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFragment;
+import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFrag;
 
 import static android.app.Activity.RESULT_OK;
-import static ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFragment.REQUEST_CODE_ADD_DETAILS;
+import static ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFrag.REQUEST_CODE_ADD_DETAILS;
 
-@EFragment(R.layout.fragment_places)
-public class PlacesFragment extends Fragment
+@EFragment(R.layout.frag_places)
+public class PlacesFrag extends Fragment
         implements OnMapReadyCallback,
         GoogleMap.OnPoiClickListener,
-        PlaceDetailsFragment.FragmentListener {
+        PlaceDetailsFrag.FragmentListener {
 
-    static final String TAG = PlacesFragment.class.getSimpleName();
+    static final String TAG = PlacesFrag.class.getSimpleName();
 
     // Map
     @ViewById(R.id.places_map)
@@ -69,7 +69,7 @@ public class PlacesFragment extends Fragment
 
     // Fragment details
     private static final String FRAG_PLACE_DETAILS_ID = "placeDetails";
-    PlaceDetailsFragment placeDetailsFragment;
+    PlaceDetailsFrag placeDetailsFrag;
 
     // Place
     Place currentPlace;
@@ -122,7 +122,7 @@ public class PlacesFragment extends Fragment
                         if (!detailsLoaded) {
                             // Load details
                             detailsLoaded = true;
-                            placeDetailsFragment.setPlaceId(placeDetailsFragment.getPlaceId());
+                            placeDetailsFrag.setPlaceId(placeDetailsFrag.getPlaceId());
                         }
                         break;
                 }
@@ -197,12 +197,12 @@ public class PlacesFragment extends Fragment
         super.onCreate(savedInstanceState);
 
         if (savedInstanceState != null) {
-            placeDetailsFragment = (PlaceDetailsFragment) context.getSupportFragmentManager().getFragment(
+            placeDetailsFrag = (PlaceDetailsFrag) context.getSupportFragmentManager().getFragment(
                     savedInstanceState,
                     FRAG_PLACE_DETAILS_ID
             );
-            if(placeDetailsFragment != null) {
-                placeDetailsFragment.setFragmentListener(this);
+            if(placeDetailsFrag != null) {
+                placeDetailsFrag.setFragmentListener(this);
             }
         }
     }
@@ -211,11 +211,11 @@ public class PlacesFragment extends Fragment
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        if (placeDetailsFragment != null)
+        if (placeDetailsFrag != null)
             context.getSupportFragmentManager().putFragment(
                     outState,
                     FRAG_PLACE_DETAILS_ID,
-                    placeDetailsFragment
+                    placeDetailsFrag
             );
     }
 
@@ -328,14 +328,14 @@ public class PlacesFragment extends Fragment
                         );
 
                         // Create details fragment
-                        placeDetailsFragment = PlaceDetailsFragment.newInstance(currentPlace, getContext());
+                        placeDetailsFrag = PlaceDetailsFrag.newInstance(currentPlace, getContext());
                         detailsLoaded = false;
-                        placeDetailsFragment.setFragmentListener(PlacesFragment.this);
+                        placeDetailsFrag.setFragmentListener(PlacesFrag.this);
 
                         // Set
                         FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
                         fragTrans.replace(R.id.places_sliding_container,
-                                placeDetailsFragment);
+                                placeDetailsFrag);
                         fragTrans.commit();
                     }
                 });
@@ -358,7 +358,7 @@ public class PlacesFragment extends Fragment
 
     @OnActivityResult(REQUEST_CODE_ADD_DETAILS)
     void onResult(int result) {
-        if (result == RESULT_OK && placeDetailsFragment != null && currentPoi != null) {
+        if (result == RESULT_OK && placeDetailsFrag != null && currentPoi != null) {
             onPoiClick(currentPoi);
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
         }

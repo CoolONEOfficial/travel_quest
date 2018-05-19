@@ -12,8 +12,8 @@ import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
  * @since 30.03.18
  */
 public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
-    public PlaceDetailsAddFragment tabFragments[] =
-            new PlaceDetailsAddFragment[SupportLang.values().length];
+    public PlaceDetailsAddFrag tabFragments[] =
+            new PlaceDetailsAddFrag[SupportLang.values().length];
     private Context context;
 
     public PlaceDetailsAddPagerAdapter(FragmentManager fm, String placeId, Context context) {
@@ -21,7 +21,7 @@ public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
         this.context = context;
 
         for (int mTabFragmentId = 0; mTabFragmentId < tabFragments.length; mTabFragmentId++) {
-            tabFragments[mTabFragmentId] = PlaceDetailsAddFragment_.builder()
+            tabFragments[mTabFragmentId] = PlaceDetailsAddFrag_.builder()
                     .lang(SupportLang.values()[mTabFragmentId])
                     .placeId(placeId)
                     .build();

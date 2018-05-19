@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="frag_auth_choice_text">Select an\nauthorization method:</string>
+    <string name="frag_auth_choice_normal_title">Registration and login</string>
+    <string name="frag_auth_choice_normal_text"><b>Use</b> all the features of Travel Quest. Add, see, evaluate user descriptions of objects.</string>
+    <string name="frag_auth_choice_anonymous_title">Anonymous logon</string>
+    <string name="frag_auth_choice_anonymous_text"><b>Get acquainted</b> with the possibilities of Travel Quest. View user descriptions of objects, but you will not be able to evaluate them or add your own.</string>
+</resources>

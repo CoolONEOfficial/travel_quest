@@ -48,9 +48,9 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsCards;
 
 @EFragment
-public class PlaceDetailsFragment extends Fragment {
+public class PlaceDetailsFrag extends Fragment {
 
-    static final String TAG = PlaceDetailsFragment.class.getSimpleName();
+    static final String TAG = PlaceDetailsFrag.class.getSimpleName();
 
     @Setter
     private FragmentListener fragmentListener;
@@ -162,7 +162,7 @@ public class PlaceDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_place_details,
+        View view = inflater.inflate(R.layout.frag_place_details,
                 container,
                 false);
 
@@ -176,9 +176,9 @@ public class PlaceDetailsFragment extends Fragment {
     /**
      * @param place   Google maps place with details data
      * @param context @{@link Context}
-     * @return @{@link PlaceDetailsFragment}
+     * @return @{@link PlaceDetailsFrag}
      */
-    public static PlaceDetailsFragment newInstance(com.google.android.gms.location.places.Place place, Context context) {
+    public static PlaceDetailsFrag newInstance(com.google.android.gms.location.places.Place place, Context context) {
         // Convert List<Place types ids> to List<Place types>
         List<Integer> placeTypeIds = place.getPlaceTypes();
         ArrayList<String> placeTypes = new ArrayList<>();
@@ -189,7 +189,7 @@ public class PlaceDetailsFragment extends Fragment {
                 placeTypes.add(mPlaceType);
         }
 
-        return PlaceDetailsFragment_.builder()
+        return PlaceDetailsFrag_.builder()
                 .title(place.getName().toString())
                 .phone(place.getPhoneNumber().toString())
                 .url(place.getWebsiteUri() != null
@@ -523,9 +523,9 @@ public class PlaceDetailsFragment extends Fragment {
 
     static private class PhotoTask extends AsyncTask<String, Integer, Void> {
 
-        PlaceDetailsFragment parent;
+        PlaceDetailsFrag parent;
 
-        PhotoTask(PlaceDetailsFragment parent) {
+        PhotoTask(PlaceDetailsFrag parent) {
             this.parent = parent;
         }
 
