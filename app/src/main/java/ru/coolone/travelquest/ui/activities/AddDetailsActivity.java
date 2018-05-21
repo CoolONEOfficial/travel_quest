@@ -1,8 +1,8 @@
 package ru.coolone.travelquest.ui.activities;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.content.ContextCompat;
@@ -10,7 +10,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
+import android.util.Pair;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,26 +22,41 @@ import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.github.zagum.switchicon.SwitchIconView;
 
 import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.Extra;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.ViewById;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddFrag;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddPagerAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
@@ -46,7 +65,7 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
 @SuppressLint("Registered")
 @EActivity
 @OptionsMenu(R.menu.activity_add_details_actions)
-public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.TaskListener {
+public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.TaskListener, PlaceDetailsAddFrag.Listener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
     // Toolbar views
@@ -78,6 +97,330 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     boolean unsavedChanges = false;
 
+    boolean untranslatedChanges = false;
+
+    void translateDetails(
+            PlaceDetailsAddFrag from,
+            PlaceDetailsAddFrag to
+    ) {
+        Log.d(TAG, "Started transalte " + from.lang.lang + " to " + to.lang.lang);
+
+        val fromAdapter = (PlaceDetailsAddAdapter) from.recycler.getAdapter();
+        val toAdapter = (PlaceDetailsAddAdapter) to.recycler.getAdapter();
+
+        // Copy sections
+        toAdapter.setSections(
+                (ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>>)
+                        fromAdapter.getSections().clone(),
+                this
+        );
+
+        // Translate
+        translateDetailAdapters(
+                toAdapter,
+                from.lang,
+                to.lang
+        );
+
+        to.translated = true;
+        to.translatedChanged = false;
+
+        untranslatedChanges = false;
+    }
+
+    void translateDetailAdapters(
+            PlaceDetailsAddAdapter adapter,
+            MainActivity.SupportLang from,
+            MainActivity.SupportLang to
+    ) {
+        for (val mSection : adapter.getSections()) {
+            translateHeader(
+                    adapter,
+                    mSection.first,
+                    from,
+                    to
+            );
+
+            for (val mItem : mSection.second) {
+                if (mItem instanceof QuestDetailsItemRecycler) {
+                    val mRecyclerItem = (QuestDetailsItemRecycler) mItem;
+
+                    translateDetailAdapters(
+                            (PlaceDetailsAddAdapter) mRecyclerItem.getRecyclerAdapter(),
+                            from,
+                            to
+                    );
+                } else if (mItem instanceof QuestDetailsItemText) {
+                    val mTextItem = (QuestDetailsItemText) mItem;
+                    translateItemText(
+                            adapter,
+                            mTextItem,
+                            from,
+                            to
+                    );
+                    translateItemText(
+                            adapter,
+                            mTextItem,
+                            from,
+                            to
+                    );
+                }
+            }
+        }
+    }
+
+    RequestQueue queue;
+
+    Pair<FrameLayout, SwitchIconView> tabs[] = new Pair[MainActivity.SupportLang.values().length];
+
+    @Override
+    public void onSectionsLoaded() {
+        val dismissText = getString(R.string.add_details_intro_dismiss_button);
+        val frag = (PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem());
+
+        frag.recycler.post(
+                () -> {
+                    if (!introStarted) {
+                        val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
+
+                        // Intro
+                        ShowcaseConfig config = new ShowcaseConfig();
+                        config.setDelay(100);
+
+                        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+
+                        sequence.setConfig(config);
+
+                        sequence.addSequenceItem(
+                                frag.addSectionButton,
+                                getString(R.string.add_details_intro_add_header),
+                                dismissText
+                        );
+
+                        FrameLayout translateButtonLayout = null;
+                        for (val mTab : tabs)
+                            if (mTab.first.getVisibility() == View.VISIBLE)
+                                translateButtonLayout = mTab.first;
+
+                        if (translateButtonLayout != null)
+                            sequence.addSequenceItem(
+                                    translateButtonLayout,
+                                    getString(R.string.add_details_intro_translate),
+                                    dismissText
+                            );
+
+                        sequence.addSequenceItem(
+                                firstHolder.findViewById(R.id.add_details_head_add),
+                                getString(R.string.add_details_intro_add),
+                                dismissText
+                        );
+
+                        sequence.addSequenceItem(
+                                firstHolder.findViewById(R.id.add_details_head_remove),
+                                getString(R.string.add_details_intro_remove),
+                                dismissText
+                        );
+
+                        sequence.addSequenceItem(
+                                sendView,
+                                getString(R.string.add_details_intro_send),
+                                dismissText
+                        );
+
+                        sequence.addSequenceItem(
+                                restoreView,
+                                getString(R.string.add_details_intro_restore),
+                                dismissText
+                        );
+
+                        introStarted = true;
+                        sequence.start();
+                    }
+                }
+        );
+    }
+
+    @Override
+    public void onSectionsChanged(MainActivity.SupportLang fragLang) {
+        unsavedChanges = true;
+
+        if (fragLang == MainActivity.getLocale(AddDetailsActivity.this))
+            untranslatedChanges = true;
+    }
+
+    @Override
+    public FrameLayout getTranslateLayout(MainActivity.SupportLang fragLang) {
+        return tabs[fragLang.ordinal()].first;
+    }
+
+    @Override
+    public SwitchIconView getTranslateIcon(MainActivity.SupportLang fragLang) {
+        return tabs[fragLang.ordinal()].second;
+    }
+
+    interface TranslateListener {
+        void onSuccess(String translatedText);
+    }
+
+    interface TranslateErrorListener {
+        void onApiError(JSONObject errorResponse);
+
+        void onNetworkError(VolleyError error);
+    }
+
+    interface Translatable {
+        String getText();
+
+        void setText(String text);
+    }
+
+    void translateItemText(
+            RecyclerView.Adapter adapter,
+            QuestDetailsItemText itemText,
+            MainActivity.SupportLang fromLang,
+            MainActivity.SupportLang toLang
+    ) {
+        translateTranslatable(
+                new Translatable() {
+                    @Override
+                    public String getText() {
+                        return itemText.getText();
+                    }
+
+                    @Override
+                    public void setText(String text) {
+                        itemText.setText(text);
+                        adapter.notifyDataSetChanged();
+                    }
+                },
+                fromLang,
+                toLang
+        );
+    }
+
+    void translateHeader(
+            PlaceDetailsAddAdapter adapter,
+            BaseSectionedHeader header,
+            MainActivity.SupportLang fromLang,
+            MainActivity.SupportLang toLang
+    ) {
+        translateTranslatable(
+                new Translatable() {
+                    @Override
+                    public String getText() {
+                        return header.getTitle();
+                    }
+
+                    @Override
+                    public void setText(String text) {
+                        header.setTitle(text);
+                        runOnUiThread(adapter::notifyDataSetChanged);
+                    }
+                },
+                fromLang,
+                toLang
+        );
+    }
+
+    @Background
+    void translateTranslatable(
+            Translatable translatable,
+            MainActivity.SupportLang fromLang,
+            MainActivity.SupportLang toLang
+    ) {
+        val text = translatable.getText();
+
+        if(!text.equals(getString(R.string.add_details_translate_progress))) {
+
+            Log.d(TAG, "Translating text: " + text);
+
+            translatable.setText(getString(R.string.add_details_translate_progress));
+
+            val listener = (TranslateListener) translatable::setText;
+
+            translateText(
+                    text,
+                    fromLang,
+                    toLang,
+                    listener,
+                    new TranslateErrorListener() {
+                        @SneakyThrows
+                        @Override
+                        public void onApiError(JSONObject errorResponse) {
+                            listener.onSuccess(getString(R.string.add_details_translate_error));
+
+                            Toast.makeText(
+                                    AddDetailsActivity.this,
+                                    "Translate http request code: " + errorResponse.getInt("code"),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+
+                        @Override
+                        public void onNetworkError(VolleyError error) {
+                            listener.onSuccess(getString(R.string.add_details_translate_error));
+
+                            Toast.makeText(
+                                    AddDetailsActivity.this,
+                                    error.getLocalizedMessage(),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+                        }
+                    }
+            );
+        }
+    }
+
+    void translateText(
+            String text,
+            MainActivity.SupportLang fromLang,
+            MainActivity.SupportLang toLang,
+            TranslateListener listener,
+            TranslateErrorListener errorListener
+    ) {
+        if (queue == null)
+            queue = Volley.newRequestQueue(this);
+
+        val uri = new Uri.Builder()
+                .scheme("https")
+                .authority("translate.yandex.net")
+                .appendPath("api")
+                .appendPath("v1.5")
+                .appendPath("tr.json")
+                .appendPath("translate")
+                .appendQueryParameter("key", getString(R.string.YANDEX_TRANSLATE_API_KEY))
+                .appendQueryParameter("text", text)
+                .appendQueryParameter("lang",
+                        fromLang.yaTranslateLang + '-' + toLang.yaTranslateLang
+                )
+                .build();
+        val uriStr = uri.toString();
+        Log.d(TAG, "Translate request to " + uriStr + "...");
+
+        val request = new JsonObjectRequest(
+                uriStr,
+                null,
+                response -> {
+                    try {
+                        if (response.getInt("code") == HttpURLConnection.HTTP_OK) {
+                            listener.onSuccess(response.getJSONArray("text").getString(0));
+                        } else if (errorListener != null)
+                            errorListener.onApiError(response);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        if (errorListener != null)
+                            errorListener.onNetworkError(new VolleyError(e));
+                    }
+                },
+                error -> {
+                    if (errorListener != null)
+                        errorListener.onNetworkError(error);
+                }
+        );
+
+        queue.add(request);
+    }
+
     @AfterViews
     void afterViews() {
         // View pager
@@ -90,82 +433,82 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
             pagerAdapter.tabFragments = frags;
         }
         viewPager.setAdapter(pagerAdapter);
+        viewPager.addOnPageChangeListener(
+                new ViewPager.SimpleOnPageChangeListener() {
+                    @Override
+                    public void onPageSelected(int position) {
+                        super.onPageSelected(position);
+
+                        val frag = pagerAdapter.tabFragments[position];
+                        val tab = tabs[frag.lang.ordinal()];
+                        if (tab.first.getVisibility() == View.VISIBLE &&
+                                tab.second.isIconEnabled() &&
+                                (
+                                        untranslatedChanges ||
+                                                ((PlaceDetailsAddAdapter) frag.recycler.getAdapter()).getSectionCount() == 0)
+                                ) {
+                            translateDetails(
+                                    pagerAdapter.tabFragments[MainActivity.getLocale(AddDetailsActivity.this).ordinal()],
+                                    pagerAdapter.tabFragments[position]
+                            );
+                        }
+                    }
+                }
+        );
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
         ((PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem()))
-                .addListener(
-                        new PlaceDetailsAddFrag.Listener() {
-                            @Override
-                            public void onSectionsLoaded() {
-                                val dismissText = getString(R.string.add_details_intro_dismiss_button);
-                                val frag = (PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem());
-
-                                frag.recycler.post(
-                                        () -> {
-                                            if(!introStarted) {
-                                                val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
-
-                                                // Intro
-                                                ShowcaseConfig config = new ShowcaseConfig();
-                                                config.setDelay(100);
-
-                                                MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
-
-                                                sequence.setConfig(config);
-
-                                                sequence.addSequenceItem(
-                                                        frag.addSectionButton,
-                                                        getString(R.string.add_details_intro_add_header),
-                                                        dismissText
-                                                );
-
-                                                sequence.addSequenceItem(
-                                                        frag.translateButtonLayout,
-                                                        getString(R.string.add_details_intro_translate),
-                                                        dismissText
-                                                );
-
-                                                sequence.addSequenceItem(
-                                                        firstHolder.findViewById(R.id.add_details_head_add),
-                                                        getString(R.string.add_details_intro_add),
-                                                        dismissText
-                                                );
-
-                                                sequence.addSequenceItem(
-                                                        firstHolder.findViewById(R.id.add_details_head_remove),
-                                                        getString(R.string.add_details_intro_remove),
-                                                        dismissText
-                                                );
-
-                                                sequence.addSequenceItem(
-                                                        sendView,
-                                                        getString(R.string.add_details_intro_send),
-                                                        dismissText
-                                                );
-
-                                                sequence.addSequenceItem(
-                                                        restoreView,
-                                                        getString(R.string.add_details_intro_restore),
-                                                        dismissText
-                                                );
-
-                                                introStarted = true;
-                                                sequence.start();
-                                            }
-                                        }
-                                );
-                            }
-
-                            @Override
-                            public void onSectionsChanged() {
-                                unsavedChanges = true;
-                            }
-                        }
+                .setListener(
+                        this
                 );
 
         // Tab layout
         tabLayout.setupWithViewPager(viewPager);
 
+        for (int mTabId = 0; mTabId < tabLayout.getTabCount(); mTabId++) {
+            val mTab = tabLayout.getTabAt(mTabId);
 
+            val tabLayout = (LinearLayout) LayoutInflater.from(this).inflate(R.layout.frag_add_details_page_tab, null);
+            val tabTitle = (TextView) tabLayout.findViewById(R.id.details_tab_title);
+            tabTitle.setText(mTab.getText());
+
+            val mFrag = pagerAdapter.tabFragments[mTabId];
+
+            val tabTranslate = (SwitchIconView) tabLayout.findViewById(R.id.details_tab_translate);
+            val tabTranslateLayout = (FrameLayout) tabLayout.findViewById(R.id.details_tab_translate_layout);
+            tabs[mTabId] = new Pair<>(
+                    tabTranslateLayout,
+                    tabTranslate
+            );
+            if (pagerAdapter.tabFragments[mTabId].lang != null)
+                tabTranslateLayout.setVisibility(
+                        pagerAdapter.tabFragments[mTabId].lang == MainActivity.getLocale(this)
+                                ? View.GONE
+                                : View.VISIBLE
+                );
+
+            tabTranslateLayout.setOnClickListener(
+                    v -> {
+                        val nextState = !tabTranslate.isIconEnabled();
+                        tabTranslate.setIconEnabled(nextState);
+
+                        if (
+                                nextState &&
+                                        mFrag.lang.ordinal() == viewPager.getCurrentItem() &&
+                                        (
+                                                mFrag.translatedChanged ||
+                                                        ((PlaceDetailsAddAdapter) mFrag.recycler.getAdapter())
+                                                                .getSectionCount() == 0
+                                        )
+                                )
+                            translateDetails(
+                                    pagerAdapter.tabFragments[MainActivity.getLocale(AddDetailsActivity.this).ordinal()],
+                                    mFrag
+                            );
+                    }
+            );
+
+            mTab.setCustomView(tabLayout);
+        }
     }
 
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -176,7 +519,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_send_alert_title))
                         .setMessage(getString(R.string.add_details_action_send_alert_text))
-                        .setCancelable(true)
+                        .setCancelable(false)
                         .setPositiveButton(
                                 getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {
@@ -252,38 +595,6 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         return super.onCreateOptionsMenu(menu);
     }
 
-    public static SwitchIconView createTranslateIconView(
-            Context context,
-            FrameLayout layout,
-            int color,
-            int paddingV,
-            int paddingH
-    ) {
-        val translateIconView = new SwitchIconView(context);
-        translateIconView.setImageDrawable(
-                ContextCompat.getDrawable(context, R.drawable.ic_translate)
-        );
-        val params = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.gravity = Gravity.CENTER;
-        translateIconView.setLayoutParams(
-                params
-        );
-        translateIconView.setColorFilter(color);
-
-        layout.setPadding(
-                paddingH, paddingV, paddingH, paddingV
-        );
-        layout.addView(translateIconView);
-        layout.setOnClickListener(
-                v -> translateIconView.callOnClick()
-        );
-
-        return translateIconView;
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -341,7 +652,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     @OptionsItem(android.R.id.home)
     void homeSelected() {
 
-        if(unsavedChanges) {
+        if (unsavedChanges) {
             new AlertDialog.Builder(this)
                     .setTitle(getString(R.string.add_details_action_cancel_alert_title))
                     .setMessage(getString(R.string.add_details_action_cancel_alert_text))

@@ -131,6 +131,7 @@ public class PlacesFrag extends Fragment
                 parentListener.onPanelStateChanged(slidingPanel, previousState, newState);
             }
         });
+        parentListener.onPanelCreate(slidingPanel);
 
         // Autocomplete fragment
         PlacesAutocompleteTextView autocompleteTextView = ((AutocompleteTextViewGetter) getActivity())
@@ -334,8 +335,10 @@ public class PlacesFrag extends Fragment
 
                         // Set
                         FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
-                        fragTrans.replace(R.id.places_sliding_container,
-                                placeDetailsFrag);
+                        fragTrans.replace(
+                                R.id.places_sliding_container,
+                                placeDetailsFrag
+                        );
                         fragTrans.commit();
                     }
                 });
@@ -418,6 +421,7 @@ public class PlacesFrag extends Fragment
     }
 
     public interface SlidingUpPanelListener {
+        void onPanelCreate(SlidingUpPanelLayout panel);
         void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset);
 
         void onPanelStateChanged(SlidingUpPanelLayout panel,

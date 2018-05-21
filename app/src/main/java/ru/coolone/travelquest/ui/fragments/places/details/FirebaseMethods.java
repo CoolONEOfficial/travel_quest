@@ -11,6 +11,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
+import org.androidannotations.annotations.Background;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,11 +34,15 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
 public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
-    private static int startedTasks;
-    private static int startedDeleteTasks;
+    private static Integer startedTasks;
+    private static Integer startedDeleteTasks;
+    private static final Object startedTasksLock = new Object();
+    private static final Object startedDeleteTasksLock = new Object();
 
     private static void checkEndTask(TaskListener listener) {
-        startedTasks--;
+        synchronized (startedTasksLock) {
+            startedTasks--;
+        }
 
         Log.d(TAG, "checkEndTask started, tasks count: " + startedTasks);
 
@@ -60,7 +66,9 @@ public class FirebaseMethods {
             RecyclerView recyclerView,
             TaskListener listener
     ) {
-        startedTasks++;
+        synchronized (startedTasksLock) {
+            startedTasks++;
+        }
         coll.get().addOnSuccessListener(
                 queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.getDocuments().isEmpty())
@@ -73,7 +81,9 @@ public class FirebaseMethods {
                         );
                     else {
                         // Delete all old docs
-                        startedDeleteTasks += queryDocumentSnapshots.getDocuments().size();
+                        synchronized (startedDeleteTasksLock) {
+                            startedDeleteTasks += queryDocumentSnapshots.getDocuments().size();
+                        }
                         for (val mDoc : queryDocumentSnapshots.getDocuments())
                             mDoc.getReference().delete()
                                     .addOnFailureListener(
@@ -86,7 +96,9 @@ public class FirebaseMethods {
                                     )
                                     .addOnSuccessListener(
                                             task -> {
-                                                startedDeleteTasks--;
+                                                synchronized (startedDeleteTasksLock) {
+                                                    startedDeleteTasks--;
+                                                }
 
                                                 if (startedDeleteTasks == 0)
                                                     // Start serialize docs
@@ -103,7 +115,11 @@ public class FirebaseMethods {
         ).addOnFailureListener(
                 e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
         ).addOnCompleteListener(
-                task -> startedTasks--
+                task -> {
+                    synchronized (startedTasksLock) {
+                        startedTasks--;
+                    }
+                }
         );
     }
 
@@ -143,7 +159,9 @@ public class FirebaseMethods {
                     Integer.toString(mSectionId + startId) + getSaltString()
             );
 
-            startedTasks++;
+            synchronized (startedTasksLock) {
+                startedTasks++;
+            }
             mDoc.set(
                     new HashMap<String, Object>() {{
                         put("title", mSection.first.getTitle());
@@ -174,7 +192,9 @@ public class FirebaseMethods {
                     Log.d(TAG, "mItem is text");
 
                     if (!mItemText.getText().isEmpty()) {
-                        startedTasks++;
+                        synchronized (startedTasksLock) {
+                            startedTasks++;
+                        }
                         nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
                                 new HashMap<String, Object>() {{
                                     put(
@@ -368,6 +388,7 @@ public class FirebaseMethods {
                 val recycler = new RecyclerView(context);
                 initDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
                 val adapter = (BaseSectionedAdapter) recycler.getAdapter();
+                adapter.setListener(parentAdapter.getListener());
 
                 // Recycler item
                 mItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());

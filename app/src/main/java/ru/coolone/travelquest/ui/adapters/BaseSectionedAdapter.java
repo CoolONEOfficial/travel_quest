@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.adapters;
 
+import android.app.Activity;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.LayoutRes;
@@ -16,8 +17,9 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.val;
+import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
 
 /**
  * Created by radiationx on 14.09.17.
@@ -29,7 +31,6 @@ public class BaseSectionedAdapter<
         I extends Parcelable, IVH extends BaseSectionedViewHolder>
         extends SectionedRecyclerViewAdapter<IVH>
         implements Parcelable {
-
     public BaseSectionedAdapter(Parcel parcel) {
         for (int mSectionId = 0; mSectionId < parcel.readInt(); mSectionId++) {
             sections.add(
@@ -44,8 +45,25 @@ public class BaseSectionedAdapter<
     }
 
     @Getter
-    @Setter
     protected ArrayList<Pair<H, ArrayList<I>>> sections = new ArrayList<>();
+
+    @Getter
+    protected Listener listener;
+
+    public void setSections(
+            ArrayList<Pair<H, ArrayList<I>>> sections,
+            Activity activity
+    ) {
+        this.sections = sections;
+        activity.runOnUiThread(
+                () -> notifyDataSetChanged()
+        );
+    }
+
+    public void setSections(ArrayList<Pair<H, ArrayList<I>>> sections) {
+        this.sections = sections;
+        notifyDataSetChanged();
+    }
 
     public void addSection(Pair<H, ArrayList<I>> item) {
         addSection(sections.size(), item);
@@ -170,4 +188,28 @@ public class BaseSectionedAdapter<
             return new BaseSectionedAdapter[size];
         }
     };
+
+    public void setListener(Listener listener) {
+        this.listener = listener;
+
+        for (val mSection : sections) {
+            for (val mItem : mSection.second) {
+                if (mItem instanceof QuestDetailsItemRecycler)
+                    (
+                            (PlaceDetailsAddAdapter) (
+                                    (QuestDetailsItemRecycler) mItem
+                            ).getRecyclerAdapter()
+                    ).setListener(listener);
+            }
+        }
+    }
+
+    protected void onSectionsChanged() {
+        if (listener != null)
+            listener.sectionsChanged();
+    }
+
+    public interface Listener {
+        void sectionsChanged();
+    }
 }

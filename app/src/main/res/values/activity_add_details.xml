@@ -33,5 +33,9 @@
     <string name="add_details_action_alert_confirm" translatable="false">@android:string/ok</string>
     <string name="add_details_action_alert_cancel">Cancel</string>
 
+    <string name="add_details_translate_error">Translation error</string>
+    <string name="add_details_translate_progress">Translation in progress</string>
+    <string name="add_details_translate_license"><a href="http://translate.yandex.ru/">Translated by the service\n"Yandex.Translate"</a></string>
+
     <dimen name="delim_height">40dp</dimen>
 </resources>

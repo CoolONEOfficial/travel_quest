@@ -7,15 +7,18 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.text.method.LinkMovementMethod;
 import android.util.Pair;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.zagum.switchicon.SwitchIconView;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
@@ -25,14 +28,14 @@ import org.androidannotations.annotations.ViewById;
 
 import java.util.ArrayList;
 
+import lombok.Getter;
+import lombok.Setter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
-import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsHeaders;
@@ -65,49 +68,81 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     @ViewById(R.id.add_details_page_add_section_button)
     public FloatingActionButton addSectionButton;
 
-    // Translate button
-    @ViewById(R.id.add_details_page_translate_button_layout)
-    public FloatingActionLayout translateButtonLayout;
-    @ViewById(R.id.add_details_page_translate_button)
-    SwitchIconView translateButton;
-
     // Root layout
     @ViewById(R.id.add_details_page_root_layout)
     FrameLayout frameLayout;
 
-    private ArrayList<Listener> listeners = new ArrayList<>();
+    // Translate license text
+    @ViewById(R.id.add_details_page_translate_license)
+    TextView translateLicenseText;
 
-    public void addListener(Listener listener) {
-        listeners.add(listener);
-    }
+    public boolean translated = false;
+    public boolean translatedChanged = false;
 
-    public void removeListener(Listener listener) {
-        listeners.remove(listener);
-    }
+    @Setter
+    @Getter
+    private Listener listener;
 
     @Override
     public void sectionsChanged() {
-        for(val mListener: listeners)
-            if(mListener != null)
-                mListener.onSectionsChanged();
+        if (listener != null) {
+            listener.onSectionsChanged(lang);
+            listener.getTranslateIcon(lang).setIconEnabled(false);
+        }
+
+        if (translated)
+            translatedChanged = true;
     }
 
     public interface Listener {
         void onSectionsLoaded();
-        void onSectionsChanged();
+
+        void onSectionsChanged(SupportLang fragLang);
+
+        FrameLayout getTranslateLayout(SupportLang fragLang);
+
+        SwitchIconView getTranslateIcon(SupportLang fragLang);
     }
 
     public void restoreDetails() {
         recyclerAdapter.clear();
         refreshDetails();
+        sectionsChanged();
+    }
+
+    ProgressBar progressBar;
+
+    public void showProgressBar() {
+        // Show bar
+        if (progressBar == null) {
+            progressBar = new ProgressBar(getContext());
+            val params = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            params.gravity = Gravity.CENTER;
+            progressBar.setLayoutParams(params);
+        }
+
+        frameLayout.addView(progressBar);
+    }
+
+    public void hideProgressBar() {
+        // Hide bar
+        frameLayout.removeView(progressBar);
     }
 
     @AfterViews
     void afterViews() {
-        // Translate button
-        translateButtonLayout.setOnClickListener(
-                v -> translateButton.setIconEnabled(!translateButton.isIconEnabled())
-        );
+        // Translate views
+        val translateVisibility = lang == MainActivity.getLocale(getContext())
+                ? View.GONE
+                : View.VISIBLE;
+        if (listener != null && listener.getTranslateLayout(lang) != null)
+            listener.getTranslateLayout(lang)
+                    .setVisibility(translateVisibility);
+        translateLicenseText.setVisibility(translateVisibility);
+        translateLicenseText.setMovementMethod(LinkMovementMethod.getInstance());
 
         // Recycle view
         initDetailsRecyclerView(
@@ -115,16 +150,17 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                 PlaceDetailsAddAdapter.class,
                 getContext()
         );
-        if(recyclerAdapter != null)
-            ((BaseSectionedAdapter)recycler.getAdapter()).setSections(recyclerAdapter.getSections());
+        if (recyclerAdapter != null)
+            ((BaseSectionedAdapter) recycler.getAdapter()).setSections(recyclerAdapter.getSections());
         recyclerAdapter = (PlaceDetailsAddAdapter) recycler.getAdapter();
         recyclerAdapter.setListener(this);
 
         if (recyclerInstance == null)
             refreshDetails();
-        else {
+        else
             recycler.getLayoutManager().onRestoreInstanceState(recyclerInstance);
-        }
+
+        recycler.setNestedScrollingEnabled(false);
     }
 
     @Override
@@ -153,17 +189,8 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                         new ArrayList<>()
                 )
         );
-    }
 
-    private void createTemplateDetails() {
-        recyclerAdapter.addSection(
-                new Pair<>(
-                        new BaseSectionedHeader(),
-                        new ArrayList<BaseQuestDetailsItem>() {{
-                            add(new QuestDetailsItemText());
-                        }}
-                )
-        );
+        sectionsChanged();
     }
 
     private void refreshDetails() {
@@ -186,38 +213,27 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
             // Parse details
 
             // Show bar
-            val bar = new ProgressBar(getContext());
-            val params = new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.WRAP_CONTENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            params.gravity = Gravity.CENTER;
-            bar.setLayoutParams(params);
-
-            frameLayout.addView(bar);
+            showProgressBar();
 
             // Get doc
             collRef.get().addOnSuccessListener(
                     task -> {
                         // Parse details
-                        if (!parseDetailsHeaders(
+                        parseDetailsHeaders(
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
                                 false,
                                 this.getContext()
-                        )) {
-                            createTemplateDetails();
-                        }
+                        );
 
-                        for (val mListener : listeners)
-                            if (mListener != null)
-                                mListener.onSectionsLoaded();
+                        if (listener != null)
+                            listener.onSectionsLoaded();
                     })
                     .addOnFailureListener(
-                            e -> createTemplateDetails()
+                            e -> Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show()
                     )
                     .addOnCompleteListener(
-                            task -> frameLayout.removeView(bar)
+                            task -> hideProgressBar()
                     );
         }
     }

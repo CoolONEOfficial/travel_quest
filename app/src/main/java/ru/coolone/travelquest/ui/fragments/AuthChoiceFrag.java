@@ -35,7 +35,6 @@ public class AuthChoiceFrag extends Fragment {
     void normalAuth() {
         LoginActivity_.intent(getContext())
                 .start();
-        getActivity().finish();
     }
 
     @Click(R.id.frag_auth_choice_anonymous)

@@ -108,6 +108,9 @@ public class MainActivity extends AppCompatActivity implements
     // Autocomplete place
     PlacesAutocompleteTextView autocompleteTextView;
 
+    // Sliding up panel in PlacesFrag
+    SlidingUpPanelLayout slidingPanel;
+
     @AfterViews
     void afterViews() {
         // Toolbar
@@ -129,8 +132,8 @@ public class MainActivity extends AppCompatActivity implements
     public boolean isGooglePlayServicesAvailable(Activity activity) {
         GoogleApiAvailability googleApiAvailability = GoogleApiAvailability.getInstance();
         int status = googleApiAvailability.isGooglePlayServicesAvailable(activity);
-        if(status != ConnectionResult.SUCCESS) {
-            if(googleApiAvailability.isUserResolvableError(status)) {
+        if (status != ConnectionResult.SUCCESS) {
+            if (googleApiAvailability.isUserResolvableError(status)) {
                 googleApiAvailability.getErrorDialog(activity, status, 2404).show();
             }
             return false;
@@ -164,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements
                         .build()
         );
 
-        if(!isGooglePlayServicesAvailable(this))
+        if (!isGooglePlayServicesAvailable(this))
             finish();
 
         // Switch last login method
@@ -314,7 +317,9 @@ public class MainActivity extends AppCompatActivity implements
             }
         }
 
-        return SupportLang.values()[0];
+        Log.d(TAG, "Unsupported lang, use ENGLISH");
+
+        return SupportLang.ENGLISH;
     }
 
     public static GoogleApiClient getApiClient() {
@@ -472,7 +477,9 @@ public class MainActivity extends AppCompatActivity implements
                         )
                         .commit();
 
-                setToolbarAlpha(1.0f);
+                if (slidingPanel != null)
+                    updatePanelAlpha();
+                else setToolbarAlpha(1.0f);
             }
 
             // --- Toolbar ---
@@ -568,8 +575,25 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onPanelStateChanged(SlidingUpPanelLayout panel, SlidingUpPanelLayout.PanelState previousState, SlidingUpPanelLayout.PanelState newState) {
-        switch (newState) {
+    public void onPanelCreate(SlidingUpPanelLayout panel) {
+        slidingPanel = panel;
+    }
+
+    @Override
+    public void onPanelStateChanged(
+            SlidingUpPanelLayout panel,
+            SlidingUpPanelLayout.PanelState previousState,
+            SlidingUpPanelLayout.PanelState newState
+    ) {
+        updatePanelAlpha(newState);
+    }
+
+    void updatePanelAlpha() {
+        updatePanelAlpha(slidingPanel.getPanelState());
+    }
+
+    void updatePanelAlpha(SlidingUpPanelLayout.PanelState state) {
+        switch (state) {
             case HIDDEN:
             case ANCHORED:
             case COLLAPSED:
@@ -599,14 +623,16 @@ public class MainActivity extends AppCompatActivity implements
      * Languages info
      */
     public enum SupportLang {
-        RUSSIAN("RU", R.string.add_details_tab_russian_title),
-        ENGLISH("US", R.string.add_details_tab_english_title);
+        RUSSIAN("RU", "ru", R.string.add_details_tab_russian_title),
+        ENGLISH("US", "en", R.string.add_details_tab_english_title);
 
         public final String lang;
+        public final String yaTranslateLang;
         public final int titleId;
 
-        SupportLang(String lang, int titleId) {
+        SupportLang(String lang, String yaTranslateLang, int titleId) {
             this.lang = lang;
+            this.yaTranslateLang = yaTranslateLang;
             this.titleId = titleId;
         }
 

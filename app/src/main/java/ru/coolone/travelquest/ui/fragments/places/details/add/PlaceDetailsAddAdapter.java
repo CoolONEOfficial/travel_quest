@@ -57,23 +57,12 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     @Setter
     private OnClickListener<BaseSectionedHeader, PlaceDetailsAddAdapter.HeaderHolder> headerClickListener;
 
-    @Setter
-    private Listener listener;
-
-    void onSectionsChanged() {
-        if(listener != null)
-            listener.sectionsChanged();
-    }
-
     @Override
     public BaseSectionedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Log.d(TAG, "Vh type: " + String.valueOf(viewType));
 
-        // Header
         if (viewType == ListItem.Id.HEADER_TEXT.ordinal())
             return new HeaderHolder(inflateLayout(parent, R.layout.add_details_header));
-
-            // Item
         else if (viewType == ListItem.Id.ITEM_TEXT.ordinal())
             return new ItemHolderText(inflateLayout(parent, R.layout.add_details_item_text));
         else if (viewType == ListItem.Id.ITEM_RECYCLER.ordinal())
@@ -163,13 +152,14 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                                     PlaceDetailsAddAdapter.class,
                                                     context
                                             );
-                                            ((BaseSectionedAdapter) recycler.getAdapter())
-                                                    .addSection(
-                                                            new Pair<>(
-                                                                    new BaseSectionedHeader(),
-                                                                    new ArrayList()
-                                                            )
-                                                    );
+                                            val adapter = ((PlaceDetailsAddAdapter) recycler.getAdapter());
+                                            adapter.addSection(
+                                                    new Pair<>(
+                                                            new BaseSectionedHeader(),
+                                                            new ArrayList()
+                                                    )
+                                            );
+                                            adapter.setListener(listener);
 
                                             detailsItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
                                             break;
@@ -279,9 +269,5 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
             recyclerView.setAdapter(recycler.getRecyclerAdapter());
             recyclerView.invalidate();
         }
-    }
-
-    interface Listener {
-        void sectionsChanged();
     }
 }

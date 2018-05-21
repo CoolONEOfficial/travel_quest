@@ -1,51 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/add_details_page_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/add_details_page_details_recycler"
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginEnd="@dimen/content_inset"
-        android:layout_marginStart="@dimen/content_inset"
-        android:clipToPadding="false"
-        android:paddingBottom="80dp"
-        android:scrollbars="vertical" />
+        android:layout_height="match_parent">
 
-    <LinearLayout
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/add_details_page_details_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/content_inset"
+                android:layout_marginStart="@dimen/content_inset"
+                android:clipToPadding="false"
+                android:paddingBottom="80dp"
+                android:scrollbars="vertical" />
+
+            <TextView
+                android:id="@+id/add_details_page_translate_license"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|start"
+                android:layout_margin="@dimen/content_inset"
+                android:gravity="bottom|start"
+                android:text="@string/add_details_translate_license"
+                android:visibility="gone" />
+        </FrameLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/add_details_page_add_section_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
-        android:orientation="horizontal">
-
-        <com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout
-            android:id="@+id/add_details_page_translate_button_layout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp">
-
-            <com.github.zagum.switchicon.SwitchIconView
-                android:id="@+id/add_details_page_translate_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_translate"
-                app:si_tint_color="@android:color/white" />
-        </com.robertlevonyan.views.customfloatingactionbutton.FloatingActionLayout>
-
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/add_details_page_add_section_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
-            android:src="@drawable/ic_add_header" />
-    </LinearLayout>
-
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_add_header" />
 
 </FrameLayout>
