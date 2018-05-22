@@ -5,6 +5,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
+import android.widget.Toast;
 
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import com.google.firebase.firestore.CollectionReference;
@@ -34,9 +35,10 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
 public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
-    private static Integer startedTasks;
-    private static Integer startedDeleteTasks;
+    private static int startedTasks;
     private static final Object startedTasksLock = new Object();
+
+    private static int startedDeleteTasks;
     private static final Object startedDeleteTasksLock = new Object();
 
     private static void checkEndTask(TaskListener listener) {
@@ -170,7 +172,7 @@ public class FirebaseMethods {
                     taskTitleComplete -> Log.d(TAG, "Adding title " + mSection.first.getTitle() + " ended")
             ).addOnFailureListener(
                     e -> {
-                        Log.e(TAG, "Create firebase doument with title error", e);
+                        Log.e(TAG, "Create firebase document with title error", e);
                         listener.onCompleted();
                         listener.onFailure(e);
                     }

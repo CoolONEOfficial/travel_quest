@@ -39,9 +39,10 @@ public class AuthChoiceFrag extends Fragment {
 
     @Click(R.id.frag_auth_choice_anonymous)
     void anonymousAuth() {
-        val progress = new ProgressDialog(getContext());
-        progress.setTitle(getString(R.string.login_progress));
-        progress.setCancelable(false);
+        val progress = new ProgressDialog.Builder(getContext())
+                .setCancelable(false)
+                .setMessage(getString(R.string.login_progress))
+                .create();
         progress.show();
 
         FirebaseAuth.getInstance().signInAnonymously()

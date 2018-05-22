@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import lombok.Setter;
 import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
 
 /**
@@ -12,7 +13,8 @@ import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
  * @since 30.03.18
  */
 public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
-    public PlaceDetailsAddFrag tabFragments[] =
+    @Setter
+    private PlaceDetailsAddFrag tabFragments[] =
             new PlaceDetailsAddFrag[SupportLang.values().length];
     private Context context;
 
@@ -34,7 +36,7 @@ public class PlaceDetailsAddPagerAdapter extends FragmentPagerAdapter {
     }
 
     @Override
-    public Fragment getItem(int position) {
+    public PlaceDetailsAddFrag getItem(int position) {
         return tabFragments[position];
     }
 

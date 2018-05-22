@@ -49,7 +49,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     }
 
     // Context
-    private final Context context;
+    public final Context context;
 
     @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;

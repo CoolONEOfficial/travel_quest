@@ -5,6 +5,8 @@ import android.os.Parcelable;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 
@@ -13,11 +15,8 @@ import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
  */
 
 @NoArgsConstructor
+@RequiredArgsConstructor
 public class QuestDetailsItemRecycler extends BaseQuestDetailsItem {
-
-    public QuestDetailsItemRecycler(BaseSectionedAdapter recyclerAdapter) {
-        this.recyclerAdapter = recyclerAdapter;
-    }
 
     public QuestDetailsItemRecycler(Parcel parcel) {
         recyclerAdapter = parcel.readParcelable(BaseSectionedAdapter.class.getClassLoader());
@@ -25,6 +24,7 @@ public class QuestDetailsItemRecycler extends BaseQuestDetailsItem {
 
     @Getter
     @Setter
+    @NonNull
     private BaseSectionedAdapter recyclerAdapter;
 
     @Override

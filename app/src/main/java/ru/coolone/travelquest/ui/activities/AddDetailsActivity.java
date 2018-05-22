@@ -49,6 +49,7 @@ import java.util.Map;
 import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
@@ -65,7 +66,8 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
 @SuppressLint("Registered")
 @EActivity
 @OptionsMenu(R.menu.activity_add_details_actions)
-public class AddDetailsActivity extends AppCompatActivity implements FirebaseMethods.TaskListener, PlaceDetailsAddFrag.Listener {
+public class AddDetailsActivity extends AppCompatActivity
+        implements FirebaseMethods.TaskListener, PlaceDetailsAddFrag.Listener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
     // Toolbar views
@@ -99,6 +101,61 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
     boolean untranslatedChanges = false;
 
+    void copySections(
+            ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>> fromSections,
+            ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>> toSections,
+            BaseSectionedAdapter.Listener newListener
+    ) {
+        for (val mSection : fromSections) {
+            val mSectionHeader = mSection.first;
+            val mNewSectionHeader = new BaseSectionedHeader(mSectionHeader.getTitle());
+
+            val mSectionItems = mSection.second;
+            val mNewSectionItems = new ArrayList<BaseQuestDetailsItem>(mSectionItems.size());
+
+            for (val mSectionItem : mSectionItems) {
+
+                if (mSectionItem instanceof QuestDetailsItemText) {
+                    val mSectionItemText = (QuestDetailsItemText) mSectionItem;
+
+                    mNewSectionItems.add(
+                            new QuestDetailsItemText(
+                                    mSectionItemText.getText()
+                            )
+                    );
+                } else if (mSectionItem instanceof QuestDetailsItemRecycler) {
+                    val mSectionItemRecycler = (QuestDetailsItemRecycler) mSectionItem;
+                    val mSectionItemRecyclerAdapter = (PlaceDetailsAddAdapter) mSectionItemRecycler.getRecyclerAdapter();
+
+                    val mNewSectionItemRecyclerAdapter = new PlaceDetailsAddAdapter(
+                            mSectionItemRecyclerAdapter.context
+                    );
+                    mNewSectionItemRecyclerAdapter.setListener(newListener);
+
+                    copySections(
+                            ((PlaceDetailsAddAdapter) mSectionItemRecycler.getRecyclerAdapter())
+                                    .getSections(),
+                            mNewSectionItemRecyclerAdapter.getSections(),
+                            newListener
+                    );
+
+                    val mNewSectionItemRecycler = new QuestDetailsItemRecycler(mNewSectionItemRecyclerAdapter);
+
+                    mNewSectionItems.add(
+                            mNewSectionItemRecycler
+                    );
+                }
+            }
+
+            val mNewSection = new Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>(
+                    mNewSectionHeader,
+                    mNewSectionItems
+            );
+
+            toSections.add(mNewSection);
+        }
+    }
+
     void translateDetails(
             PlaceDetailsAddFrag from,
             PlaceDetailsAddFrag to
@@ -109,10 +166,10 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         val toAdapter = (PlaceDetailsAddAdapter) to.recycler.getAdapter();
 
         // Copy sections
-        toAdapter.setSections(
-                (ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>>)
-                        fromAdapter.getSections().clone(),
-                this
+        copySections(
+                fromAdapter.getSections(),
+                toAdapter.getSections(),
+                to
         );
 
         // Translate
@@ -176,7 +233,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     @Override
     public void onSectionsLoaded() {
         val dismissText = getString(R.string.add_details_intro_dismiss_button);
-        val frag = (PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem());
+        val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
         frag.recycler.post(
                 () -> {
@@ -258,6 +315,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         return tabs[fragLang.ordinal()].second;
     }
 
+
     interface TranslateListener {
         void onSuccess(String translatedText);
     }
@@ -330,11 +388,12 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
     ) {
         val text = translatable.getText();
 
-        if(!text.equals(getString(R.string.add_details_translate_progress))) {
+        if (!text.equals(getString(R.string.add_details_translate_progress))) {
 
             Log.d(TAG, "Translating text: " + text);
-
-            translatable.setText(getString(R.string.add_details_translate_progress));
+            runOnUiThread(
+                    () -> translatable.setText(getString(R.string.add_details_translate_progress))
+            );
 
             val listener = (TranslateListener) translatable::setText;
 
@@ -430,7 +489,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 this
         );
         if (frags != null) {
-            pagerAdapter.tabFragments = frags;
+            pagerAdapter.setTabFragments(frags);
         }
         viewPager.setAdapter(pagerAdapter);
         viewPager.addOnPageChangeListener(
@@ -439,7 +498,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                     public void onPageSelected(int position) {
                         super.onPageSelected(position);
 
-                        val frag = pagerAdapter.tabFragments[position];
+                        val frag = pagerAdapter.getItem(position);
                         val tab = tabs[frag.lang.ordinal()];
                         if (tab.first.getVisibility() == View.VISIBLE &&
                                 tab.second.isIconEnabled() &&
@@ -448,18 +507,20 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                                 ((PlaceDetailsAddAdapter) frag.recycler.getAdapter()).getSectionCount() == 0)
                                 ) {
                             translateDetails(
-                                    pagerAdapter.tabFragments[MainActivity.getLocale(AddDetailsActivity.this).ordinal()],
-                                    pagerAdapter.tabFragments[position]
+                                    pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
+                                    pagerAdapter.getItem(position)
                             );
                         }
                     }
                 }
         );
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
-        ((PlaceDetailsAddFrag) pagerAdapter.getItem(viewPager.getCurrentItem()))
-                .setListener(
-                        this
-                );
+
+        // Listen all frags
+        for(int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+            val mFrag = pagerAdapter.getItem(mFragId);
+            mFrag.setListener(this);
+        }
 
         // Tab layout
         tabLayout.setupWithViewPager(viewPager);
@@ -471,7 +532,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
             val tabTitle = (TextView) tabLayout.findViewById(R.id.details_tab_title);
             tabTitle.setText(mTab.getText());
 
-            val mFrag = pagerAdapter.tabFragments[mTabId];
+            val mFrag = pagerAdapter.getItem(mTabId);
 
             val tabTranslate = (SwitchIconView) tabLayout.findViewById(R.id.details_tab_translate);
             val tabTranslateLayout = (FrameLayout) tabLayout.findViewById(R.id.details_tab_translate_layout);
@@ -479,9 +540,9 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                     tabTranslateLayout,
                     tabTranslate
             );
-            if (pagerAdapter.tabFragments[mTabId].lang != null)
+            if (pagerAdapter.getItem(mTabId).lang != null)
                 tabTranslateLayout.setVisibility(
-                        pagerAdapter.tabFragments[mTabId].lang == MainActivity.getLocale(this)
+                        pagerAdapter.getItem(mTabId).lang == MainActivity.getLocale(this)
                                 ? View.GONE
                                 : View.VISIBLE
                 );
@@ -501,7 +562,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                         )
                                 )
                             translateDetails(
-                                    pagerAdapter.tabFragments[MainActivity.getLocale(AddDetailsActivity.this).ordinal()],
+                                    pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
                                     mFrag
                             );
                     }
@@ -523,9 +584,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                         .setPositiveButton(
                                 getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {
-                                    tabLayout.setVisibility(View.GONE);
-                                    viewPager.setVisibility(View.GONE);
-                                    rootLayout.addView(progressBar);
+                                    setProgressVisible(true);
 
                                     Map<String, Object> defaultVals = new HashMap<>();
                                     defaultVals.put("score", new ArrayList<String>());
@@ -544,11 +603,13 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
                                         docRef.set(defaultVals)
                                                 .addOnSuccessListener(
-                                                        aVoid -> serializeDetails(
-                                                                docRef.collection("coll"),
-                                                                mFrag.recycler,
-                                                                this
-                                                        )
+                                                        aVoid -> {
+                                                            serializeDetails(
+                                                                    docRef.collection("coll"),
+                                                                    mFrag.recycler,
+                                                                    this
+                                                            );
+                                                        }
                                                 ).addOnFailureListener(
                                                 e -> {
                                                     onFailure(e);
@@ -578,7 +639,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                                 getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {
                                     for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-                                        val mFrag = (PlaceDetailsAddFrag) pagerAdapter.getItem(mFragId);
+                                        val mFrag = pagerAdapter.getItem(mFragId);
 
                                         mFrag.restoreDetails();
                                     }
@@ -604,7 +665,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
 
         // Progress bar
         progressBar = new ProgressBar(this);
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+        val params = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
@@ -631,7 +692,7 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
                 );
             }
             if (pagerAdapter != null) {
-                pagerAdapter.tabFragments = frags;
+                pagerAdapter.setTabFragments(frags);
             }
         }
     }
@@ -682,11 +743,23 @@ public class AddDetailsActivity extends AppCompatActivity implements FirebaseMet
         finish();
     }
 
+    public void setProgressVisible(
+            boolean visible
+    ) {
+        if (visible)
+            rootLayout.removeView(progressBar);
+        else
+            rootLayout.removeView(progressBar);
+        val visibility = visible
+                ? View.VISIBLE
+                : View.GONE;
+        tabLayout.setVisibility(visibility);
+        viewPager.setVisibility(visibility);
+    }
+
     @Override
     public void onCompleted() {
-        rootLayout.removeView(progressBar);
-        tabLayout.setVisibility(View.VISIBLE);
-        viewPager.setVisibility(View.VISIBLE);
+        setProgressVisible(false);
     }
 
     @Override

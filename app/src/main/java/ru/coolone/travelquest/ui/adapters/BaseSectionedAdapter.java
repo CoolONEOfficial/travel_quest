@@ -17,6 +17,8 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.val;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
@@ -26,6 +28,7 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
  */
 
 @NoArgsConstructor
+@RequiredArgsConstructor
 public class BaseSectionedAdapter<
         H extends BaseSectionedHeader, HVH extends BaseSectionedViewHolder,
         I extends Parcelable, IVH extends BaseSectionedViewHolder>
@@ -48,6 +51,7 @@ public class BaseSectionedAdapter<
     protected ArrayList<Pair<H, ArrayList<I>>> sections = new ArrayList<>();
 
     @Getter
+    @NonNull
     protected Listener listener;
 
     public void setSections(
