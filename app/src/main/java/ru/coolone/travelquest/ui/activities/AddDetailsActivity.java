@@ -44,7 +44,6 @@ import org.json.JSONObject;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 
 import lombok.SneakyThrows;
 import lombok.val;
@@ -106,6 +105,8 @@ public class AddDetailsActivity extends AppCompatActivity
             ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>> toSections,
             BaseSectionedAdapter.Listener newListener
     ) {
+        toSections.clear();
+
         for (val mSection : fromSections) {
             val mSectionHeader = mSection.first;
             val mNewSectionHeader = new BaseSectionedHeader(mSectionHeader.getTitle());
@@ -237,7 +238,9 @@ public class AddDetailsActivity extends AppCompatActivity
 
         frag.recycler.post(
                 () -> {
-                    if (!introStarted) {
+                    if (!introStarted &&
+                            ((PlaceDetailsAddAdapter) frag.recycler.getAdapter()).getSectionCount() != 0) {
+
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
                         // Intro
@@ -517,7 +520,7 @@ public class AddDetailsActivity extends AppCompatActivity
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
 
         // Listen all frags
-        for(int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+        for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
             val mFrag = pagerAdapter.getItem(mFragId);
             mFrag.setListener(this);
         }
@@ -586,11 +589,11 @@ public class AddDetailsActivity extends AppCompatActivity
                                 (dialog, which) -> {
                                     setProgressVisible(true);
 
-                                    Map<String, Object> defaultVals = new HashMap<>();
+                                    val defaultVals = new HashMap<String, Object>();
                                     defaultVals.put("score", new ArrayList<String>());
 
                                     for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
-                                        PlaceDetailsAddFrag mFrag = (PlaceDetailsAddFrag) pagerAdapter.getItem(mFragId);
+                                        val mFrag = pagerAdapter.getItem(mFragId);
 
                                         val mLang = mFrag.lang.lang;
                                         val docRef = MainActivity.getQuestsRoot(mLang)
@@ -746,15 +749,15 @@ public class AddDetailsActivity extends AppCompatActivity
     public void setProgressVisible(
             boolean visible
     ) {
-        if (visible)
-            rootLayout.removeView(progressBar);
-        else
-            rootLayout.removeView(progressBar);
         val visibility = visible
                 ? View.VISIBLE
                 : View.GONE;
         tabLayout.setVisibility(visibility);
         viewPager.setVisibility(visibility);
+        if (visible)
+            rootLayout.addView(progressBar);
+        else
+            rootLayout.removeView(progressBar);
     }
 
     @Override

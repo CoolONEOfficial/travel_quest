@@ -418,7 +418,7 @@ public class PlaceDetailsFrag extends Fragment {
                             new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onSuccess() {
-                                    if(!introStarted) {
+                                    if (!introStarted) {
                                         // Intro
                                         val config = new ShowcaseConfig();
                                         config.setDelay(100);
@@ -567,9 +567,12 @@ public class PlaceDetailsFrag extends Fragment {
                                 .freeze()
                                 .getPhoto(MainActivity.getApiClient())
                                 .setResultCallback(
-                                        placePhotoResult -> ((ImageView)
-                                                parent.photosLayout.getChildAt(mAttributedPhotoIdFinal)
-                                        ).setImageBitmap(placePhotoResult.getBitmap())
+                                        placePhotoResult -> {
+                                            if (parent.photosLayout != null)
+                                                ((ImageView)
+                                                        parent.photosLayout.getChildAt(mAttributedPhotoIdFinal)
+                                                ).setImageBitmap(placePhotoResult.getBitmap());
+                                        }
                                 );
                     }
                 } else {
