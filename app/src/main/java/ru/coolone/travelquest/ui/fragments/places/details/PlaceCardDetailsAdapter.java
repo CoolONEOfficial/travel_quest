@@ -43,6 +43,7 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
             super(v);
 
             title = v.findViewById(R.id.card_details_mail);
+            title.setSelected(true);
             likes = v.findViewById(R.id.card_details_likes);
             likeButton = v.findViewById(R.id.card_details_star);
             recycler = v.findViewById(R.id.card_details_recycler);
@@ -88,45 +89,57 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
         val likedUsers = (ArrayList<String>) mItem.rootDoc.get("score");
         holder.likeButton.setLiked(likedUsers.contains(userUid));
         holder.likeButton.setVisibility(View.VISIBLE);
-        holder.likeButton.setEnabled(
-                !MainActivity.firebaseUser.isAnonymous() && // user registered
-                        !mItem.uId.equals(userUid) // not self card
-        );
+        holder.likeButton.setEnabled(true);
         holder.likeButton.setOnClickListener(
                 v -> {
-                    val button = (LikeButton) v;
-
-                    val fListener = (OnFailureListener) e ->
-                            Toast.makeText(
-                                    context,
-                                    context.getText(R.string.error_network),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                    val sListener = (OnSuccessListener) o -> button.setEnabled(true);
-
-                    // Toggle button
-                    button.onClick(v);
-                    button.setEnabled(false);
-
-                    // Add / Remove user
-                    if (likedUsers.contains(userUid)) {
-                        likedUsers.remove(userUid);
+                    if (MainActivity.firebaseUser.isAnonymous()) // user registered
+                        Toast.makeText(
+                                context,
+                                context.getString(R.string.details_star_error_anonymous),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    else if (mItem.uId.equals(userUid)) { // it is not self card
+                        Toast.makeText(
+                                context,
+                                context.getString(R.string.details_star_error_self),
+                                Toast.LENGTH_SHORT
+                        ).show();
                     } else {
-                        likedUsers.add(userUid);
+
+                        val button = (LikeButton) v;
+
+                        val fListener = (OnFailureListener) e ->
+                                Toast.makeText(
+                                        context,
+                                        context.getText(R.string.error_network),
+                                        Toast.LENGTH_SHORT
+                                ).show();
+                        val sListener = (OnSuccessListener) o -> button.setEnabled(true);
+
+                        // Toggle button
+                        button.onClick(v);
+                        button.setEnabled(false);
+
+                        // Add / Remove user
+                        if (likedUsers.contains(userUid)) {
+                            likedUsers.remove(userUid);
+                        } else {
+                            likedUsers.add(userUid);
+                        }
+
+                        // Update likes counter
+                        holder.likes.setText(String.valueOf(likedUsers.size()));
+
+                        // Apply changes
+                        mItem.rootDoc.getReference()
+                                .update(
+                                        new HashMap<String, Object>() {{
+                                            put("score", likedUsers);
+                                        }}
+                                )
+                                .addOnSuccessListener(sListener)
+                                .addOnFailureListener(fListener);
                     }
-
-                    // Update likes counter
-                    holder.likes.setText(String.valueOf(likedUsers.size()));
-
-                    // Apply changes
-                    mItem.rootDoc.getReference()
-                            .update(
-                                    new HashMap<String, Object>() {{
-                                        put("score", likedUsers);
-                                    }}
-                            )
-                            .addOnSuccessListener(sListener)
-                            .addOnFailureListener(fListener);
                 }
         );
         holder.likes.setText(String.valueOf(likedUsers.size()));

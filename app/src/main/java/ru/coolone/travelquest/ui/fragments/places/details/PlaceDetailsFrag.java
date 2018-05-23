@@ -18,6 +18,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlacePhotoMetadata;
@@ -122,6 +123,8 @@ public class PlaceDetailsFrag extends Fragment {
 
     @AfterViews
     void afterViews() {
+        titleView.setSelected(true);
+
         // Recycler view
         initDetailsRecyclerView(detailsRecyclerView, PlaceCardDetailsAdapter.class, getContext());
 
@@ -555,7 +558,7 @@ public class PlaceDetailsFrag extends Fragment {
                     for (int mAttributedPhotoId = 0;
                          mAttributedPhotoId < photoMetadataBuffer.getCount();
                          mAttributedPhotoId++) {
-                        final int mAttributedPhotoIdFinal = mAttributedPhotoId;
+                        val mAttributedPhotoIdFinal = mAttributedPhotoId;
 
                         // Get the first bitmap
                         PlacePhotoMetadata photo = photoMetadataBuffer

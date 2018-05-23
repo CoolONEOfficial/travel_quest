@@ -58,7 +58,15 @@
                     android:id="@+id/details_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/content_inset"
                     android:layout_toStartOf="@id/details_rating"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:freezesText="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
                     android:text="Title"
                     android:textColor="@color/primary_text_inverse"
                     android:textSize="24sp"
@@ -102,8 +110,7 @@
                     android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_below="@id/details_photos_scroll">
-                </android.support.v7.widget.RecyclerView>
+                    android:layout_below="@id/details_photos_scroll"></android.support.v7.widget.RecyclerView>
 
                 <ImageView
                     android:id="@+id/details_details_unknown_text_smile"

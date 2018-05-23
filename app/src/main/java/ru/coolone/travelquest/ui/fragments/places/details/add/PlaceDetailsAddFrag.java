@@ -198,16 +198,17 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
             val db = FirebaseFirestore
                     .getInstance();
 
+            val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
+            val userName = MainActivity.firebaseUser.getDisplayName();
+            if(userName != null && !userName.isEmpty())
+                docPath.append('_').append(userName);
+
             val collRef =
                     db
                             .collection(lang.lang)
                             .document("quests")
                             .collection(placeId)
-                            .document(
-                                    MainActivity.firebaseUser.getUid() +
-                                            '_' +
-                                            MainActivity.firebaseUser.getDisplayName()
-                            )
+                            .document(docPath.toString())
                             .collection("coll");
 
             // Parse details
@@ -223,7 +224,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
                                 false,
-                                this.getContext()
+                                PlaceDetailsAddFrag.this.getContext()
                         );
 
                         if (listener != null)

@@ -596,23 +596,21 @@ public class AddDetailsActivity extends AppCompatActivity
                                         val mFrag = pagerAdapter.getItem(mFragId);
 
                                         val mLang = mFrag.lang.lang;
+                                        val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
+                                        val userName = MainActivity.firebaseUser.getDisplayName();
+                                        if(userName != null && !userName.isEmpty())
+                                            docPath.append('_').append(userName);
                                         val docRef = MainActivity.getQuestsRoot(mLang)
                                                 .collection(placeId)
-                                                .document(
-                                                        MainActivity.firebaseUser.getUid() +
-                                                                '_' +
-                                                                MainActivity.firebaseUser.getDisplayName()
-                                                );
+                                                .document(docPath.toString());
 
                                         docRef.set(defaultVals)
                                                 .addOnSuccessListener(
-                                                        aVoid -> {
-                                                            serializeDetails(
-                                                                    docRef.collection("coll"),
-                                                                    mFrag.recycler,
-                                                                    this
-                                                            );
-                                                        }
+                                                        aVoid -> serializeDetails(
+                                                                docRef.collection("coll"),
+                                                                mFrag.recycler,
+                                                                this
+                                                        )
                                                 ).addOnFailureListener(
                                                 e -> {
                                                     onFailure(e);

@@ -20,8 +20,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_toLeftOf="@id/card_details_likes"
-                android:text="...@..."
+                android:layout_marginEnd="@dimen/content_inset"
+                android:layout_toStartOf="@id/card_details_likes"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:freezesText="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
                 android:textSize="24sp" />
 
             <TextView
@@ -41,8 +48,8 @@
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:visibility="invisible"
-                app:is_enabled="false"
-                app:icon_type="star" />
+                app:icon_type="star"
+                app:is_enabled="false" />
 
         </RelativeLayout>
 

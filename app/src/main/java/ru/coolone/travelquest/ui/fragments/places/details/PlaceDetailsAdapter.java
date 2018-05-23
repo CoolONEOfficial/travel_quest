@@ -102,6 +102,7 @@ public class PlaceDetailsAdapter
         public HeaderHolder(View v) {
             super(v, headerClickListener, PlaceDetailsAdapter.this);
             title = v.findViewById(R.id.details_head_text);
+            title.setSelected(true);
             caret = v.findViewById(R.id.details_head_caret);
 
             caret.setOnClickListener(this);

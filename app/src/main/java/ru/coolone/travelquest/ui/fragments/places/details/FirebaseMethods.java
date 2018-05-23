@@ -5,14 +5,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.util.Pair;
-import android.widget.Toast;
 
 import com.afollestad.sectionedrecyclerview.SectionedRecyclerViewAdapter;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
-
-import org.androidannotations.annotations.Background;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +19,8 @@ import java.util.Random;
 
 import lombok.SneakyThrows;
 import lombok.val;
+import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
@@ -242,7 +242,7 @@ public class FirebaseMethods {
             TaskListener listener
     ) {
         coll.getQuery()
-                .orderBy("score")
+                .orderBy("score", Query.Direction.DESCENDING)
                 .limit(5)
                 .get()
                 .addOnSuccessListener(
@@ -263,10 +263,15 @@ public class FirebaseMethods {
 
                                 adapter.dataset.add(
                                         new PlaceCardDetailsAdapter.Item(
-                                                mDocId.substring(delimIndex + 1), // delim to end is name
+                                                delimIndex != -1
+                                                        ? mDocId.substring(delimIndex + 1) // delim to end is name
+                                                        : context.getString(R.string.details_unnamed_user)
+                                                        + mDocId, // user uid
                                                 recycler,
                                                 mDoc,
-                                                mDocId.substring(0, delimIndex) // 0 to delim is id
+                                                delimIndex != -1
+                                                        ? mDocId.substring(0, delimIndex) // 0 to delim is id
+                                                        : mDocId // all is id
                                         )
                                 );
                                 adapter.notifyDataSetChanged();
