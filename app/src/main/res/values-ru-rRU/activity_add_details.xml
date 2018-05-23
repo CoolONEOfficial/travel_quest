@@ -36,4 +36,7 @@
     <string name="add_details_translate_progress">Перевод в процессе</string>
     <string name="add_details_translate_license"><a href="http://translate.yandex.ru/">Переведено сервисом\n«Яндекс.Переводчик»</a></string>
 
+    <string name="add_details_progress_load">Загружаем описание&#8230;</string>
+    <string name="add_details_progress_translate">Переводим описание&#8230;</string>
+
 </resources>

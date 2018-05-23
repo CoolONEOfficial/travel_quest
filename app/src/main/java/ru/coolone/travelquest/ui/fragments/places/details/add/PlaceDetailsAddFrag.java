@@ -1,11 +1,13 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.method.LinkMovementMethod;
 import android.util.Pair;
@@ -13,6 +15,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -105,31 +108,71 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     }
 
     public void restoreDetails() {
-        recyclerAdapter.clear();
-        refreshDetails();
-        sectionsChanged();
+        if(translatedChanged) {
+            recyclerAdapter.clear();
+            refreshDetails();
+        }
     }
 
-    ProgressBar progressBar;
+    CardView progressCard;
+    TextView progressText;
 
-    public void showProgressBar() {
-        // Show bar
-        if (progressBar == null) {
-            progressBar = new ProgressBar(getContext());
-            val params = new FrameLayout.LayoutParams(
+    public void showProgressBar(String title) {
+        if(progressText == null) {
+            progressText = new TextView(getContext());
+            val textParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            params.gravity = Gravity.CENTER;
-            progressBar.setLayoutParams(params);
+            progressText.setLayoutParams(textParams);
+            progressText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        }
+        progressText.setText(title);
+
+        // Show bar
+        if (progressCard == null) {
+            val inset = (int) getResources().getDimension(R.dimen.content_inset);
+
+            progressCard = new CardView(getContext());
+            val cardParams = new FrameLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            cardParams.gravity = Gravity.CENTER;
+            progressCard.setLayoutParams(cardParams);
+
+            val cardLayout = new LinearLayout(getContext());
+            val layoutParams = new CardView.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            layoutParams.setMargins(
+                    inset, inset, inset, inset
+            );
+            cardLayout.setLayoutParams(layoutParams);
+            cardLayout.setOrientation(LinearLayout.VERTICAL);
+
+            val progressBar = new ProgressBar(getContext());
+            val barParams = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            barParams.gravity = Gravity.CENTER;
+            barParams.bottomMargin = inset;
+            progressBar.setLayoutParams(barParams);
+
+            cardLayout.addView(progressBar);
+            cardLayout.addView(progressText);
+
+            progressCard.addView(cardLayout);
         }
 
-        frameLayout.addView(progressBar);
+        frameLayout.addView(progressCard);
     }
 
     public void hideProgressBar() {
         // Hide bar
-        frameLayout.removeView(progressBar);
+        frameLayout.removeView(progressCard);
     }
 
     @AfterViews
@@ -214,7 +257,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
             // Parse details
 
             // Show bar
-            showProgressBar();
+            showProgressBar(getString(R.string.add_details_progress_load));
 
             // Get doc
             collRef.get().addOnSuccessListener(
@@ -234,7 +277,11 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                             e -> Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show()
                     )
                     .addOnCompleteListener(
-                            task -> hideProgressBar()
+                            task -> {
+                                hideProgressBar();
+
+                                translatedChanged = false;
+                            }
                     );
         }
     }

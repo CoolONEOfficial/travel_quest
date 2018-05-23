@@ -36,6 +36,9 @@
     <string name="add_details_translate_error">Translation error</string>
     <string name="add_details_translate_progress">Translation in progress</string>
     <string name="add_details_translate_license"><a href="http://translate.yandex.ru/">Translated by the service\n"Yandex.Translate"</a></string>
-    
+
+    <string name="add_details_progress_load">Uploading description&#8230;</string>
+    <string name="add_details_progress_translate">Translating description&#8230;</string>
+
     <dimen name="delim_height">40dp</dimen>
 </resources>

@@ -159,21 +159,20 @@ public class AddDetailsActivity extends AppCompatActivity
     }
 
     public interface TranslateFragListener {
-        void onTranslateFragSuccess();
+        void onTranslateFragSuccess(PlaceDetailsAddFrag frag);
 
-        void onTranslateFragError(Exception e);
+        void onTranslateFragError(PlaceDetailsAddFrag frag, Exception e);
 
-        void onTranslateFragCompleted();
+        void onTranslateFragCompleted(PlaceDetailsAddFrag frag);
     }
 
     final TranslateFragListener fragListener = new TranslateFragListener() {
         @Override
-        public void onTranslateFragSuccess() {
-
+        public void onTranslateFragSuccess(PlaceDetailsAddFrag frag) {
         }
 
         @Override
-        public void onTranslateFragError(Exception e) {
+        public void onTranslateFragError(PlaceDetailsAddFrag frag, Exception e) {
             Toast.makeText(
                     AddDetailsActivity.this,
                     e.getLocalizedMessage(),
@@ -182,8 +181,8 @@ public class AddDetailsActivity extends AppCompatActivity
         }
 
         @Override
-        public void onTranslateFragCompleted() {
-            setProgressVisible(false);
+        public void onTranslateFragCompleted(PlaceDetailsAddFrag frag) {
+            frag.hideProgressBar();
         }
     };
 
@@ -212,55 +211,58 @@ public class AddDetailsActivity extends AppCompatActivity
         Log.d(TAG, "Translate ended task. Count: " + startedTranslateTasks);
     }
 
-    void onEndTask(TranslateFragListener completeListener) {
+    void onEndTask(
+            TranslateFragListener completeListener,
+            PlaceDetailsAddFrag toFrag
+    ) {
         onEndTask();
         Log.d(TAG, "Translate ended task with check. Count: " + startedTranslateTasks);
 
         if (startedTranslateTasks == 0) {
             Log.d(TAG, "Translate ended all tasks!");
 
-            completeListener.onTranslateFragCompleted();
-            completeListener.onTranslateFragSuccess();
+            completeListener.onTranslateFragCompleted(toFrag);
+            completeListener.onTranslateFragSuccess(toFrag);
         }
     }
 
     void translateDetails(
-            PlaceDetailsAddFrag from,
-            PlaceDetailsAddFrag to,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
-        setProgressVisible(true);
+        toFrag.showProgressBar(getString(R.string.add_details_progress_translate));
 
-        Log.d(TAG, "Started transalte " + from.lang.lang + " to " + to.lang.lang);
+        Log.d(TAG, "Started transalte " + fromFrag.lang.lang + " to " + toFrag.lang.lang);
 
-        val fromAdapter = (PlaceDetailsAddAdapter) from.recycler.getAdapter();
-        val toAdapter = (PlaceDetailsAddAdapter) to.recycler.getAdapter();
+        val fromAdapter = (PlaceDetailsAddAdapter) fromFrag.recycler.getAdapter();
+        val toAdapter = (PlaceDetailsAddAdapter) toFrag.recycler.getAdapter();
 
         // Copy sections
         copySections(
                 fromAdapter.getSections(),
                 toAdapter.getSections(),
-                to
+                toFrag
         );
 
         // Translate
         translateDetailAdapters(
                 toAdapter,
-                from.lang,
-                to.lang,
+                fromFrag,
+                toFrag,
                 fragListener
         );
 
-        to.translated = true;
-        to.translatedChanged = false;
+        toFrag.translated = true;
+        toFrag.translatedChanged = false;
 
         untranslatedChanges = false;
     }
 
     void translateDetailAdapters(
             PlaceDetailsAddAdapter adapter,
-            MainActivity.SupportLang from,
-            MainActivity.SupportLang to,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
         onStartTasks(adapter.getSectionCount());
@@ -269,8 +271,8 @@ public class AddDetailsActivity extends AppCompatActivity
             translateHeader(
                     adapter,
                     mSection.first,
-                    from,
-                    to,
+                    fromFrag,
+                    toFrag,
                     fragListener
             );
 
@@ -282,8 +284,8 @@ public class AddDetailsActivity extends AppCompatActivity
 
                     translateDetailAdapters(
                             (PlaceDetailsAddAdapter) mRecyclerItem.getRecyclerAdapter(),
-                            from,
-                            to,
+                            fromFrag,
+                            toFrag,
                             fragListener
                     );
                 } else if (mItem instanceof QuestDetailsItemText) {
@@ -291,15 +293,15 @@ public class AddDetailsActivity extends AppCompatActivity
                     translateItemText(
                             adapter,
                             mTextItem,
-                            from,
-                            to,
+                            fromFrag,
+                            toFrag,
                             fragListener
                     );
                     translateItemText(
                             adapter,
                             mTextItem,
-                            from,
-                            to,
+                            fromFrag,
+                            toFrag,
                             fragListener
                     );
                 }
@@ -323,7 +325,7 @@ public class AddDetailsActivity extends AppCompatActivity
         frag.recycler.post(
                 () -> {
                     if (!introStarted &&
-                            ((PlaceDetailsAddAdapter) frag.recycler.getAdapter()).getSectionCount() != 0) {
+                            frag.recycler.findViewHolderForAdapterPosition(0) != null) {
 
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
@@ -386,6 +388,9 @@ public class AddDetailsActivity extends AppCompatActivity
 
     @Override
     public void onSectionsChanged(MainActivity.SupportLang fragLang) {
+        sendView.setVisibility(View.VISIBLE);
+        restoreView.setVisibility(View.VISIBLE);
+
         unsavedChanges = true;
 
         if (fragLang == MainActivity.getLocale(AddDetailsActivity.this))
@@ -421,8 +426,8 @@ public class AddDetailsActivity extends AppCompatActivity
     void translateItemText(
             RecyclerView.Adapter adapter,
             QuestDetailsItemText itemText,
-            MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
         translateTranslatable(
@@ -438,8 +443,8 @@ public class AddDetailsActivity extends AppCompatActivity
                         adapter.notifyDataSetChanged();
                     }
                 },
-                fromLang,
-                toLang,
+                fromFrag,
+                toFrag,
                 fragListener
         );
     }
@@ -447,8 +452,8 @@ public class AddDetailsActivity extends AppCompatActivity
     void translateHeader(
             PlaceDetailsAddAdapter adapter,
             BaseSectionedHeader header,
-            MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
         translateTranslatable(
@@ -464,8 +469,8 @@ public class AddDetailsActivity extends AppCompatActivity
                         runOnUiThread(adapter::notifyDataSetChanged);
                     }
                 },
-                fromLang,
-                toLang,
+                fromFrag,
+                toFrag,
                 fragListener
         );
     }
@@ -473,8 +478,8 @@ public class AddDetailsActivity extends AppCompatActivity
     @Background
     void translateTranslatable(
             Translatable translatable,
-            MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
         val text = translatable.getText();
@@ -490,8 +495,8 @@ public class AddDetailsActivity extends AppCompatActivity
 
             translateText(
                     text,
-                    fromLang,
-                    toLang,
+                    fromFrag,
+                    toFrag,
                     listener,
                     new TranslateErrorListener() {
                         @SneakyThrows
@@ -524,8 +529,8 @@ public class AddDetailsActivity extends AppCompatActivity
 
     void translateText(
             String text,
-            MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang,
+            PlaceDetailsAddFrag fromFrag,
+            PlaceDetailsAddFrag toFrag,
             TranslateListener listener,
             TranslateErrorListener errorListener,
             TranslateFragListener fragListener
@@ -543,7 +548,7 @@ public class AddDetailsActivity extends AppCompatActivity
                 .appendQueryParameter("key", getString(R.string.YANDEX_TRANSLATE_API_KEY))
                 .appendQueryParameter("text", text)
                 .appendQueryParameter("lang",
-                        fromLang.yaTranslateLang + '-' + toLang.yaTranslateLang
+                        fromFrag.lang.yaTranslateLang + '-' + toFrag.lang.yaTranslateLang
                 )
                 .build();
         val uriStr = uri.toString();
@@ -553,30 +558,30 @@ public class AddDetailsActivity extends AppCompatActivity
                 uriStr,
                 null,
                 response -> {
-                    onEndTask(fragListener);
+                    onEndTask(fragListener, toFrag);
 
                     try {
                         if (response.getInt("code") == HttpURLConnection.HTTP_OK) {
                             listener.onTranslateSuccess(response.getJSONArray("text").getString(0));
                         } else if (errorListener != null) {
                             errorListener.onTranslateApiError(response);
-                            fragListener.onTranslateFragError(new Exception("Translate api error"));
-                            fragListener.onTranslateFragCompleted();
+                            fragListener.onTranslateFragError(toFrag, new Exception("Translate api error"));
+                            fragListener.onTranslateFragCompleted(toFrag);
                         }
                     } catch (JSONException e) {
                         e.printStackTrace();
                         if (errorListener != null) {
                             errorListener.onTranslateNetworkError(new VolleyError(e));
-                            fragListener.onTranslateFragError(e);
-                            fragListener.onTranslateFragCompleted();
+                            fragListener.onTranslateFragError(toFrag, e);
+                            fragListener.onTranslateFragCompleted(toFrag);
                         }
                     }
                 },
                 error -> {
                     if (errorListener != null) {
                         errorListener.onTranslateNetworkError(error);
-                        fragListener.onTranslateFragError(error);
-                        fragListener.onTranslateFragCompleted();
+                        fragListener.onTranslateFragError(toFrag, error);
+                        fragListener.onTranslateFragCompleted(toFrag);
                     }
                 }
         );
@@ -684,6 +689,9 @@ public class AddDetailsActivity extends AppCompatActivity
         sendView = (ImageButton) menu.findItem(R.id.add_details_action_send).getActionView();
         sendView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_check));
         sendView.getBackground().setAlpha(0);
+        sendView.post(
+                () -> sendView.setVisibility(View.INVISIBLE)
+        );
         sendView.setOnClickListener(
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_send_alert_title))
@@ -736,6 +744,9 @@ public class AddDetailsActivity extends AppCompatActivity
         restoreView = (ImageButton) menu.findItem(R.id.add_details_action_restore).getActionView();
         restoreView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_restore));
         restoreView.getBackground().setAlpha(0);
+        restoreView.post(
+                () -> restoreView.setVisibility(View.INVISIBLE)
+        );
         restoreView.setOnClickListener(
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_restore_alert_title))
@@ -749,6 +760,13 @@ public class AddDetailsActivity extends AppCompatActivity
 
                                         mFrag.restoreDetails();
                                     }
+
+                                    unsavedChanges = false;
+                                    untranslatedChanges = false;
+
+                                    sendView.setVisibility(View.INVISIBLE);
+                                    restoreView.setVisibility(View.INVISIBLE);
+
                                 }
                         )
                         .setNegativeButton(
