@@ -66,7 +66,8 @@ import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods
 @EActivity
 @OptionsMenu(R.menu.activity_add_details_actions)
 public class AddDetailsActivity extends AppCompatActivity
-        implements FirebaseMethods.TaskListener, PlaceDetailsAddFrag.Listener {
+        implements FirebaseMethods.TaskListener,
+        PlaceDetailsAddFrag.Listener {
     private static final String TAG = AddDetailsActivity.class.getSimpleName();
 
     // Toolbar views
@@ -157,10 +158,79 @@ public class AddDetailsActivity extends AppCompatActivity
         }
     }
 
+    public interface TranslateFragListener {
+        void onTranslateFragSuccess();
+
+        void onTranslateFragError(Exception e);
+
+        void onTranslateFragCompleted();
+    }
+
+    final TranslateFragListener fragListener = new TranslateFragListener() {
+        @Override
+        public void onTranslateFragSuccess() {
+
+        }
+
+        @Override
+        public void onTranslateFragError(Exception e) {
+            Toast.makeText(
+                    AddDetailsActivity.this,
+                    e.getLocalizedMessage(),
+                    Toast.LENGTH_SHORT
+            ).show();
+        }
+
+        @Override
+        public void onTranslateFragCompleted() {
+            setProgressVisible(false);
+        }
+    };
+
+    int startedTranslateTasks;
+    final Object startedTranslateTasksLock = new Object();
+
+    void onStartTask() {
+        synchronized (startedTranslateTasksLock) {
+            startedTranslateTasks++;
+        }
+    }
+
+    void onStartTasks(int count) {
+        synchronized (startedTranslateTasksLock) {
+            startedTranslateTasks += count;
+        }
+
+        Log.d(TAG, "Translate started task. Count: " + startedTranslateTasks);
+    }
+
+    void onEndTask() {
+        synchronized (startedTranslateTasksLock) {
+            startedTranslateTasks--;
+        }
+
+        Log.d(TAG, "Translate ended task. Count: " + startedTranslateTasks);
+    }
+
+    void onEndTask(TranslateFragListener completeListener) {
+        onEndTask();
+        Log.d(TAG, "Translate ended task with check. Count: " + startedTranslateTasks);
+
+        if (startedTranslateTasks == 0) {
+            Log.d(TAG, "Translate ended all tasks!");
+
+            completeListener.onTranslateFragCompleted();
+            completeListener.onTranslateFragSuccess();
+        }
+    }
+
     void translateDetails(
             PlaceDetailsAddFrag from,
-            PlaceDetailsAddFrag to
+            PlaceDetailsAddFrag to,
+            TranslateFragListener fragListener
     ) {
+        setProgressVisible(true);
+
         Log.d(TAG, "Started transalte " + from.lang.lang + " to " + to.lang.lang);
 
         val fromAdapter = (PlaceDetailsAddAdapter) from.recycler.getAdapter();
@@ -177,7 +247,8 @@ public class AddDetailsActivity extends AppCompatActivity
         translateDetailAdapters(
                 toAdapter,
                 from.lang,
-                to.lang
+                to.lang,
+                fragListener
         );
 
         to.translated = true;
@@ -189,15 +260,21 @@ public class AddDetailsActivity extends AppCompatActivity
     void translateDetailAdapters(
             PlaceDetailsAddAdapter adapter,
             MainActivity.SupportLang from,
-            MainActivity.SupportLang to
+            MainActivity.SupportLang to,
+            TranslateFragListener fragListener
     ) {
+        onStartTasks(adapter.getSectionCount());
+
         for (val mSection : adapter.getSections()) {
             translateHeader(
                     adapter,
                     mSection.first,
                     from,
-                    to
+                    to,
+                    fragListener
             );
+
+            onStartTasks(mSection.second.size());
 
             for (val mItem : mSection.second) {
                 if (mItem instanceof QuestDetailsItemRecycler) {
@@ -206,7 +283,8 @@ public class AddDetailsActivity extends AppCompatActivity
                     translateDetailAdapters(
                             (PlaceDetailsAddAdapter) mRecyclerItem.getRecyclerAdapter(),
                             from,
-                            to
+                            to,
+                            fragListener
                     );
                 } else if (mItem instanceof QuestDetailsItemText) {
                     val mTextItem = (QuestDetailsItemText) mItem;
@@ -214,16 +292,22 @@ public class AddDetailsActivity extends AppCompatActivity
                             adapter,
                             mTextItem,
                             from,
-                            to
+                            to,
+                            fragListener
                     );
                     translateItemText(
                             adapter,
                             mTextItem,
                             from,
-                            to
+                            to,
+                            fragListener
                     );
                 }
+
+                onEndTask();
             }
+
+            onEndTask();
         }
     }
 
@@ -318,15 +402,14 @@ public class AddDetailsActivity extends AppCompatActivity
         return tabs[fragLang.ordinal()].second;
     }
 
-
     interface TranslateListener {
-        void onSuccess(String translatedText);
+        void onTranslateSuccess(String translatedText);
     }
 
     interface TranslateErrorListener {
-        void onApiError(JSONObject errorResponse);
+        void onTranslateApiError(JSONObject errorResponse);
 
-        void onNetworkError(VolleyError error);
+        void onTranslateNetworkError(VolleyError error);
     }
 
     interface Translatable {
@@ -339,7 +422,8 @@ public class AddDetailsActivity extends AppCompatActivity
             RecyclerView.Adapter adapter,
             QuestDetailsItemText itemText,
             MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang
+            MainActivity.SupportLang toLang,
+            TranslateFragListener fragListener
     ) {
         translateTranslatable(
                 new Translatable() {
@@ -355,7 +439,8 @@ public class AddDetailsActivity extends AppCompatActivity
                     }
                 },
                 fromLang,
-                toLang
+                toLang,
+                fragListener
         );
     }
 
@@ -363,7 +448,8 @@ public class AddDetailsActivity extends AppCompatActivity
             PlaceDetailsAddAdapter adapter,
             BaseSectionedHeader header,
             MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang
+            MainActivity.SupportLang toLang,
+            TranslateFragListener fragListener
     ) {
         translateTranslatable(
                 new Translatable() {
@@ -379,7 +465,8 @@ public class AddDetailsActivity extends AppCompatActivity
                     }
                 },
                 fromLang,
-                toLang
+                toLang,
+                fragListener
         );
     }
 
@@ -387,7 +474,8 @@ public class AddDetailsActivity extends AppCompatActivity
     void translateTranslatable(
             Translatable translatable,
             MainActivity.SupportLang fromLang,
-            MainActivity.SupportLang toLang
+            MainActivity.SupportLang toLang,
+            TranslateFragListener fragListener
     ) {
         val text = translatable.getText();
 
@@ -408,8 +496,8 @@ public class AddDetailsActivity extends AppCompatActivity
                     new TranslateErrorListener() {
                         @SneakyThrows
                         @Override
-                        public void onApiError(JSONObject errorResponse) {
-                            listener.onSuccess(getString(R.string.add_details_translate_error));
+                        public void onTranslateApiError(JSONObject errorResponse) {
+                            listener.onTranslateSuccess(getString(R.string.add_details_translate_error));
 
                             Toast.makeText(
                                     AddDetailsActivity.this,
@@ -419,8 +507,8 @@ public class AddDetailsActivity extends AppCompatActivity
                         }
 
                         @Override
-                        public void onNetworkError(VolleyError error) {
-                            listener.onSuccess(getString(R.string.add_details_translate_error));
+                        public void onTranslateNetworkError(VolleyError error) {
+                            listener.onTranslateSuccess(getString(R.string.add_details_translate_error));
 
                             Toast.makeText(
                                     AddDetailsActivity.this,
@@ -428,7 +516,8 @@ public class AddDetailsActivity extends AppCompatActivity
                                     Toast.LENGTH_SHORT
                             ).show();
                         }
-                    }
+                    },
+                    fragListener
             );
         }
     }
@@ -438,7 +527,8 @@ public class AddDetailsActivity extends AppCompatActivity
             MainActivity.SupportLang fromLang,
             MainActivity.SupportLang toLang,
             TranslateListener listener,
-            TranslateErrorListener errorListener
+            TranslateErrorListener errorListener,
+            TranslateFragListener fragListener
     ) {
         if (queue == null)
             queue = Volley.newRequestQueue(this);
@@ -463,22 +553,35 @@ public class AddDetailsActivity extends AppCompatActivity
                 uriStr,
                 null,
                 response -> {
+                    onEndTask(fragListener);
+
                     try {
                         if (response.getInt("code") == HttpURLConnection.HTTP_OK) {
-                            listener.onSuccess(response.getJSONArray("text").getString(0));
-                        } else if (errorListener != null)
-                            errorListener.onApiError(response);
+                            listener.onTranslateSuccess(response.getJSONArray("text").getString(0));
+                        } else if (errorListener != null) {
+                            errorListener.onTranslateApiError(response);
+                            fragListener.onTranslateFragError(new Exception("Translate api error"));
+                            fragListener.onTranslateFragCompleted();
+                        }
                     } catch (JSONException e) {
                         e.printStackTrace();
-                        if (errorListener != null)
-                            errorListener.onNetworkError(new VolleyError(e));
+                        if (errorListener != null) {
+                            errorListener.onTranslateNetworkError(new VolleyError(e));
+                            fragListener.onTranslateFragError(e);
+                            fragListener.onTranslateFragCompleted();
+                        }
                     }
                 },
                 error -> {
-                    if (errorListener != null)
-                        errorListener.onNetworkError(error);
+                    if (errorListener != null) {
+                        errorListener.onTranslateNetworkError(error);
+                        fragListener.onTranslateFragError(error);
+                        fragListener.onTranslateFragCompleted();
+                    }
                 }
         );
+
+        onStartTask();
 
         queue.add(request);
     }
@@ -511,7 +614,8 @@ public class AddDetailsActivity extends AppCompatActivity
                                 ) {
                             translateDetails(
                                     pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
-                                    pagerAdapter.getItem(position)
+                                    pagerAdapter.getItem(position),
+                                    fragListener
                             );
                         }
                     }
@@ -566,7 +670,8 @@ public class AddDetailsActivity extends AppCompatActivity
                                 )
                             translateDetails(
                                     pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
-                                    mFrag
+                                    mFrag,
+                                    fragListener
                             );
                     }
             );
@@ -598,7 +703,7 @@ public class AddDetailsActivity extends AppCompatActivity
                                         val mLang = mFrag.lang.lang;
                                         val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
                                         val userName = MainActivity.firebaseUser.getDisplayName();
-                                        if(userName != null && !userName.isEmpty())
+                                        if (userName != null && !userName.isEmpty())
                                             docPath.append('_').append(userName);
                                         val docRef = MainActivity.getQuestsRoot(mLang)
                                                 .collection(placeId)
@@ -613,8 +718,8 @@ public class AddDetailsActivity extends AppCompatActivity
                                                         )
                                                 ).addOnFailureListener(
                                                 e -> {
-                                                    onFailure(e);
-                                                    onCompleted();
+                                                    onTaskError(e);
+                                                    onTaskCompleted();
                                                 }
                                         );
                                     }
@@ -738,18 +843,12 @@ public class AddDetailsActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onSuccess() {
-        setResult(RESULT_OK);
-        finish();
-    }
-
     public void setProgressVisible(
             boolean visible
     ) {
         val visibility = visible
-                ? View.VISIBLE
-                : View.GONE;
+                ? View.GONE
+                : View.VISIBLE;
         tabLayout.setVisibility(visibility);
         viewPager.setVisibility(visibility);
         if (visible)
@@ -759,16 +858,22 @@ public class AddDetailsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onCompleted() {
-        setProgressVisible(false);
+    public void onTaskSuccess() {
+        setResult(RESULT_OK);
+        finish();
     }
 
     @Override
-    public void onFailure(Exception e) {
+    public void onTaskError(Exception e) {
         Toast.makeText(
                 AddDetailsActivity.this,
                 e.getLocalizedMessage(),
                 Toast.LENGTH_SHORT
         ).show();
+    }
+
+    @Override
+    public void onTaskCompleted() {
+        setProgressVisible(false);
     }
 }

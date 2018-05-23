@@ -20,7 +20,6 @@ import java.util.Random;
 import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
@@ -35,32 +34,66 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
 public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
 
-    private static int startedTasks;
-    private static final Object startedTasksLock = new Object();
-
     private static int startedDeleteTasks;
     private static final Object startedDeleteTasksLock = new Object();
 
-    private static void checkEndTask(TaskListener listener) {
-        synchronized (startedTasksLock) {
-            startedTasks--;
+    private static void onStartDeleteTasks(int count) {
+        synchronized (startedDeleteTasksLock) {
+            startedDeleteTasks += count;
         }
+    }
 
-        Log.d(TAG, "checkEndTask started, tasks count: " + startedTasks);
+    private static void onStartDeleteTask() {
+        synchronized (startedDeleteTasksLock) {
+            startedDeleteTasks++;
+        }
+    }
 
-        if (startedTasks == 0) {
+    private static void onEndDeleteTask() {
+        synchronized (startedDeleteTasksLock) {
+            startedDeleteTasks--;
+        }
+    }
+
+    private static int startedSerializeTasks;
+    private static final Object startedSerializeTasksLock = new Object();
+
+    private static void onEndSerializeTask(TaskListener listener) {
+        onEndSerializeTask();
+
+        Log.d(TAG, "checkEndTask started, tasks count: " + startedSerializeTasks);
+
+        if (startedSerializeTasks == 0) {
             Log.d(TAG, "All serialize tasks ended!");
-            listener.onCompleted();
-            listener.onSuccess();
+            listener.onTaskCompleted();
+            listener.onTaskSuccess();
+        }
+    }
+
+    private static void onStartSerializeTasks(int count) {
+        synchronized (startedSerializeTasksLock) {
+            startedSerializeTasks += count;
+        }
+    }
+
+    private static void onStartSerializeTask() {
+        synchronized (startedSerializeTasksLock) {
+            startedSerializeTasks++;
+        }
+    }
+
+    private static void onEndSerializeTask() {
+        synchronized (startedSerializeTasksLock) {
+            startedSerializeTasks--;
         }
     }
 
     public interface TaskListener {
-        void onSuccess();
+        void onTaskSuccess();
 
-        void onFailure(Exception e);
+        void onTaskError(Exception e);
 
-        void onCompleted();
+        void onTaskCompleted();
     }
 
     static public void serializeDetails(
@@ -68,9 +101,7 @@ public class FirebaseMethods {
             RecyclerView recyclerView,
             TaskListener listener
     ) {
-        synchronized (startedTasksLock) {
-            startedTasks++;
-        }
+        onStartSerializeTask();
         coll.get().addOnSuccessListener(
                 queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.getDocuments().isEmpty())
@@ -83,24 +114,20 @@ public class FirebaseMethods {
                         );
                     else {
                         // Delete all old docs
-                        synchronized (startedDeleteTasksLock) {
-                            startedDeleteTasks += queryDocumentSnapshots.getDocuments().size();
-                        }
+                        onStartDeleteTasks(queryDocumentSnapshots.getDocuments().size());
                         for (val mDoc : queryDocumentSnapshots.getDocuments())
                             mDoc.getReference().delete()
                                     .addOnFailureListener(
                                             e -> {
                                                 Log.e(TAG, "Error while delete doc " + mDoc.getId());
 
-                                                listener.onCompleted();
-                                                listener.onFailure(e);
+                                                listener.onTaskCompleted();
+                                                listener.onTaskError(e);
                                             }
                                     )
                                     .addOnSuccessListener(
                                             task -> {
-                                                synchronized (startedDeleteTasksLock) {
-                                                    startedDeleteTasks--;
-                                                }
+                                                onEndDeleteTask();
 
                                                 if (startedDeleteTasks == 0)
                                                     // Start serialize docs
@@ -117,11 +144,7 @@ public class FirebaseMethods {
         ).addOnFailureListener(
                 e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
         ).addOnCompleteListener(
-                task -> {
-                    synchronized (startedTasksLock) {
-                        startedTasks--;
-                    }
-                }
+                task -> onEndSerializeTask()
         );
     }
 
@@ -161,9 +184,7 @@ public class FirebaseMethods {
                     Integer.toString(mSectionId + startId) + getSaltString()
             );
 
-            synchronized (startedTasksLock) {
-                startedTasks++;
-            }
+            onStartSerializeTask();
             mDoc.set(
                     new HashMap<String, Object>() {{
                         put("title", mSection.first.getTitle());
@@ -173,11 +194,11 @@ public class FirebaseMethods {
             ).addOnFailureListener(
                     e -> {
                         Log.e(TAG, "Create firebase document with title error", e);
-                        listener.onCompleted();
-                        listener.onFailure(e);
+                        listener.onTaskCompleted();
+                        listener.onTaskError(e);
                     }
             ).addOnCompleteListener(
-                    task -> checkEndTask(listener)
+                    task -> onEndSerializeTask(listener)
             );
 
             val nextColl = mDoc.collection("coll");
@@ -194,9 +215,7 @@ public class FirebaseMethods {
                     Log.d(TAG, "mItem is text");
 
                     if (!mItemText.getText().isEmpty()) {
-                        synchronized (startedTasksLock) {
-                            startedTasks++;
-                        }
+                        onStartSerializeTask();
                         nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
                                 new HashMap<String, Object>() {{
                                     put(
@@ -209,11 +228,11 @@ public class FirebaseMethods {
                         ).addOnFailureListener(
                                 e -> {
                                     Log.e(TAG, "Create firebase doument with text error", e);
-                                    listener.onCompleted();
-                                    listener.onFailure(e);
+                                    listener.onTaskCompleted();
+                                    listener.onTaskError(e);
                                 }
                         ).addOnCompleteListener(
-                                task -> checkEndTask(listener)
+                                task -> onEndSerializeTask(listener)
                         );
                     }
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
@@ -248,8 +267,8 @@ public class FirebaseMethods {
                 .addOnSuccessListener(
                         collRef -> {
                             if (collRef.getDocuments().isEmpty()) {
-                                listener.onCompleted();
-                                listener.onFailure(new Exception("No cards"));
+                                listener.onTaskCompleted();
+                                listener.onTaskError(new Exception("No cards"));
                                 Log.d(TAG, "No cards");
                             }
 
@@ -285,16 +304,16 @@ public class FirebaseMethods {
                                                             true,
                                                             context
                                                     ))
-                                                        listener.onSuccess();
+                                                        listener.onTaskSuccess();
                                                     else
-                                                        listener.onFailure(new Exception("Error while parsing card details"));
+                                                        listener.onTaskError(new Exception("Error while parsing card details"));
                                                 }
                                         )
                                         .addOnFailureListener(
-                                                listener::onFailure
+                                                listener::onTaskError
                                         )
                                         .addOnCompleteListener(
-                                                task -> listener.onCompleted()
+                                                task -> listener.onTaskCompleted()
                                         );
 
                             }
@@ -302,8 +321,8 @@ public class FirebaseMethods {
                 )
                 .addOnFailureListener(
                         e -> {
-                            listener.onCompleted();
-                            listener.onFailure(e);
+                            listener.onTaskCompleted();
+                            listener.onTaskError(e);
                             Log.e(TAG, "Error while getting cards order by score", e);
                         }
                 );
