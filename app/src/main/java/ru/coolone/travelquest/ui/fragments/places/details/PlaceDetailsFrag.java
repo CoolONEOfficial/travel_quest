@@ -147,8 +147,17 @@ public class PlaceDetailsFrag extends Fragment {
         new PhotoTask(this).execute(placeId);
     }
 
+    @Override
+    public void onResume() {
+        detailsAddButton.setEnabled(true);
+
+        super.onResume();
+    }
+
     @Click(R.id.details_details_add_button)
     void onAddButtonClicked() {
+        detailsAddButton.setEnabled(false);
+
         // To add place activity
         AddDetailsActivity_
                 .intent(getContext())
@@ -420,7 +429,7 @@ public class PlaceDetailsFrag extends Fragment {
                             getContext(),
                             new FirebaseMethods.TaskListener() {
                                 @Override
-                                public void onSuccess() {
+                                public void onTaskSuccess() {
                                     if (!introStarted) {
                                         // Intro
                                         val config = new ShowcaseConfig();
@@ -470,12 +479,12 @@ public class PlaceDetailsFrag extends Fragment {
                                 }
 
                                 @Override
-                                public void onFailure(Exception e) {
+                                public void onTaskError(Exception e) {
                                     detailsError(e);
                                 }
 
                                 @Override
-                                public void onCompleted() {
+                                public void onTaskCompleted() {
                                 }
                             }
                     );
