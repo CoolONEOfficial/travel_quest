@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -84,6 +85,17 @@ public class PlacesFrag extends Fragment
     void afterViews() {
         // Sliding panel
 
+        if(slidingLayout != null)
+            slidingLayout.setLayoutParams(
+                    new SlidingUpPanelLayout.LayoutParams(
+                            ViewGroup.MarginLayoutParams.MATCH_PARENT,
+                            ViewGroup.MarginLayoutParams.MATCH_PARENT
+
+                    ) {{
+                        topMargin = MainActivity.getStatusBarHeight(getActivity());
+                    }}
+            );
+
         // Hide quest panel if empty
         if (slidingLayout == null || slidingLayout.getChildCount() == 0)
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
@@ -110,11 +122,13 @@ public class PlacesFrag extends Fragment
                 // Set map padding
                 switch (newState) {
                     case HIDDEN:
-                        map.setPadding(0, getActionBarHeight(),
+                        map.setPadding(0, getActionBarHeight(getActivity())
+                                        + MainActivity.getStatusBarHeight(getActivity()),
                                 0, 0);
                         break;
                     case COLLAPSED:
-                        map.setPadding(0, getActionBarHeight(),
+                        map.setPadding(0, getActionBarHeight(getActivity())
+                                + MainActivity.getStatusBarHeight(getActivity()),
                                 0, panel.findViewById(R.id.details_layout_header)
                                         .getHeight());
                         break;
@@ -226,10 +240,11 @@ public class PlacesFrag extends Fragment
         super.onAttach(context);
     }
 
-    private int getActionBarHeight() {
+    static public int getActionBarHeight(Activity activity) {
         TypedValue tv = new TypedValue();
-        if (getActivity().getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
-            return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        if (activity.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+            return TypedValue.complexToDimensionPixelSize(tv.data, activity.getResources().getDisplayMetrics());
+        else Log.e(TAG, "Not founded actionbar height!");
         return 0;
     }
 
@@ -267,7 +282,8 @@ public class PlacesFrag extends Fragment
         googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         // Padding
-        map.setPadding(0, getActionBarHeight(),
+        map.setPadding(0, getActionBarHeight(getActivity())
+                + MainActivity.getStatusBarHeight(getActivity()),
                 0, 0);
 
         // Style

@@ -9,12 +9,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.util.SparseArrayCompat;
@@ -32,6 +34,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -57,6 +60,7 @@ import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.AboutFrag_;
 import ru.coolone.travelquest.ui.fragments.SettingsFrag_;
+import ru.coolone.travelquest.ui.fragments.places.PlacesFrag;
 import ru.coolone.travelquest.ui.fragments.places.PlacesFrag_;
 
 @SuppressLint("Registered")
@@ -114,6 +118,14 @@ public class MainActivity extends AppCompatActivity implements
     @AfterViews
     void afterViews() {
         // Toolbar
+        toolbar.setLayoutParams(
+                new AppBarLayout.LayoutParams(
+                        AppBarLayout.LayoutParams.MATCH_PARENT,
+                        PlacesFrag.getActionBarHeight(this)
+                ) {{
+                    topMargin = getStatusBarHeight(MainActivity.this);
+                }}
+        );
         setSupportActionBar(toolbar);
 
         // Drawer layout
@@ -262,6 +274,15 @@ public class MainActivity extends AppCompatActivity implements
                 getSupportFragmentManager().putFragment(outState, Integer.toString(mKey), mFrag);
             }
         }
+    }
+
+    public static int getStatusBarHeight(Activity activity) {
+        int result = (int) Math.ceil((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? 24 : 25) * activity.getResources().getDisplayMetrics().density);
+        int resourceId = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            result = activity.getResources().getDimensionPixelSize(resourceId);
+        } else Log.e(TAG, "Not founded status bar height!");
+        return result;
     }
 
     public static DocumentReference getQuestsRoot(String lang) {
