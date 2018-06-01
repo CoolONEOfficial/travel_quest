@@ -79,6 +79,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     @ViewById(R.id.add_details_page_translate_license)
     TextView translateLicenseText;
 
+    public boolean translateInProgress = false;
     public boolean translated = false;
     public boolean translatedChanged = false;
 

@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Rect;
 import android.location.Location;
 import android.os.Build;
 import android.os.Bundle;
@@ -34,7 +33,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -419,16 +417,17 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     public void setToolbarTransparent(boolean transparent, boolean fragmentMargin) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            // Transparent
-            toolbarMain.getBackground().setAlpha(
-                    transparent
-                            ? 0
-                            : 255
-            );
+        // Transparent
+        toolbarMain.getBackground().setAlpha(
+                transparent
+                        ? 0
+                        : 255
+        );
 
-            // Elevation
+        // Elevation
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
             val stateListAnimator = new StateListAnimator();
+
             stateListAnimator.addState(
                     new int[0],
                     ObjectAnimator.ofFloat(
@@ -441,13 +440,13 @@ public class MainActivity extends AppCompatActivity implements
                     )
             );
             toolbarMain.setStateListAnimator(stateListAnimator);
-
-            // Margin
-            ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
-                    .topMargin = fragmentMargin
-                    ? toolbarMain.getHeight()
-                    : 0;
         }
+
+        // Margin
+        ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
+                .topMargin = fragmentMargin
+                ? toolbarMain.getHeight()
+                : 0;
     }
 
     @Override

@@ -221,6 +221,7 @@ public class AddDetailsActivity extends AppCompatActivity
         if (startedTranslateTasks == 0) {
             Log.d(TAG, "Translate ended all tasks!");
 
+            toFrag.translateInProgress = false;
             completeListener.onTranslateFragCompleted(toFrag);
             completeListener.onTranslateFragSuccess(toFrag);
         }
@@ -255,6 +256,7 @@ public class AddDetailsActivity extends AppCompatActivity
 
         toFrag.translated = true;
         toFrag.translatedChanged = false;
+        toFrag.translateInProgress = true;
 
         untranslatedChanges = false;
     }
@@ -290,20 +292,15 @@ public class AddDetailsActivity extends AppCompatActivity
                     );
                 } else if (mItem instanceof QuestDetailsItemText) {
                     val mTextItem = (QuestDetailsItemText) mItem;
-                    translateItemText(
-                            adapter,
-                            mTextItem,
-                            fromFrag,
-                            toFrag,
-                            fragListener
-                    );
-                    translateItemText(
-                            adapter,
-                            mTextItem,
-                            fromFrag,
-                            toFrag,
-                            fragListener
-                    );
+                    if (!mTextItem.getText().trim().isEmpty()) {
+                        translateItemText(
+                                adapter,
+                                mTextItem,
+                                fromFrag,
+                                toFrag,
+                                fragListener
+                        );
+                    }
                 }
 
                 onEndTask();
@@ -603,6 +600,7 @@ public class AddDetailsActivity extends AppCompatActivity
             pagerAdapter.setTabFragments(frags);
         }
         viewPager.setAdapter(pagerAdapter);
+        viewPager.setCurrentItem(MainActivity.getLocale(this).ordinal());
         viewPager.addOnPageChangeListener(
                 new ViewPager.SimpleOnPageChangeListener() {
                     @Override
@@ -613,10 +611,10 @@ public class AddDetailsActivity extends AppCompatActivity
                         val tab = tabs[frag.lang.ordinal()];
                         if (tab.first.getVisibility() == View.VISIBLE &&
                                 tab.second.isIconEnabled() &&
-                                (
-                                        untranslatedChanges ||
-                                                ((PlaceDetailsAddAdapter) frag.recycler.getAdapter()).getSectionCount() == 0)
-                                ) {
+                                (untranslatedChanges ||
+                                        ((PlaceDetailsAddAdapter) frag.recycler.getAdapter())
+                                                .getSectionCount() == 0) &&
+                                !frag.translateInProgress) {
                             translateDetails(
                                     pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
                                     pagerAdapter.getItem(position),
