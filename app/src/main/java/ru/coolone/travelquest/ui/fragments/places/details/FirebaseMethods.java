@@ -266,13 +266,13 @@ public class FirebaseMethods {
                 .get()
                 .addOnSuccessListener(
                         collRef -> {
-                            if (collRef.getDocuments().isEmpty()) {
+                            val docs = collRef.getDocuments();
+
+                            if (docs.isEmpty()) {
                                 listener.onTaskCompleted();
                                 listener.onTaskError(new Exception("No cards"));
                                 Log.d(TAG, "No cards");
-                            }
-
-                            for (val mDoc : collRef.getDocuments()) {
+                            } else for (val mDoc : docs) {
                                 val recycler = new RecyclerView(context);
                                 val nextAdapter = new PlaceDetailsAdapter();
                                 recycler.setAdapter(nextAdapter);
@@ -280,15 +280,17 @@ public class FirebaseMethods {
                                 val mDocId = mDoc.getId();
                                 val delimIndex = mDocId.indexOf('_');
 
+                                val mDocIdWithName = mDocId.matches("([0-9A-Za-z]+)(_)([^_]+)( )([^_]+)");
+
                                 adapter.dataset.add(
                                         new PlaceCardDetailsAdapter.Item(
-                                                delimIndex != -1
-                                                        ? mDocId.substring(delimIndex + 1) // delim to end is name
+                                                mDocIdWithName
+                                                        ? mDocId.substring(delimIndex + 1) // name
                                                         : context.getString(R.string.details_unnamed_user)
-                                                        + mDocId, // user uid
+                                                        + mDocId, // user uid,
                                                 recycler,
                                                 mDoc,
-                                                delimIndex != -1
+                                                mDocIdWithName
                                                         ? mDocId.substring(0, delimIndex) // 0 to delim is id
                                                         : mDocId // all is id
                                         )
@@ -338,48 +340,52 @@ public class FirebaseMethods {
 
         Log.d(TAG, "--- Started parse details headers ---");
 
-        for (DocumentSnapshot mDoc : coll.getDocuments()) {
-            if (mDoc.contains("title")) {
-                // Recycler view
-                val recycler = new RecyclerView(context);
+        val docs = coll.getDocuments();
 
-                initDetailsRecyclerView(recycler, adapter.getClass(), context);
+        if (!docs.isEmpty())
+            for (DocumentSnapshot mDoc : docs) {
+                if (mDoc.contains("title")) {
+                    // Recycler view
+                    val recycler = new RecyclerView(context);
+                    initDetailsRecyclerView(recycler, adapter.getClass(), context);
 
-                // Recycler item
+                    // Recycler item
+                    val itemRecycler = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
 
-                val itemRecycler = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
+                    // Section
+                    val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
+                            new BaseSectionedHeader(mDoc.getString("title")),
+                            new ArrayList<BaseQuestDetailsItem>() {{
+                                add(itemRecycler);
+                            }}
+                    );
 
-                // Section
-                val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
-                        new BaseSectionedHeader(mDoc.getString("title")),
-                        new ArrayList<BaseQuestDetailsItem>() {{
-                            add(itemRecycler);
-                        }}
-                );
+                    // Add item
+                    adapter.addSection(
+                            nextSection
+                    );
+                    adapter.notifyDataSetChanged();
 
-                // Add item
-                adapter.addSection(
-                        nextSection
-                );
-                adapter.notifyDataSetChanged();
+                    mDoc.getReference().collection("coll").get()
+                            .addOnSuccessListener(
+                                    task -> {
+                                        // Parse details
+                                        parseDetailsSections(
+                                                task,
+                                                nextSection,
+                                                adapter,
+                                                collapseSection,
+                                                context
+                                        );
+                                    }
+                            );
 
-                mDoc.getReference().collection("coll").get()
-                        .addOnSuccessListener(
-                                task -> {
-                                    // Parse details
-                                    parseDetailsSections(
-                                            task,
-                                            nextSection,
-                                            adapter,
-                                            collapseSection,
-                                            context
-                                    );
-                                }
-                        );
-
-                result = true;
+                    result = true;
+                } else {
+                    Log.e(TAG, "mDoc not contain title!");
+                }
             }
-        }
+        else result = true;
 
         Log.d(TAG, "--- Ended parse details headers ---");
 
