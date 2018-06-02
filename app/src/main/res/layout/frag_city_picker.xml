@@ -1,61 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/dialog_city_container"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/dialog_city_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/pattern_fill"
     android:orientation="vertical"
+    android:paddingBottom="@dimen/appIntroBottomBarHeight"
     tools:context=".ui.fragments.intro.CityPickerFrag">
 
-
     <TextView
+        android:id="@+id/city_picker_title"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="bottom"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="@dimen/content_inset"
         android:text="@string/city_picker_title"
         android:textAlignment="center"
         android:textColor="@android:color/white"
-        android:textSize="36sp" />
+        android:textSize="24sp" />
 
     <TextView
+        android:id="@+id/city_picker_subtitle"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:alpha="200"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/city_picker_title"
+        android:layout_marginBottom="@dimen/content_inset"
         android:gravity="top"
         android:text="@string/city_picker_subtitle"
         android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="28sp" />
+        android:textColor="@android:color/white" />
 
     <include
         android:id="@+id/dialog_city_picker_include"
         layout="@layout/dialog_city_picker"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="2" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/city_picker_map_title"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/city_picker_subtitle" />
+
 
     <TextView
+        android:id="@+id/city_picker_map_title"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/city_picker_map_select"
+        android:layout_marginTop="@dimen/content_inset"
         android:gravity="bottom"
         android:text="@string/city_picker_map_title"
         android:textAlignment="center"
-        android:textColor="@android:color/white"
-        android:textSize="28sp" />
+        android:textColor="@android:color/white" />
 
     <TextView
         android:id="@+id/city_picker_map_select"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="@dimen/content_inset"
         android:gravity="top"
         android:text="@string/city_picker_map_select"
         android:textAlignment="center"
         android:textColor="@android:color/white"
-        android:textSize="28sp" />
+        android:textSize="24sp" />
 
-</LinearLayout>
+</RelativeLayout>

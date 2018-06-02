@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.StringRes;
@@ -16,9 +17,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
+import android.widget.GridLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -109,7 +109,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
     SupportCity selectedCity;
 
     static private void unselectAllCities(
-            LinearLayout cityLayout
+            GridLayout cityLayout
     ) {
         // Remove all selectImage's
         for (int mImageContainerId = 0; mImageContainerId < cityLayout.getChildCount(); mImageContainerId++) {
@@ -123,7 +123,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
 
     static public void selectCitySelect(
             Context context,
-            LinearLayout cityLayout,
+            GridLayout cityLayout,
             int cityId
     ) {
         unselectAllCities(cityLayout);
@@ -156,7 +156,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
 
     static public void refreshCitiesLayout(
             Context context,
-            LinearLayout layout
+            GridLayout layout
     ) {
         val selectedCityId = MainActivity.settings.getInt(
                 context.getString(R.string.settings_key_city_id),
@@ -173,40 +173,40 @@ public class SettingsFrag extends PreferenceFragmentCompat {
 
     static public void initCitiesLayout(
             Context context,
-            LinearLayout layout,
+            GridLayout layout,
             OnClickCityListener listener,
             int imageSize
     ) {
         for (val mCity : SupportCity.values()) {
             val mCityImageContainer = new FrameLayout(context);
-            val mCityImageContainerParams = new LinearLayout.LayoutParams(
-                    imageSize, imageSize
-            );
-            mCityImageContainer.setLayoutParams(mCityImageContainerParams);
 
             val mCityImage = new ImageView(context);
+            val mCityImageParams = new FrameLayout.LayoutParams(
+                    imageSize,
+                    imageSize
+            );
+            mCityImage.setLayoutParams(mCityImageParams);
             mCityImage.setImageBitmap(
-                    Bitmap.createScaledBitmap(
+                   Bitmap.createScaledBitmap(
                             BitmapFactory.decodeResource(context.getResources(), mCity.drawableId),
-                            imageSize,
-                            imageSize,
-                            true
-                    )
+                           imageSize, imageSize,
+                           true
+                   )
             );
             mCityImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
             val mCityLabel = new TextView(context);
             mCityLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             mCityLabel.setText(mCity.nameId);
-            mCityLabel.setTextSize(18);
+            mCityLabel.setTextSize(22);
             mCityLabel.setTextColor(Color.WHITE);
             mCityLabel.setBackgroundColor(Color.BLACK);
             mCityLabel.getBackground().setAlpha(128);
             val mCityLabelParams = new FrameLayout.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    imageSize,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
-            mCityLabelParams.gravity = Gravity.BOTTOM;
+            mCityLabelParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
             mCityLabel.setLayoutParams(mCityLabelParams);
 
             mCityImageContainer.addView(mCityImage);
@@ -248,13 +248,12 @@ public class SettingsFrag extends PreferenceFragmentCompat {
 
         val dialogView = getLayoutInflater()
                 .inflate(R.layout.dialog_city_picker, null);
-        val imagesLayout = (LinearLayout) dialogView.findViewById(R.id.dialog_city_images);
-        val imagesLayoutParams = new HorizontalScrollView.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        imagesLayoutParams.topMargin = 50;
-        imagesLayout.setLayoutParams(imagesLayoutParams);
+        val imagesLayout = (GridLayout) dialogView.findViewById(R.id.dialog_city_images);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {
+            imagesLayout.setPadding(
+                    0, 50, 0, 0
+            );
+        }
         initCitiesLayout(
                 getContext(),
                 imagesLayout,

@@ -4,7 +4,8 @@ package ru.coolone.travelquest.ui.fragments.intro;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.view.View;
-import android.widget.LinearLayout;
+import android.widget.GridLayout;
+import android.widget.RelativeLayout;
 
 import com.google.android.gms.location.places.ui.PlacePicker;
 
@@ -25,35 +26,43 @@ import static ru.coolone.travelquest.ui.fragments.SettingsFrag.onPlacePickerSucc
 public class CityPickerFrag extends Fragment {
 
     @ViewById(R.id.dialog_city_container)
-    LinearLayout container;
+    RelativeLayout container;
 
     @ViewById(R.id.dialog_city_picker_include)
     View include;
 
     @ViewById(R.id.dialog_city_images)
-    LinearLayout cityImages;
+    GridLayout cityImages;
+
+    int rows;
 
     @AfterViews
     void afterViews() {
         container.post(
-                () -> SettingsFrag.initCitiesLayout(
-                        getContext(),
-                        cityImages,
-                        (v, city) -> {
-                            SettingsFrag.selectCitySelect(
-                                    getContext(),
-                                    cityImages,
-                                    city.ordinal()
-                            );
-                            SettingsFrag.saveCityInPreferences(
-                                    getContext(),
-                                    city
-                            );
-                        },
-                        container.getHeight() / 3
-                )
-        );
+                () -> {
+                    rows = (include.getHeight() / 400);
+                    if(rows == 0)
+                        rows = 1;
+                    cityImages.setRowCount(rows);
 
+                    SettingsFrag.initCitiesLayout(
+                            getContext(),
+                            cityImages,
+                            (v, city) -> {
+                                SettingsFrag.selectCitySelect(
+                                        getContext(),
+                                        cityImages,
+                                        city.ordinal()
+                                );
+                                SettingsFrag.saveCityInPreferences(
+                                        getContext(),
+                                        city
+                                );
+                            },
+                            include.getHeight() / rows
+                    );
+                }
+        );
     }
 
     @Click(R.id.city_picker_map_select)
