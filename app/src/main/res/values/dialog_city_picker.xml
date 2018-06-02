@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dialog_city_title">Select city</string>
+    <string name="dialog_city_button_map">Select on map</string>
+
+    <string name="city_nn">Nizhny Novgorod</string>
+    <string name="city_moscow">Moscow</string>
+    <string name="city_krasnoyarsk">Krasnoyarsk</string>
+    <string name="city_novosibirsk">Novosibirsk</string>
+    <string name="city_tyumen">Tyumen</string>
+    <string name="city_rostov_on_don">Rostov-on-Don</string>
+    <string name="city_samara">Samara</string>
+    <string name="city_saint_peterburg">Saint Petersburg</string>
+    <string name="city_penza">Penza</string>
+    <string name="city_sevastopol">Sevastopol</string>
+    <string name="city_novokuznetsk">Novokuznetsk</string>
+    <string name="city_barnaul">Barnaul</string>
+</resources>

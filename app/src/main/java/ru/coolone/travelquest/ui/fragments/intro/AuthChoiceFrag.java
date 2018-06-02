@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.fragments;
+package ru.coolone.travelquest.ui.fragments.intro;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;

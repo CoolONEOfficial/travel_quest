@@ -15,9 +15,9 @@ import java.io.Serializable;
 
 import lombok.Setter;
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedViewHolder;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedViewHolder;
 import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;

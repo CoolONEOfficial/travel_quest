@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.widget.SlidingPaneLayout;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -42,6 +41,7 @@ import org.androidannotations.annotations.ViewById;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
+import ru.coolone.travelquest.ui.fragments.SettingsFrag;
 import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsFrag;
 
 import static android.app.Activity.RESULT_OK;
@@ -85,7 +85,7 @@ public class PlacesFrag extends Fragment
     void afterViews() {
         // Sliding panel
 
-        if(slidingLayout != null)
+        if (slidingLayout != null)
             slidingLayout.setLayoutParams(
                     new SlidingUpPanelLayout.LayoutParams(
                             ViewGroup.MarginLayoutParams.MATCH_PARENT,
@@ -128,7 +128,7 @@ public class PlacesFrag extends Fragment
                         break;
                     case COLLAPSED:
                         map.setPadding(0, getActionBarHeight(getActivity())
-                                + MainActivity.getStatusBarHeight(getActivity()),
+                                        + MainActivity.getStatusBarHeight(getActivity()),
                                 0, panel.findViewById(R.id.details_layout_header)
                                         .getHeight());
                         break;
@@ -216,7 +216,7 @@ public class PlacesFrag extends Fragment
                     savedInstanceState,
                     FRAG_PLACE_DETAILS_ID
             );
-            if(placeDetailsFrag != null) {
+            if (placeDetailsFrag != null) {
                 placeDetailsFrag.setFragmentListener(this);
             }
         }
@@ -283,16 +283,23 @@ public class PlacesFrag extends Fragment
 
         // Padding
         map.setPadding(0, getActionBarHeight(getActivity())
-                + MainActivity.getStatusBarHeight(getActivity()),
+                        + MainActivity.getStatusBarHeight(getActivity()),
                 0, 0);
 
         // Style
         updateMapStyle();
 
-        // To Nuzhny Novgorod
-        googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                new LatLng(56.326887, 44.005986),
-                getResources().getDimension(R.dimen.map_zoom)));
+        // To city
+        googleMap.moveCamera(
+                CameraUpdateFactory.newLatLngZoom(
+                        MainActivity.getSettingsLatLng(
+                                MainActivity.settings,
+                                getString(R.string.settings_key_city_coord),
+                                SettingsFrag.SupportCity.NN.coord // Nizhny Novgorod is default
+                        ),
+                        getResources().getDimension(R.dimen.map_zoom)
+                )
+        );
 
         // Listen poi clicks
         googleMap.setOnPoiClickListener(this);
@@ -301,7 +308,7 @@ public class PlacesFrag extends Fragment
     private void updateMapStyle() {
         // Get style
         String mapStyle = MainActivity.settings.getString(
-                getResources().getString(R.string.settings_map_style_key),
+                getResources().getString(R.string.settings_key_map_style),
                 "retro"
         );
 
@@ -438,6 +445,7 @@ public class PlacesFrag extends Fragment
 
     public interface SlidingUpPanelListener {
         void onPanelCreate(SlidingUpPanelLayout panel);
+
         void onPanelSlide(SlidingUpPanelLayout panel, float slideOffset);
 
         void onPanelStateChanged(SlidingUpPanelLayout panel,

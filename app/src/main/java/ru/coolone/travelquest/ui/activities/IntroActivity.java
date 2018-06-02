@@ -6,14 +6,15 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 
-import com.github.paolorotolo.appintro.AppIntro;
+import com.github.paolorotolo.appintro.AppIntro2;
 
 import org.androidannotations.annotations.EActivity;
 
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.AboutFrag_;
-import ru.coolone.travelquest.ui.fragments.AuthChoiceFrag_;
 import ru.coolone.travelquest.ui.fragments.IntroFrag_;
+import ru.coolone.travelquest.ui.fragments.intro.AuthChoiceFrag_;
+import ru.coolone.travelquest.ui.fragments.intro.CityPickerFrag_;
 
 /**
  * @author coolone
@@ -21,7 +22,7 @@ import ru.coolone.travelquest.ui.fragments.IntroFrag_;
  */
 @SuppressLint("Registered")
 @EActivity
-public class IntroActivity extends AppIntro {
+public class IntroActivity extends AppIntro2 {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -53,11 +54,9 @@ public class IntroActivity extends AppIntro {
                         .build()
         );
 
-        addSlide(AuthChoiceFrag_.builder().build());
+        addSlide(CityPickerFrag_.builder().build());
 
-        // Override bar/separator color.
-        setBarColor(ContextCompat.getColor(this, R.color.primary_dark));
-        setSeparatorColor(ContextCompat.getColor(this, R.color.primary_dark));
+        addSlide(AuthChoiceFrag_.builder().build());
 
         // Hide Skip/Done button.
         showSkipButton(false);

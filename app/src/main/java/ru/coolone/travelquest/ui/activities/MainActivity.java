@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.StringRes;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -42,6 +43,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Places;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
@@ -137,6 +139,11 @@ public class MainActivity extends AppCompatActivity implements
 
         // Navigation view
         navigationView.setNavigationItemSelectedListener(this);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        return super.onOptionsItemSelected(item);
     }
 
     public boolean isGooglePlayServicesAvailable(Activity activity) {
@@ -511,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements
             );
 
             // Colors
-            val mapStyle = settings.getString(getResources().getString(R.string.settings_map_style_key), null);
+            val mapStyle = settings.getString(getResources().getString(R.string.settings_key_map_style), null);
             val mapBlack = "night".equalsIgnoreCase(mapStyle)
                     || "solarized".equalsIgnoreCase(mapStyle);
             setToolbarColors(
@@ -560,6 +567,61 @@ public class MainActivity extends AppCompatActivity implements
 
             currentMenuId = menuId;
         }
+    }
+
+    static public SharedPreferences.Editor putSettingsLatLng(
+            final SharedPreferences.Editor edit,
+            final String key,
+            final LatLng value
+    ) {
+        putSettingsDouble(
+                edit,
+                key + "_lat",
+                value.latitude
+        );
+
+        putSettingsDouble(
+                edit,
+                key + "_lng",
+                value.longitude
+        );
+
+        return edit;
+    }
+
+    static public LatLng getSettingsLatLng(
+            final SharedPreferences prefs,
+            final String key,
+            final LatLng defaultValue
+    ) {
+        return new LatLng(
+                getSettingsDouble(
+                        prefs,
+                        key + "_lat",
+                        defaultValue.latitude
+                ),
+                getSettingsDouble(
+                        prefs,
+                        key + "_lng",
+                        defaultValue.longitude
+                )
+        );
+    }
+
+    static public SharedPreferences.Editor putSettingsDouble(
+            final SharedPreferences.Editor edit,
+            final String key,
+            final double value
+    ) {
+        return edit.putLong(key, Double.doubleToRawLongBits(value));
+    }
+
+    static public double getSettingsDouble(
+            final SharedPreferences prefs,
+            final String key, final
+            double defaultValue
+    ) {
+        return Double.longBitsToDouble(prefs.getLong(key, Double.doubleToLongBits(defaultValue)));
     }
 
     @Override
@@ -650,7 +712,11 @@ public class MainActivity extends AppCompatActivity implements
         public final String yaTranslateLang;
         public final int titleId;
 
-        SupportLang(String lang, String yaTranslateLang, int titleId) {
+        SupportLang(
+                String lang,
+                String yaTranslateLang,
+                @StringRes int titleId
+        ) {
             this.lang = lang;
             this.yaTranslateLang = yaTranslateLang;
             this.titleId = titleId;

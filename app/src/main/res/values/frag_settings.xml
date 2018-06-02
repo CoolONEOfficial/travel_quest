@@ -1,11 +1,18 @@
 <resources>
     <string name="settings_filename" translatable="false">settings</string>
 
-    <string name="settings_map_style_key" translatable="false">mapstyle</string>
+    <!-- Keys -->
+    <string name="settings_key_map_style" translatable="false">mapstyle</string>
+    <string name="settings_key_city_pref" translatable="false">city_screen</string>
+    <string name="settings_key_city_id" translatable="false">city_id</string>
+    <string name="settings_key_city_coord" translatable="false">city_coord</string>
 
-    <!-- Map styles -->
+    <!-- Titles -->
     <string name="settings_map_style">Map style</string>
     <string name="settings_map_style_summary">Map color scheme</string>
+    <string name="settings_city">City</string>
+    <string name="settings_city_summary">The city or the point on the map that will be displayed at startup</string>
+
     <string-array name="map_style_titles">
         <item>Retro</item>
         <item>Classic</item>

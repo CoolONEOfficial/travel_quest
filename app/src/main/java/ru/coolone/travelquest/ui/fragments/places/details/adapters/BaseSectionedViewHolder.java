@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.adapters;
+package ru.coolone.travelquest.ui.fragments.places.details.adapters;
 
 import android.view.View;
 

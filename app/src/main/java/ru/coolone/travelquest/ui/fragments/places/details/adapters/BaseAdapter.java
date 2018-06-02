@@ -1,4 +1,4 @@
-package ru.coolone.travelquest.ui.adapters;
+package ru.coolone.travelquest.ui.fragments.places.details.adapters;
 
 import android.support.annotation.LayoutRes;
 import android.support.v7.widget.RecyclerView;

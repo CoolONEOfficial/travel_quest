@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="city_picker_title">Выберите город</string>
+    <string name="city_picker_subtitle">Он будет показываться при запуске</string>
+    <string name="city_picker_map_title">Города нет в списке?</string>
+    <string name="city_picker_map_select"><u>Выбрать на карте</u></string>
+</resources>

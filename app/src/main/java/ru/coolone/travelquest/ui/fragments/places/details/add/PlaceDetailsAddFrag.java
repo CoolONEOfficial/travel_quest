@@ -1,6 +1,5 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -37,8 +36,8 @@ import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
 import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedHeader;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
 
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsHeaders;

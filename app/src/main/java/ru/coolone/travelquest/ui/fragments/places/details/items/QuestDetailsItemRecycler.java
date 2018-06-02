@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import ru.coolone.travelquest.ui.adapters.BaseSectionedAdapter;
+import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
 
 /**
  * Created by coolone on 15.11.17.

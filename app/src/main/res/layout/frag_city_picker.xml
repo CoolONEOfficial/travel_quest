@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_city_container"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/pattern_fill"
+    android:orientation="vertical"
+    tools:context=".ui.fragments.intro.CityPickerFrag">
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="bottom"
+        android:text="@string/city_picker_title"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="36sp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:alpha="200"
+        android:gravity="top"
+        android:text="@string/city_picker_subtitle"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="28sp" />
+
+    <include
+        android:id="@+id/dialog_city_picker_include"
+        layout="@layout/dialog_city_picker"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="2" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="bottom"
+        android:text="@string/city_picker_map_title"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/city_picker_map_select"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="top"
+        android:text="@string/city_picker_map_select"
+        android:textAlignment="center"
+        android:textColor="@android:color/white"
+        android:textSize="28sp" />
+
+</LinearLayout>

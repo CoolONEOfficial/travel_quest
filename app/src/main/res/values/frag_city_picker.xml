@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="city_picker_title">Select a city</string>
+    <string name="city_picker_subtitle">It will be shown at startup</string>
+    <string name="city_picker_map_title">Is the city not on the list?</string>
+    <string name="city_picker_map_select"><u>Select on map</u></string>
+</resources>

@@ -110,7 +110,7 @@
                     android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_below="@id/details_photos_scroll"></android.support.v7.widget.RecyclerView>
+                    android:layout_below="@id/details_photos_scroll" />
 
                 <ImageView
                     android:id="@+id/details_details_unknown_text_smile"

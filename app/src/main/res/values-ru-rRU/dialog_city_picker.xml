@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dialog_city_title">Выберите город</string>
+    <string name="dialog_city_button_map">Выбрать на карте</string>
+
+    <string name="city_nn">Нижний Новгород</string>
+    <string name="city_moscow">Москва</string>
+    <string name="city_krasnoyarsk">Красноярск</string>
+    <string name="city_novosibirsk">Новосибирск</string>
+    <string name="city_tyumen">Тюмень</string>
+    <string name="city_rostov_on_don">Ростов-на-Дону</string>
+    <string name="city_samara">Самара</string>
+    <string name="city_saint_peterburg">Санкт-Петербург</string>
+    <string name="city_penza">Пенза</string>
+    <string name="city_sevastopol">Севастополь</string>
+    <string name="city_novokuznetsk">Новокузнецк</string>
+    <string name="city_barnaul">Барнаул</string>
+</resources>

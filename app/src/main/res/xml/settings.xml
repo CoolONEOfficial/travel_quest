@@ -3,9 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <ListPreference
+        android:defaultValue="retro"
         android:entries="@array/map_style_titles"
         android:entryValues="@array/settings_map_style_values"
-        android:key="@string/settings_map_style_key"
+        android:key="@string/settings_key_map_style"
         android:summary="@string/settings_map_style_summary"
         android:title="@string/settings_map_style" />
+
+    <Preference
+        android:key="@string/settings_key_city_pref"
+        android:summary="@string/settings_city_summary"
+        android:title="@string/settings_city" />
 </PreferenceScreen>

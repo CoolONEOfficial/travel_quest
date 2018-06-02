@@ -12,7 +12,7 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
 import ru.coolone.travelquest.R;
-import ru.coolone.travelquest.ui.fragments.AuthChoiceFrag_;
+import ru.coolone.travelquest.ui.fragments.intro.AuthChoiceFrag_;
 
 @SuppressLint("Registered")
 @EActivity
