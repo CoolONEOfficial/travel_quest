@@ -10,7 +10,7 @@
     <string name="nav_logout">Logout</string>
 
     <!-- Menu bar -->
-    <string name="menu_bar_subtitle">The application for tourists, allowing to learn the history of Nizhny Novgorod</string>
+    <string name="menu_bar_subtitle">The application for tourists, allowing to learn the history of Russian cities</string>
     <string name="menu_bar_title" translatable="false">Travel Quest</string>
 
     <!-- Navigation drawer -->

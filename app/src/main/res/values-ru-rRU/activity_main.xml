@@ -10,5 +10,5 @@
     <string name="nav_logout">Выйти</string>
 
     <!-- Menu bar -->
-    <string name="menu_bar_subtitle">Приложение для туристов, позволяющее узнать историю Нижнего Новгорода</string>
+    <string name="menu_bar_subtitle">Приложение для туристов, позволяющее узнать историю городов России</string>
 </resources>
