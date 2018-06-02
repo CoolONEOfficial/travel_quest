@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlacePhotoMetadata;
@@ -589,7 +588,9 @@ public class PlaceDetailsFrag extends Fragment {
                     }
                 } else {
                     // Hide photos
-                    parent.setPhotosVisibility(View.GONE);
+                    parent.getActivity().runOnUiThread(
+                            () -> parent.setPhotosVisibility(View.GONE)
+                    );
                 }
 
                 // Release the photos buffer

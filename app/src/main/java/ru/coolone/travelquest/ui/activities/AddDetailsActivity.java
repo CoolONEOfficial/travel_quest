@@ -319,10 +319,11 @@ public class AddDetailsActivity extends AppCompatActivity
         val dismissText = getString(R.string.add_details_intro_dismiss_button);
         val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
+        frag.onAddHeaderClick();
         frag.recycler.post(
                 () -> {
-                    if (!introStarted &&
-                            frag.recycler.findViewHolderForAdapterPosition(0) != null) {
+                    if (!introStarted) {
+                        introStarted = true;
 
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
@@ -376,7 +377,6 @@ public class AddDetailsActivity extends AppCompatActivity
                                 dismissText
                         );
 
-                        introStarted = true;
                         sequence.start();
                     }
                 }

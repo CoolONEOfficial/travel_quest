@@ -64,7 +64,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     // Description recycler view
     @ViewById(R.id.add_details_page_details_recycler)
     public RecyclerView recycler;
-    PlaceDetailsAddAdapter recyclerAdapter;
+    public PlaceDetailsAddAdapter recyclerAdapter;
 
     // Add section button
     @ViewById(R.id.add_details_page_add_section_button)
@@ -108,7 +108,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     }
 
     public void restoreDetails() {
-        if(translatedChanged) {
+        if (translatedChanged) {
             recyclerAdapter.clear();
             refreshDetails();
         }
@@ -118,7 +118,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     TextView progressText;
 
     public void showProgressBar(String title) {
-        if(progressText == null) {
+        if (progressText == null) {
             progressText = new TextView(getContext());
             val textParams = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -225,7 +225,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     }
 
     @Click(R.id.add_details_page_add_section_button)
-    void onAddHeaderClick() {
+    public void onAddHeaderClick() {
         recyclerAdapter.addSection(
                 new Pair<>(
                         new BaseSectionedHeader(),
@@ -243,7 +243,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
 
             val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
             val userName = MainActivity.firebaseUser.getDisplayName();
-            if(userName != null && !userName.isEmpty())
+            if (userName != null && !userName.isEmpty())
                 docPath.append('_').append(userName);
 
             val collRef =
@@ -274,7 +274,11 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                             listener.onSectionsLoaded();
                     })
                     .addOnFailureListener(
-                            e -> Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG).show()
+                            e -> {
+                                if (!e.getLocalizedMessage().isEmpty())
+                                    Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG)
+                                            .show();
+                            }
                     )
                     .addOnCompleteListener(
                             task -> {
