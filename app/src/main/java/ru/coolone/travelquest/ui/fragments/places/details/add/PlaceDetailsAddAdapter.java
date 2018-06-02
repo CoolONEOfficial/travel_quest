@@ -180,9 +180,30 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
             buttonRemove.setOnClickListener(
                     v12 -> {
-                        removeSection(getRelativePosition().section());
-                        notifyDataSetChanged();
-                        onSectionsChanged();
+                        val itemCount = getItemCount(getRelativePosition().section()) - 1;
+                        if (itemCount == 0) {
+                            removeSection(getRelativePosition().section());
+                            notifyDataSetChanged();
+                            onSectionsChanged();
+                        } else new AlertDialog.Builder(context)
+                                .setTitle(R.string.add_details_remove_section_dialog_title)
+                                .setMessage(
+                                        context.getString(R.string.add_details_remove_section_dialog_text)
+                                                .replace("X", Integer.toString(itemCount))
+                                )
+                                .setPositiveButton(
+                                        android.R.string.ok,
+                                        (dialog, which) -> {
+                                            removeSection(getRelativePosition().section());
+                                            notifyDataSetChanged();
+                                            onSectionsChanged();
+                                        }
+                                )
+                                .setNegativeButton(
+                                        android.R.string.cancel,
+                                        (dialog, which) -> dialog.dismiss()
+                                )
+                                .create().show();
                     }
             );
         }

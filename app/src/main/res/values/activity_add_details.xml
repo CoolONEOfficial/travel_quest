@@ -16,6 +16,9 @@
     <string name="add_details_add_dialog_text">Text</string>
     <string name="add_details_add_dialog_section">Title</string>
 
+    <string name="add_details_remove_section_dialog_title">Removing a non-empty header</string>
+    <string name="add_details_remove_section_dialog_text">Are you sure you want to delete this header with X item(-s)?</string>
+
     <string name="add_details_intro_send">And send your own description</string>
     <string name="add_details_intro_add_header">Add headers</string>
     <string name="add_details_intro_add">Add texts or subtitles</string>

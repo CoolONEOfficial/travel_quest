@@ -173,11 +173,13 @@ public class AddDetailsActivity extends AppCompatActivity
 
         @Override
         public void onTranslateFragError(PlaceDetailsAddFrag frag, Exception e) {
-            Toast.makeText(
-                    AddDetailsActivity.this,
-                    e.getLocalizedMessage(),
-                    Toast.LENGTH_SHORT
-            ).show();
+            if (e != null && e.getLocalizedMessage() != null &&
+                    !e.getLocalizedMessage().trim().isEmpty())
+                Toast.makeText(
+                        AddDetailsActivity.this,
+                        e.getLocalizedMessage(),
+                        Toast.LENGTH_SHORT
+                ).show();
         }
 
         @Override
@@ -384,6 +386,11 @@ public class AddDetailsActivity extends AppCompatActivity
     }
 
     @Override
+    public void onBackPressed() {
+        homeSelected();
+    }
+
+    @Override
     public void onSectionsChanged(MainActivity.SupportLang fragLang) {
         sendView.setVisibility(View.VISIBLE);
         restoreView.setVisibility(View.VISIBLE);
@@ -512,11 +519,14 @@ public class AddDetailsActivity extends AppCompatActivity
                         public void onTranslateNetworkError(VolleyError error) {
                             listener.onTranslateSuccess(getString(R.string.add_details_translate_error));
 
-                            Toast.makeText(
-                                    AddDetailsActivity.this,
-                                    error.getLocalizedMessage(),
-                                    Toast.LENGTH_SHORT
-                            ).show();
+                            if (error != null &&
+                                    error.getLocalizedMessage() != null &&
+                                    !error.getLocalizedMessage().trim().isEmpty())
+                                Toast.makeText(
+                                        AddDetailsActivity.this,
+                                        error.getLocalizedMessage(),
+                                        Toast.LENGTH_SHORT
+                                ).show();
                         }
                     },
                     fragListener
@@ -881,11 +891,13 @@ public class AddDetailsActivity extends AppCompatActivity
 
     @Override
     public void onTaskError(Exception e) {
-        Toast.makeText(
-                AddDetailsActivity.this,
-                e.getLocalizedMessage(),
-                Toast.LENGTH_SHORT
-        ).show();
+        if (e != null && e.getLocalizedMessage() != null &&
+                !e.getLocalizedMessage().trim().isEmpty())
+            Toast.makeText(
+                    AddDetailsActivity.this,
+                    e.getLocalizedMessage(),
+                    Toast.LENGTH_SHORT
+            ).show();
     }
 
     @Override

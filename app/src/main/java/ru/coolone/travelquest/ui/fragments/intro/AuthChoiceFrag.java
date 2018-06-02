@@ -57,7 +57,7 @@ public class AuthChoiceFrag extends Fragment {
                                 getActivity().finish();
                             } else {
                                 Log.w(TAG, "signInAnonymously:failure", task.getException());
-                                Toast.makeText(getContext(), "Authentication failed.",
+                                Toast.makeText(getContext(), "Authentication failed",
                                         Toast.LENGTH_SHORT).show();
                             }
                             progress.dismiss();

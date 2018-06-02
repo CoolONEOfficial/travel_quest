@@ -16,6 +16,9 @@
     <string name="add_details_add_dialog_text">Текст</string>
     <string name="add_details_add_dialog_section">Заголовок</string>
 
+    <string name="add_details_remove_section_dialog_title">Удаление непустого заголовка</string>
+    <string name="add_details_remove_section_dialog_text">Вы действительно хотите удалить этот заголовок с X элементом(-ами)?</string>
+
     <string name="add_details_intro_send">И отправьте свой вариант описания</string>
     <string name="add_details_intro_add_header">Добавляйте заголовки</string>
     <string name="add_details_intro_add">Добавляйте тексты и подзаголовки</string>

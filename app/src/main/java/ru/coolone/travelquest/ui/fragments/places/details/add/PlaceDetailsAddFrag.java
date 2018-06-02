@@ -275,7 +275,8 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                     })
                     .addOnFailureListener(
                             e -> {
-                                if (!e.getLocalizedMessage().isEmpty())
+                                if (e != null && e.getLocalizedMessage() != null &&
+                                        !e.getLocalizedMessage().trim().isEmpty())
                                     Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG)
                                             .show();
                             }
