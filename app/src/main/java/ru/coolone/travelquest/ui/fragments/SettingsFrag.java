@@ -202,7 +202,9 @@ public class SettingsFrag extends PreferenceFragmentCompat {
             val mCityLabel = new TextView(context);
             mCityLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             mCityLabel.setText(mCity.nameId);
-            mCityLabel.setTextSize(22);
+            mCityLabel.setTextSize(
+                    (float) ((22. / 400.) * imageSize)
+            );
             mCityLabel.setTextColor(Color.WHITE);
             mCityLabel.setBackgroundColor(Color.BLACK);
             mCityLabel.getBackground().setAlpha(128);
@@ -262,7 +264,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
         findPreference(getString(R.string.settings_key_city_pref))
                 .setOnPreferenceClickListener(
                         preference -> {
-                            if(!citiesInitialized) {
+                            if (!citiesInitialized) {
                                 citiesInitialized = true;
 
                                 initCitiesLayout(
