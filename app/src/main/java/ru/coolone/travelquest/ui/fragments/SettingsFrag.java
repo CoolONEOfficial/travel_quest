@@ -107,7 +107,6 @@ public class SettingsFrag extends PreferenceFragmentCompat {
     }
 
     SupportCity selectedCity;
-    boolean citiesInitialized = false;
 
     static private void unselectAllCities(
             GridLayout cityLayout
@@ -261,12 +260,46 @@ public class SettingsFrag extends PreferenceFragmentCompat {
             );
         }
 
+        val cityPickerDialog = new AlertDialog.Builder(getActivity())
+                .setTitle(R.string.dialog_city_title)
+                .setView(dialogView)
+                .setPositiveButton(
+                        getString(android.R.string.ok),
+                        (dialog1, which) -> {
+                            if (selectedCity != null)
+                                saveCityInPreferences(getContext(), selectedCity);
+                        }
+                )
+                .setNegativeButton(
+                        getString(android.R.string.cancel),
+                        (dialog2, which) -> {
+                            dialog2.dismiss();
+
+                            if (selectedCity != null) {
+                                unselectAllCities(imagesLayout);
+                                selectedCity = null;
+                            }
+                        }
+                )
+                .setNeutralButton(
+                        getString(R.string.dialog_city_button_map),
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            @SneakyThrows
+                            public void onClick(DialogInterface dialog, int which) {
+                                startActivityForResult(
+                                        new PlacePicker.IntentBuilder().build(getActivity()),
+                                        PLACE_PICKER_REQUEST
+                                );
+                            }
+                        }
+                )
+                .create();
+
         findPreference(getString(R.string.settings_key_city_pref))
                 .setOnPreferenceClickListener(
                         preference -> {
-                            if (!citiesInitialized) {
-                                citiesInitialized = true;
-
+                            if (imagesLayout.getChildCount() == 0) {
                                 initCitiesLayout(
                                         getContext(),
                                         imagesLayout,
@@ -279,42 +312,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
                                 );
                             }
                             refreshCitiesLayout(getContext(), imagesLayout);
-                            new AlertDialog.Builder(getActivity())
-                                    .setTitle(R.string.dialog_city_title)
-                                    .setView(dialogView)
-                                    .setPositiveButton(
-                                            getString(android.R.string.ok),
-                                            (dialog1, which) -> {
-                                                if (selectedCity != null)
-                                                    saveCityInPreferences(getContext(), selectedCity);
-                                            }
-                                    )
-                                    .setNegativeButton(
-                                            getString(android.R.string.cancel),
-                                            (dialog2, which) -> {
-                                                dialog2.dismiss();
-
-                                                if (selectedCity != null) {
-                                                    unselectAllCities(imagesLayout);
-                                                    selectedCity = null;
-                                                }
-                                            }
-                                    )
-                                    .setNeutralButton(
-                                            getString(R.string.dialog_city_button_map),
-                                            new DialogInterface.OnClickListener() {
-                                                @Override
-                                                @SneakyThrows
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    startActivityForResult(
-                                                            new PlacePicker.IntentBuilder().build(getActivity()),
-                                                            PLACE_PICKER_REQUEST
-                                                    );
-                                                }
-                                            }
-                                    )
-                                    .create()
-                                    .show();
+                            cityPickerDialog.show();
 
                             return true;
                         }

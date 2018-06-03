@@ -178,16 +178,12 @@ public class PlacesFrag extends Fragment
                                     Log.d(TAG, "Place selected:\nname: " + place.description + "\nunical id: " + place.place_id);
 
                                     // Go to place
-                                    float currentZoom = map.getCameraPosition().zoom;
-                                    float defaultZoom = getResources().getDimension(R.dimen.map_zoom);
                                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(
                                             new LatLng(
                                                     placeDetails.geometry.location.lat,
                                                     placeDetails.geometry.location.lng
                                             ),
-                                            (currentZoom < defaultZoom)
-                                                    ? defaultZoom
-                                                    : currentZoom
+                                            getResources().getDimension(R.dimen.map_link_zoom)
                                     ));
 
                                     mapView.removeView(progressBar);
