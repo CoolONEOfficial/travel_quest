@@ -203,8 +203,6 @@ public class MainActivity extends AppCompatActivity implements
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
         if (settings.getBoolean("firstrun", true)) {
-            settings.edit().putBoolean("firstrun", false).apply();
-
             // On first run
             startTour();
         }

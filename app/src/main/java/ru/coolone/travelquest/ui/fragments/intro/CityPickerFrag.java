@@ -3,6 +3,7 @@ package ru.coolone.travelquest.ui.fragments.intro;
 
 import android.content.Intent;
 import android.support.v4.app.Fragment;
+import android.util.DisplayMetrics;
 import android.view.View;
 import android.widget.GridLayout;
 import android.widget.RelativeLayout;
@@ -15,6 +16,7 @@ import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.ViewById;
 
 import lombok.SneakyThrows;
+import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.SettingsFrag;
 
@@ -40,10 +42,11 @@ public class CityPickerFrag extends Fragment {
     void afterViews() {
         container.post(
                 () -> {
-                    rows = (include.getHeight() / 400);
+                    val metrics = new DisplayMetrics();
+                    getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+                    rows = (include.getHeight() / (metrics.heightPixels / 5));
                     if(rows == 0)
                         rows = 1;
-                    cityImages.setRowCount(rows);
 
                     SettingsFrag.initCitiesLayout(
                             getContext(),
@@ -59,7 +62,8 @@ public class CityPickerFrag extends Fragment {
                                         city
                                 );
                             },
-                            include.getHeight() / rows
+                            include.getHeight() / rows,
+                            rows
                     );
                 }
         );

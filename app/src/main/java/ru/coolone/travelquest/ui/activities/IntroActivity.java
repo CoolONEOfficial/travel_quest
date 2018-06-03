@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -13,6 +14,7 @@ import org.androidannotations.annotations.EActivity;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.AboutFrag_;
 import ru.coolone.travelquest.ui.fragments.IntroFrag_;
+import ru.coolone.travelquest.ui.fragments.intro.AuthChoiceFrag;
 import ru.coolone.travelquest.ui.fragments.intro.AuthChoiceFrag_;
 import ru.coolone.travelquest.ui.fragments.intro.CityPickerFrag_;
 
@@ -71,5 +73,16 @@ public class IntroActivity extends AppIntro2 {
                         )
                 )
         );
+    }
+
+    @Override
+    public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
+        if(newFragment instanceof AuthChoiceFrag) {
+            MainActivity.settings.edit()
+                    .putBoolean("firstrun", false)
+                    .apply();
+        }
+
+        super.onSlideChanged(oldFragment, newFragment);
     }
 }
