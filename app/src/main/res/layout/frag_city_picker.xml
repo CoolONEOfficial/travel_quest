@@ -40,7 +40,6 @@
         android:layout_alignParentStart="true"
         android:layout_below="@+id/city_picker_subtitle" />
 
-
     <TextView
         android:id="@+id/city_picker_map_title"
         android:layout_width="match_parent"

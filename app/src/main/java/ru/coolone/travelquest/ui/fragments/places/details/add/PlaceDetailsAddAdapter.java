@@ -180,8 +180,8 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
             buttonRemove.setOnClickListener(
                     v12 -> {
-                        val itemCount = getItemCount(getRelativePosition().section()) - 1;
-                        if (itemCount == 0) {
+                        val itemCount = getItemCount(getRelativePosition().section());
+                        if (itemCount <= 0) {
                             removeSection(getRelativePosition().section());
                             notifyDataSetChanged();
                             onSectionsChanged();

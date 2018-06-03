@@ -349,15 +349,10 @@ public class FirebaseMethods {
                     val recycler = new RecyclerView(context);
                     initDetailsRecyclerView(recycler, adapter.getClass(), context);
 
-                    // Recycler item
-                    val itemRecycler = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
-
                     // Section
                     val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
                             new BaseSectionedHeader(mDoc.getString("title")),
-                            new ArrayList<BaseQuestDetailsItem>() {{
-                                add(itemRecycler);
-                            }}
+                            new ArrayList<>()
                     );
 
                     // Add item
