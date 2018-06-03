@@ -666,6 +666,7 @@ public class AddDetailsActivity extends AppCompatActivity
                                 ? View.GONE
                                 : View.VISIBLE
                 );
+            else postRestoreListener = this::afterViews;
 
             tabTranslateLayout.setOnClickListener(
                     v -> {
@@ -788,6 +789,8 @@ public class AddDetailsActivity extends AppCompatActivity
         return super.onCreateOptionsMenu(menu);
     }
 
+    Runnable postRestoreListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -826,6 +829,9 @@ public class AddDetailsActivity extends AppCompatActivity
             if (pagerAdapter != null) {
                 pagerAdapter.setTabFragments(frags);
             }
+
+            if (postRestoreListener != null)
+                postRestoreListener.run();
         }
     }
 

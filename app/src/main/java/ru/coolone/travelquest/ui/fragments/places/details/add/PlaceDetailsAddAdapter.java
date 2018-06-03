@@ -54,9 +54,6 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
 
-    @Setter
-    private OnClickListener<BaseSectionedHeader, PlaceDetailsAddAdapter.HeaderHolder> headerClickListener;
-
     @Override
     public BaseSectionedViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         Log.d(TAG, "Vh type: " + String.valueOf(viewType));
