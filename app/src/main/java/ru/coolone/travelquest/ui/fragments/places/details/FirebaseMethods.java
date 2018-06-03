@@ -159,6 +159,18 @@ public class FirebaseMethods {
         return salt.toString();
     }
 
+    static String addNullsPrefix(int num, int max) {
+        val strIdBuilder = new StringBuilder();
+        for (int mNullPrefix = 0;
+             mNullPrefix < Integer.toString(max).length() - Integer.toString(num).length();
+             mNullPrefix++) {
+            strIdBuilder.append('0');
+        }
+        strIdBuilder.append(Integer.toString(num));
+
+        return strIdBuilder.toString();
+    }
+
     static private void serializeDetails(
             CollectionReference coll,
             BaseSectionedAdapter adapter,
@@ -181,7 +193,10 @@ public class FirebaseMethods {
                     + '\n' + " size: " + mSection.second.size());
 
             val mDoc = coll.document(
-                    Integer.toString(mSectionId + startId) + getSaltString()
+                    addNullsPrefix(
+                            mSectionId + startId,
+                            adapter.getSectionCount() + startId
+                    ) + getSaltString()
             );
 
             onStartSerializeTask();
@@ -214,9 +229,13 @@ public class FirebaseMethods {
                     val mItemText = (QuestDetailsItemText) mItem;
                     Log.d(TAG, "mItem is text");
 
-                    if (!mItemText.getText().isEmpty()) {
+                    if (!mItemText.getText().trim().isEmpty()) {
+                        // Serialize
                         onStartSerializeTask();
-                        nextColl.document(Integer.toString(mItemId) + getSaltString()).set(
+                        nextColl.document(
+                                addNullsPrefix(mItemId, mSection.second.size())
+                                        + getSaltString()
+                        ).set(
                                 new HashMap<String, Object>() {{
                                     put(
                                             "text",
