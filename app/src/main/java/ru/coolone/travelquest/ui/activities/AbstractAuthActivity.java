@@ -540,7 +540,9 @@ abstract public class AbstractAuthActivity
         Log.d(TAG, "Google OAuth success");
 
         // To main activity
-        MainActivity_.intent(this).start();
+        MainActivity_.intent(this)
+                .flags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                .start();
         finish();
     }
 

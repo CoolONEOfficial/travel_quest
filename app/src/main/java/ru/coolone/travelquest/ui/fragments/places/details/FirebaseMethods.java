@@ -361,7 +361,7 @@ public class FirebaseMethods {
 
         val docs = coll.getDocuments();
 
-        if (!docs.isEmpty())
+        if (!docs.isEmpty()) {
             for (DocumentSnapshot mDoc : docs) {
                 if (mDoc.contains("title")) {
                     // Recycler view
@@ -399,6 +399,12 @@ public class FirebaseMethods {
                     Log.e(TAG, "mDoc not contain title!");
                 }
             }
+
+            if(collapseSection) {
+                adapter.collapseAllSections();
+                adapter.expandSection(0);
+            }
+        }
         else result = true;
 
         Log.d(TAG, "--- Ended parse details headers ---");

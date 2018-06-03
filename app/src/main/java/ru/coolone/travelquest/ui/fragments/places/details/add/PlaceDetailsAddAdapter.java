@@ -281,7 +281,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                 mIndex = textSpan.toString().indexOf(token.toString(), mIndex);
                                 tokenIndexId++;
                             }
-                            if(tokenIndexId == 0)
+                            if (tokenIndexId == 0)
                                 tokenIndexId = 1;
 
                             int mStartIndexHtml = 0;
@@ -400,7 +400,12 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
         @Override
         public void bind(QuestDetailsItemText item) {
-            text.setText(Html.fromHtml(item.getText()));
+            val itemText = item.getText();
+            text.setText(
+                    itemText != null && !itemText.trim().isEmpty()
+                            ? Html.fromHtml(itemText)
+                            : ""
+            );
         }
     }
 
