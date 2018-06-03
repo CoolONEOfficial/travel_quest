@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -115,6 +116,9 @@ public class MainActivity extends AppCompatActivity implements
     // Sliding up panel in PlacesFrag
     SlidingUpPanelLayout slidingPanel;
 
+    // Deep link
+    Uri deepLink;
+
     @AfterViews
     void afterViews() {
         // Toolbar
@@ -199,6 +203,9 @@ public class MainActivity extends AppCompatActivity implements
                     .start();
             finish();
         }
+
+        // Deeplink
+        deepLink = getIntent().getData();
 
         // Get settings
         settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -390,8 +397,33 @@ public class MainActivity extends AppCompatActivity implements
                 case ABOUT:
                     fragment = new AboutFrag_();
                     break;
-                case QUESTS:
-                    fragment = new PlacesFrag_();
+                case PLACES:
+                    val builder = PlacesFrag_.builder();
+
+                    if (deepLink != null) {
+                        Log.d(TAG, "Deep link:" + deepLink);
+
+                        val latStr = deepLink.getQueryParameter("lat");
+                        val lngStr = deepLink.getQueryParameter("lng");
+
+                        val placeId = deepLink.getQueryParameter("placeId");
+
+                        if (latStr != null && lngStr != null) {
+                            Log.d(TAG, "Open position from deep link...");
+
+                            builder.startPosition(
+                                    new LatLng(
+                                            Double.valueOf(latStr),
+                                            Double.valueOf(lngStr)
+                                    )
+                            );
+                        } else if (placeId != null) {
+                            Log.d(TAG, "Open place by id from deep link...");
+                            builder.startPlaceId(placeId);
+                        }
+                    }
+
+                    fragment = builder.build();
                     break;
                 case SETTINGS:
                     fragment = new SettingsFrag_();
@@ -483,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements
             FragmentId fragId = null;
             switch (menuId) {
                 case R.id.nav_quests:
-                    fragId = FragmentId.QUESTS;
+                    fragId = FragmentId.PLACES;
                     break;
                 case R.id.nav_settings:
                     fragId = FragmentId.SETTINGS;
@@ -695,7 +727,7 @@ public class MainActivity extends AppCompatActivity implements
      */
     enum FragmentId {
         ABOUT,
-        QUESTS,
+        PLACES,
         SETTINGS
     }
 

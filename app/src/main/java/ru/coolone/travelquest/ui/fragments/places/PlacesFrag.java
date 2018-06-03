@@ -35,6 +35,7 @@ import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EFragment;
+import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
@@ -54,6 +55,13 @@ public class PlacesFrag extends Fragment
         PlaceDetailsFrag.FragmentListener {
 
     static final String TAG = PlacesFrag.class.getSimpleName();
+
+    @FragmentArg
+    LatLng startPosition;
+
+    @FragmentArg
+    String startPlaceId;
+    Place startPlace;
 
     // Map
     @ViewById(R.id.places_map)
@@ -211,6 +219,30 @@ public class PlacesFrag extends Fragment
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (startPlaceId != null) {
+            Places.GeoDataApi.getPlaceById(
+                    MainActivity.getApiClient(),
+                    startPlaceId
+            ).setResultCallback(
+                    places -> {
+                        if (places.getStatus().isSuccess() &&
+                                places.getCount() > 0) {
+                            // Select place
+                            startPlace = places.get(0);
+
+                            if (map != null) {
+                                map.moveCamera(
+                                        CameraUpdateFactory.newLatLngZoom(
+                                                startPlace.getLatLng(),
+                                                getResources().getDimension(R.dimen.map_zoom)
+                                        )
+                                );
+                            }
+                        }
+                    }
+            );
+        }
+
         if (savedInstanceState != null) {
             placeDetailsFrag = (PlaceDetailsFrag) context.getSupportFragmentManager().getFragment(
                     savedInstanceState,
@@ -279,7 +311,7 @@ public class PlacesFrag extends Fragment
         map = googleMap;
 
         // Type
-        googleMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+        map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
         // Padding
         map.setPadding(0, getActionBarHeight(getActivity())
@@ -290,19 +322,21 @@ public class PlacesFrag extends Fragment
         updateMapStyle();
 
         // To city
-        googleMap.moveCamera(
+        map.moveCamera(
                 CameraUpdateFactory.newLatLngZoom(
-                        MainActivity.getSettingsLatLng(
-                                MainActivity.settings,
-                                getString(R.string.settings_key_city_coord),
-                                SettingsFrag.SupportCity.NN.coord // Nizhny Novgorod is default
-                        ),
+                        startPosition != null ? startPosition :
+                                startPlace != null ? startPlace.getLatLng() :
+                                        MainActivity.getSettingsLatLng(
+                                                MainActivity.settings,
+                                                getString(R.string.settings_key_city_coord),
+                                                SettingsFrag.SupportCity.NN.coord // Nizhny Novgorod is default
+                                        ),
                         getResources().getDimension(R.dimen.map_zoom)
                 )
         );
 
         // Listen poi clicks
-        googleMap.setOnPoiClickListener(this);
+        map.setOnPoiClickListener(this);
     }
 
     private void updateMapStyle() {

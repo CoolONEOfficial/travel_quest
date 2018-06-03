@@ -420,7 +420,9 @@ public class FirebaseMethods {
             BaseQuestDetailsItem mItem = null;
 
             if (mDoc.contains("text")) {
-                val mDocText = mDoc.getString("text");
+                String mDocText = mDoc.getString("text");
+                if(mDocText != null)
+                    mDocText = '\t' + mDocText.trim();
                 Log.d(TAG, "mDoc is text (" + mDocText + ")");
 
                 mItem = new QuestDetailsItemText(
