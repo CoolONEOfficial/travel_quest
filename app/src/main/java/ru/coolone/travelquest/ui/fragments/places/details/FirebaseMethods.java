@@ -1,6 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details;
 
-import android.content.Context;
+import android.app.Activity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -276,7 +276,7 @@ public class FirebaseMethods {
     public static void parseDetailsCards(
             QuerySnapshot coll,
             PlaceCardDetailsAdapter adapter,
-            Context context,
+            Activity activity,
             TaskListener listener
     ) {
         coll.getQuery()
@@ -292,7 +292,7 @@ public class FirebaseMethods {
                                 listener.onTaskError(new Exception("No cards"));
                                 Log.d(TAG, "No cards");
                             } else for (val mDoc : docs) {
-                                val recycler = new RecyclerView(context);
+                                val recycler = new RecyclerView(activity);
                                 val nextAdapter = new PlaceDetailsAdapter();
                                 recycler.setAdapter(nextAdapter);
 
@@ -305,7 +305,7 @@ public class FirebaseMethods {
                                         new PlaceCardDetailsAdapter.Item(
                                                 mDocIdWithName
                                                         ? mDocId.substring(delimIndex + 1) // name
-                                                        : context.getString(R.string.details_unnamed_user)
+                                                        : activity.getString(R.string.details_unnamed_user)
                                                         + mDocId, // user uid,
                                                 recycler,
                                                 mDoc,
@@ -323,7 +323,7 @@ public class FirebaseMethods {
                                                             collDetails,
                                                             nextAdapter,
                                                             true,
-                                                            context
+                                                            activity
                                                     ))
                                                         listener.onTaskSuccess();
                                                     else
@@ -353,7 +353,7 @@ public class FirebaseMethods {
             QuerySnapshot coll,
             BaseSectionedAdapter adapter,
             boolean collapseSection,
-            Context context
+            Activity activity
     ) {
         boolean result = false;
 
@@ -365,8 +365,8 @@ public class FirebaseMethods {
             for (DocumentSnapshot mDoc : docs) {
                 if (mDoc.contains("title")) {
                     // Recycler view
-                    val recycler = new RecyclerView(context);
-                    initDetailsRecyclerView(recycler, adapter.getClass(), context);
+                    val recycler = new RecyclerView(activity);
+                    initDetailsRecyclerView(recycler, adapter.getClass(), activity);
 
                     // Section
                     val nextSection = new Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>>(
@@ -389,7 +389,7 @@ public class FirebaseMethods {
                                                 nextSection,
                                                 adapter,
                                                 collapseSection,
-                                                context
+                                                activity
                                         );
                                     }
                             );
@@ -411,7 +411,7 @@ public class FirebaseMethods {
             Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section,
             BaseSectionedAdapter parentAdapter,
             boolean collapseSection,
-            Context context) {
+            Activity activity) {
         Log.d(TAG, "--- Started parse details sections ---");
 
         for (DocumentSnapshot mDoc : coll.getDocuments()) {
@@ -421,20 +421,18 @@ public class FirebaseMethods {
 
             if (mDoc.contains("text")) {
                 String mDocText = mDoc.getString("text");
-                if(mDocText != null)
-                    mDocText = '\t' + mDocText.trim();
                 Log.d(TAG, "mDoc is text (" + mDocText + ")");
 
                 mItem = new QuestDetailsItemText(
                         mDocText
                 );
             } else if (mDoc.contains("title")) {
-                final String mDocTitle = mDoc.getString("title");
+                val mDocTitle = mDoc.getString("title");
                 Log.d(TAG, "mDoc is title (" + mDocTitle + ")");
 
                 // Recycler view
-                val recycler = new RecyclerView(context);
-                initDetailsRecyclerView(recycler, parentAdapter.getClass(), context);
+                val recycler = new RecyclerView(activity);
+                initDetailsRecyclerView(recycler, parentAdapter.getClass(), activity);
                 val adapter = (BaseSectionedAdapter) recycler.getAdapter();
                 adapter.setListener(parentAdapter.getListener());
 
@@ -463,7 +461,7 @@ public class FirebaseMethods {
                                                 nextSection,
                                                 parentAdapter,
                                                 collapseSection,
-                                                context
+                                                activity
                                         );
                                     }
                                 }
@@ -490,13 +488,13 @@ public class FirebaseMethods {
     static public void initDetailsRecyclerView(
             RecyclerView recyclerView,
             Class<? extends RecyclerView.Adapter> adapterClass,
-            Context context
+            Activity activity
     ) {
         // Recycler view
         recyclerView.setHasFixedSize(true);
 
         // Layout manager
-        val detailsLayoutManager = new LinearLayoutManager(context);
+        val detailsLayoutManager = new LinearLayoutManager(activity);
         recyclerView.setLayoutManager(detailsLayoutManager);
 
         // Adapter
@@ -506,8 +504,8 @@ public class FirebaseMethods {
                         ? (BaseSectionedAdapter) recyclerView.getAdapter() :
                         (adapterClass == PlaceDetailsAddAdapter.class ||
                                 adapterClass == PlaceCardDetailsAdapter.class)
-                                ? adapterClass.getDeclaredConstructor(Context.class)
-                                .newInstance(context)
+                                ? adapterClass.getDeclaredConstructor(Activity.class)
+                                .newInstance(activity)
                                 : adapterClass.getConstructor()
                                 .newInstance()
                 );

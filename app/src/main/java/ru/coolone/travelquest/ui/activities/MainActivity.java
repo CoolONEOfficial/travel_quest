@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity implements
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        // Retranslate results to frags
+        // Retranslate results to restoredFrags
         for (int mFragId = 0; mFragId < fragmentArr.size(); mFragId++) {
             val mFragKey = fragmentArr.keyAt(mFragId);
             val mFragVal = fragmentArr.get(mFragKey);

@@ -53,6 +53,16 @@
                     android:host="www.coolone.ru"
                     android:pathPrefix="/travelquest"
                     android:scheme="https" />
+
+                <data
+                    android:host="coolone.ru"
+                    android:pathPrefix="/travelquest"
+                    android:scheme="http" />
+
+                <data
+                    android:host="coolone.ru"
+                    android:pathPrefix="/travelquest"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
         <activity

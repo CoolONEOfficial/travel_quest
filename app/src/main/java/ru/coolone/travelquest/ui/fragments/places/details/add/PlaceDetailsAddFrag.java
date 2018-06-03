@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.zagum.switchicon.SwitchIconView;
+import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.androidannotations.annotations.AfterViews;
@@ -39,8 +41,10 @@ import ru.coolone.travelquest.ui.activities.MainActivity.SupportLang;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
 
+import static android.app.Activity.RESULT_OK;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.parseDetailsHeaders;
+import static ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter.PLACE_PICKER_REQUEST;
 
 /**
  * @author coolone
@@ -191,7 +195,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
         initDetailsRecyclerView(
                 recycler,
                 PlaceDetailsAddAdapter.class,
-                getContext()
+                getActivity()
         );
         if (recyclerAdapter != null)
             ((BaseSectionedAdapter) recycler.getAdapter()).setSections(recyclerAdapter.getSections());
@@ -267,7 +271,7 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
                                 false,
-                                PlaceDetailsAddFrag.this.getContext()
+                                PlaceDetailsAddFrag.this.getActivity()
                         );
 
                         if (listener != null)
@@ -288,6 +292,29 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                                 translatedChanged = false;
                             }
                     );
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode == PLACE_PICKER_REQUEST &&
+                resultCode == RESULT_OK) {
+            for(int mChildId = 0; mChildId < recycler.getChildCount(); mChildId++) {
+                val mChild = recycler.getChildAt(mChildId);
+                val mChildHolder = recycler.getChildViewHolder(mChild);
+
+                if(mChildHolder instanceof PlaceDetailsAddAdapter.ItemHolderText) {
+                    val mChildText = (PlaceDetailsAddAdapter.ItemHolderText) mChildHolder;
+
+                    if(mChildText.placeSelectedListener != null) {
+                        mChildText.placeSelectedListener.onPlaceSelected(
+                                PlacePicker.getPlace(getContext(), data)
+                        );
+                    }
+                }
+            }
         }
     }
 }

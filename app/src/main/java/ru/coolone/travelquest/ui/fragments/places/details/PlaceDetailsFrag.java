@@ -125,7 +125,7 @@ public class PlaceDetailsFrag extends Fragment {
         titleView.setSelected(true);
 
         // Recycler view
-        initDetailsRecyclerView(detailsRecyclerView, PlaceCardDetailsAdapter.class, getContext());
+        initDetailsRecyclerView(detailsRecyclerView, PlaceCardDetailsAdapter.class, getActivity());
 
         // Add details button
         detailsAddButton.setVisibility(
@@ -425,7 +425,7 @@ public class PlaceDetailsFrag extends Fragment {
                     parseDetailsCards(
                             task,
                             adapter,
-                            getContext(),
+                            getActivity(),
                             new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onTaskSuccess() {

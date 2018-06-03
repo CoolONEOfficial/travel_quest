@@ -234,7 +234,7 @@ public class PlacesFrag extends Fragment
                                 map.moveCamera(
                                         CameraUpdateFactory.newLatLngZoom(
                                                 startPlace.getLatLng(),
-                                                getResources().getDimension(R.dimen.map_zoom)
+                                                getResources().getDimension(R.dimen.map_link_zoom)
                                         )
                                 );
                             }
@@ -331,7 +331,11 @@ public class PlacesFrag extends Fragment
                                                 getString(R.string.settings_key_city_coord),
                                                 SettingsFrag.SupportCity.NN.coord // Nizhny Novgorod is default
                                         ),
-                        getResources().getDimension(R.dimen.map_zoom)
+                        getResources().getDimension(
+                                startPosition != null || startPlace != null
+                                ? R.dimen.map_link_zoom
+                                : R.dimen.map_zoom
+                        )
                 )
         );
 

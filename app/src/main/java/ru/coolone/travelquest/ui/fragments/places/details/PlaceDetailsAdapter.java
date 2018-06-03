@@ -4,7 +4,11 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.Html;
 import android.text.Layout;
+import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -130,22 +134,39 @@ public class PlaceDetailsAdapter
             super(v, itemClickListener, PlaceDetailsAdapter.this);
 
             this.text = v.findViewById(R.id.details_item_text);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
-            }
+            text.setMovementMethod(LinkMovementMethod.getInstance());
+            text.addTextChangedListener(
+                    new TextWatcher() {
+                        @Override
+                        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                        }
+
+                        @Override
+                        public void onTextChanged(CharSequence s, int start, int before, int count) {
+                        }
+
+                        @Override
+                        public void afterTextChanged(Editable s) {
+                            if (s.charAt(0) != '\t')
+                                s.insert(0, "\t");
+                        }
+                    }
+            );
 
             Log.d(TAG, "Item text holder created:" + this.text.getText());
         }
 
         @Override
         public void bind(QuestDetailsItemText item) {
-            text.setText(item.getText());
+            text.setText(Html.fromHtml(item.getText()));
         }
     }
 
     public class ItemHolderRecycler
             extends BaseSectionedViewHolder<QuestDetailsItemRecycler>
-            implements Serializable{
+            implements Serializable {
 
         RecyclerView recyclerView;
 

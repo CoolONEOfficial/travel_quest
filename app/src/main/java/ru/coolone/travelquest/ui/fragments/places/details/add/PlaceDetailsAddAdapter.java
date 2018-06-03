@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details.add;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.os.Parcel;
@@ -7,20 +8,34 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.Html;
+import android.text.InputType;
 import android.text.Layout;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.util.Pair;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Toast;
+
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlacePicker;
+
+import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.places.details.PlaceDetailsAdapter.ListItem;
@@ -43,13 +58,15 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         BaseQuestDetailsItem, BaseSectionedViewHolder> {
     private static final String TAG = PlaceDetailsAddFrag.class.getSimpleName();
 
+    public static int PLACE_PICKER_REQUEST = 1;
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         super.writeToParcel(dest, flags);
     }
 
     // Context
-    public final Context context;
+    public final Activity activity;
 
     @Setter
     private OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
@@ -128,13 +145,13 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
             buttonAdd.setOnClickListener(
                     v1 -> {
-                        val builder = new AlertDialog.Builder(context);
-                        builder.setTitle(context.getString(R.string.add_details_add_dialog_title));
+                        val builder = new AlertDialog.Builder(activity);
+                        builder.setTitle(activity.getString(R.string.add_details_add_dialog_title));
 
                         builder.setItems(
                                 new String[]{
-                                        context.getString(R.string.add_details_add_dialog_section),
-                                        context.getString(R.string.add_details_add_dialog_text)
+                                        activity.getString(R.string.add_details_add_dialog_section),
+                                        activity.getString(R.string.add_details_add_dialog_text)
                                 }, (dialog, item) -> {
                                     final Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>> section =
                                             getSection(getRelativePosition().section());
@@ -143,11 +160,11 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
                                     switch (item) {
                                         case 0:
-                                            RecyclerView recycler = new RecyclerView(context);
+                                            RecyclerView recycler = new RecyclerView(activity);
                                             initDetailsRecyclerView(
                                                     recycler,
                                                     PlaceDetailsAddAdapter.class,
-                                                    context
+                                                    activity
                                             );
                                             val adapter = ((PlaceDetailsAddAdapter) recycler.getAdapter());
                                             adapter.addSection(
@@ -182,10 +199,10 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                             removeSection(getRelativePosition().section());
                             notifyDataSetChanged();
                             onSectionsChanged();
-                        } else new AlertDialog.Builder(context)
+                        } else new AlertDialog.Builder(activity)
                                 .setTitle(R.string.add_details_remove_section_dialog_title)
                                 .setMessage(
-                                        context.getString(R.string.add_details_remove_section_dialog_text)
+                                        activity.getString(R.string.add_details_remove_section_dialog_text)
                                                 .replace("X", Integer.toString(itemCount))
                                 )
                                 .setPositiveButton(
@@ -211,11 +228,17 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         }
     }
 
+    interface PlaceSelectedListener {
+        void onPlaceSelected(Place place);
+    }
+
     public class ItemHolderText
             extends BaseSectionedViewHolder<QuestDetailsItemText>
             implements Serializable {
         EditText text;
         ImageButton buttonRemove;
+
+        PlaceSelectedListener placeSelectedListener;
 
         ItemHolderText(View v) {
             super(v, itemClickListener, PlaceDetailsAddAdapter.this);
@@ -226,6 +249,124 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 text.setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
             }
+            text.setCustomSelectionActionModeCallback(
+                    new android.view.ActionMode.Callback() {
+                        @Override
+                        public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
+                            MenuInflater inflater = mode.getMenuInflater();
+                            inflater.inflate(R.menu.activity_add_details_text_select_actions, menu);
+                            return true;
+                        }
+
+                        @Override
+                        public boolean onPrepareActionMode(android.view.ActionMode mode, Menu menu) {
+                            return false;
+                        }
+
+                        @Override
+                        @SneakyThrows
+                        public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
+                            val textHtmlCoded = Html.toHtml(text.getText());
+                            val textHtml = StringEscapeUtils.unescapeHtml4(textHtmlCoded);
+                            val textSpan = text.getText();
+
+                            val startIndexSpan = text.getSelectionStart();
+                            val endIndexSpan = text.getSelectionEnd();
+
+                            val token = text.getText().subSequence(startIndexSpan, endIndexSpan);
+
+                            int tokenIndexId = 0;
+                            int mIndex = 0;
+                            while (mIndex < startIndexSpan) {
+                                mIndex = textSpan.toString().indexOf(token.toString(), mIndex);
+                                tokenIndexId++;
+                            }
+                            if(tokenIndexId == 0)
+                                tokenIndexId = 1;
+
+                            int mStartIndexHtml = 0;
+                            for (int mNextIndexId = 0; mNextIndexId < tokenIndexId; mNextIndexId++) {
+                                mStartIndexHtml = textHtml.indexOf(token.toString(), mStartIndexHtml);
+                            }
+                            val startIndexHtml = mStartIndexHtml;
+                            val endIndexHtml = startIndexHtml + token.length();
+
+                            val textItem = (QuestDetailsItemText) getItem(getRelativePosition().section(), getRelativePosition().relativePos());
+                            val sb = new StringBuilder(textHtml);
+
+                            switch (item.getItemId()) {
+                                case R.id.text_link:
+                                    val editUri = new EditText(activity);
+                                    editUri.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+
+                                    new AlertDialog.Builder(activity)
+                                            .setTitle(R.string.add_details_text_link_dialog_title)
+                                            .setView(editUri)
+                                            .setPositiveButton(
+                                                    activity.getString(android.R.string.ok),
+                                                    (dialog, which) -> {
+                                                        if (URLUtil.isValidUrl(editUri.getText().toString())) {
+
+                                                            sb.delete(startIndexHtml, endIndexHtml);
+                                                            sb.insert(
+                                                                    startIndexHtml,
+                                                                    "<a href=\""
+                                                                            + editUri.getText()
+                                                                            + "\">"
+                                                                            + token
+                                                                            + "</a>"
+                                                            );
+
+                                                            text.setText(Html.fromHtml(sb.toString()));
+                                                            textItem.setText(sb.toString());
+                                                        } else Toast.makeText(
+                                                                activity,
+                                                                R.string.add_details_text_link_invalid,
+                                                                Toast.LENGTH_SHORT
+                                                        ).show();
+                                                    }
+                                            )
+                                            .setNegativeButton(
+                                                    activity.getString(android.R.string.cancel),
+                                                    (dialog, which) -> dialog.dismiss()
+                                            )
+                                            .show();
+                                    return true;
+                                case R.id.text_place:
+                                    placeSelectedListener = place -> {
+
+                                        sb.delete(startIndexHtml, endIndexHtml);
+                                        sb.insert(
+                                                startIndexHtml,
+                                                "<a href=\"http://www.coolone.ru/travelquest"
+                                                        + "?lat=" + place.getLatLng().latitude
+                                                        + "&lng=" + place.getLatLng().longitude
+                                                        + "\">"
+                                                        + token
+                                                        + "</a>"
+                                        );
+
+                                        text.setText(Html.fromHtml(sb.toString()));
+                                        textItem.setText(sb.toString());
+                                    };
+                                    activity.startActivityForResult(
+                                            new PlacePicker.IntentBuilder()
+                                                    .build(activity),
+                                            PLACE_PICKER_REQUEST
+                                    );
+                                    return true;
+                            }
+
+                            return false;
+                        }
+
+                        @Override
+                        public void onDestroyActionMode(android.view.ActionMode mode) {
+
+                        }
+                    }
+            );
+            text.setMovementMethod(LinkMovementMethod.getInstance());
             text.addTextChangedListener(
                     new TextWatcher() {
                         @Override
@@ -259,7 +400,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
         @Override
         public void bind(QuestDetailsItemText item) {
-            text.setText(item.getText());
+            text.setText(Html.fromHtml(item.getText()));
         }
     }
 

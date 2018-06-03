@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.activities;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -93,7 +94,7 @@ public class AddDetailsActivity extends AppCompatActivity
 
     ProgressBar progressBar;
 
-    PlaceDetailsAddFrag[] frags;
+    PlaceDetailsAddFrag[] restoredFrags;
 
     static boolean introStarted = false;
 
@@ -130,7 +131,7 @@ public class AddDetailsActivity extends AppCompatActivity
                     val mSectionItemRecyclerAdapter = (PlaceDetailsAddAdapter) mSectionItemRecycler.getRecyclerAdapter();
 
                     val mNewSectionItemRecyclerAdapter = new PlaceDetailsAddAdapter(
-                            mSectionItemRecyclerAdapter.context
+                            mSectionItemRecyclerAdapter.activity
                     );
                     mNewSectionItemRecyclerAdapter.setListener(newListener);
 
@@ -606,8 +607,8 @@ public class AddDetailsActivity extends AppCompatActivity
                 placeId,
                 this
         );
-        if (frags != null) {
-            pagerAdapter.setTabFragments(frags);
+        if (restoredFrags != null) {
+            pagerAdapter.setTabFragments(restoredFrags);
         }
         viewPager.setAdapter(pagerAdapter);
         viewPager.setCurrentItem(MainActivity.getLocale(this).ordinal());
@@ -636,7 +637,7 @@ public class AddDetailsActivity extends AppCompatActivity
         );
         viewPager.setOffscreenPageLimit(MainActivity.SupportLang.values().length);
 
-        // Listen all frags
+        // Listen all restoredFrags
         for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
             val mFrag = pagerAdapter.getItem(mFragId);
             mFrag.setListener(this);
@@ -817,17 +818,17 @@ public class AddDetailsActivity extends AppCompatActivity
                 )
         );
 
-        // Restore frags
+        // Restore restoredFrags
         if (savedInstanceState != null) {
-            frags = new PlaceDetailsAddFrag[MainActivity.SupportLang.values().length];
+            restoredFrags = new PlaceDetailsAddFrag[MainActivity.SupportLang.values().length];
             for (val mLang : MainActivity.SupportLang.values()) {
-                frags[mLang.ordinal()] = (PlaceDetailsAddFrag) getSupportFragmentManager().getFragment(
+                restoredFrags[mLang.ordinal()] = (PlaceDetailsAddFrag) getSupportFragmentManager().getFragment(
                         savedInstanceState,
                         mLang.lang
                 );
             }
             if (pagerAdapter != null) {
-                pagerAdapter.setTabFragments(frags);
+                pagerAdapter.setTabFragments(restoredFrags);
             }
 
             if (postRestoreListener != null)
@@ -887,6 +888,17 @@ public class AddDetailsActivity extends AppCompatActivity
             rootLayout.addView(progressBar);
         else
             rootLayout.removeView(progressBar);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+            val mFrag = pagerAdapter.getItem(mFragId);
+
+            mFrag.onActivityResult(requestCode, resultCode, data);
+        }
     }
 
     @Override

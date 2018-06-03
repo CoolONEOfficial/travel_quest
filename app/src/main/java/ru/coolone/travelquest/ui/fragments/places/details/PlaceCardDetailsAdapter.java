@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -29,7 +30,7 @@ import ru.coolone.travelquest.ui.activities.MainActivity;
  */
 @RequiredArgsConstructor
 public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetailsAdapter.ViewHolder> {
-    final Context context;
+    final Activity activity;
 
     public ArrayList<Item> dataset = new ArrayList<>();
 
@@ -94,14 +95,14 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
                 v -> {
                     if (MainActivity.firebaseUser.isAnonymous()) // user registered
                         Toast.makeText(
-                                context,
-                                context.getString(R.string.details_star_error_anonymous),
+                                activity,
+                                activity.getString(R.string.details_star_error_anonymous),
                                 Toast.LENGTH_SHORT
                         ).show();
                     else if (mItem.uId.equals(userUid)) { // it is not self card
                         Toast.makeText(
-                                context,
-                                context.getString(R.string.details_star_error_self),
+                                activity,
+                                activity.getString(R.string.details_star_error_self),
                                 Toast.LENGTH_SHORT
                         ).show();
                     } else {
@@ -110,8 +111,8 @@ public class PlaceCardDetailsAdapter extends RecyclerView.Adapter<PlaceCardDetai
 
                         val fListener = (OnFailureListener) e ->
                                 Toast.makeText(
-                                        context,
-                                        context.getText(R.string.error_network),
+                                        activity,
+                                        activity.getText(R.string.error_network),
                                         Toast.LENGTH_SHORT
                                 ).show();
                         val sListener = (OnSuccessListener) o -> button.setEnabled(true);

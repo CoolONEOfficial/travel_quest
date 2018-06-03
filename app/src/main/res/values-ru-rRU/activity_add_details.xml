@@ -42,4 +42,9 @@
     <string name="add_details_progress_load">Загружаем описание&#8230;</string>
     <string name="add_details_progress_translate">Переводим описание&#8230;</string>
 
+    <string name="add_details_text_link_dialog_title">Введите ссылку</string>
+    <string name="add_details_text_link_invalid">Невалидная ссылка</string>
+
+    <string name="add_details_text_place">Добавить ссылку на место</string>
+    <string name="add_details_text_link">Добавить ссылку</string>
 </resources>

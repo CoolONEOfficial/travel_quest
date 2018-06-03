@@ -4,4 +4,5 @@
 
     <!-- Map default zoom -->
     <dimen name="map_zoom">14px</dimen>
+    <dimen name="map_link_zoom">18px</dimen>
 </resources>
