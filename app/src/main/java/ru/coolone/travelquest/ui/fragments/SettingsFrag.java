@@ -171,12 +171,28 @@ public class SettingsFrag extends PreferenceFragmentCompat {
         }
     }
 
+    static public enum CityType {
+        SETTINGS(300),
+        INTRO;
+
+        public int size;
+
+        CityType(int size) {
+            this.size = size;
+        }
+
+        CityType() {
+        }
+    }
+
+    static Bitmap[][] cityBitmaps = new Bitmap[CityType.values().length][SupportCity.values().length];
+
     static public void initCitiesLayout(
             Context context,
             GridLayout layout,
             OnClickCityListener listener,
-            int imageSize,
-            int rowsCount
+            int rowsCount,
+            CityType cityType
     ) {
         layout.setRowCount(rowsCount);
 
@@ -185,16 +201,12 @@ public class SettingsFrag extends PreferenceFragmentCompat {
 
             val mCityImage = new ImageView(context);
             val mCityImageParams = new FrameLayout.LayoutParams(
-                    imageSize,
-                    imageSize
+                    cityType.size,
+                    cityType.size
             );
             mCityImage.setLayoutParams(mCityImageParams);
             mCityImage.setImageBitmap(
-                    Bitmap.createScaledBitmap(
-                            BitmapFactory.decodeResource(context.getResources(), mCity.drawableId),
-                            imageSize, imageSize,
-                            true
-                    )
+                    cityBitmaps[cityType.ordinal()][mCity.ordinal()]
             );
             mCityImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
 
@@ -202,13 +214,13 @@ public class SettingsFrag extends PreferenceFragmentCompat {
             mCityLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
             mCityLabel.setText(mCity.nameId);
             mCityLabel.setTextSize(
-                    (float) ((22. / 400.) * imageSize)
+                    (float) ((22. / 400.) * cityType.size)
             );
             mCityLabel.setTextColor(Color.WHITE);
             mCityLabel.setBackgroundColor(Color.BLACK);
             mCityLabel.getBackground().setAlpha(128);
             val mCityLabelParams = new FrameLayout.LayoutParams(
-                    imageSize,
+                    cityType.size,
                     ViewGroup.LayoutParams.WRAP_CONTENT
             );
             mCityLabelParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
@@ -245,6 +257,27 @@ public class SettingsFrag extends PreferenceFragmentCompat {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        initCityImages(getContext());
+    }
+
+    static public void initCityImages(
+            Context context
+    ) {
+        for (val mCityType : CityType.values()) {
+            for (val mCity : SupportCity.values()) {
+                if (mCityType.size > 0)
+                    cityBitmaps[mCityType.ordinal()][mCity.ordinal()] =
+                            Bitmap.createScaledBitmap(
+                                    BitmapFactory.decodeResource(
+                                            context.getResources(),
+                                            mCity.drawableId
+                                    ),
+                                    mCityType.size, mCityType.size,
+                                    false
+                            );
+            }
+        }
     }
 
     @Override
@@ -307,8 +340,8 @@ public class SettingsFrag extends PreferenceFragmentCompat {
                                             selectCitySelect(getContext(), imagesLayout, city.ordinal());
                                             selectedCity = city;
                                         },
-                                        300,
-                                        2
+                                        2,
+                                        CityType.SETTINGS
                                 );
                             }
                             refreshCitiesLayout(getContext(), imagesLayout);
