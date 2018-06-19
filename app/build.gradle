@@ -52,7 +52,7 @@ dependencies {
     }
     ext {
         support = "27.1.1"
-        ps = "15.0.1"
+        ps = "+"
         lb = "1.16.20"
         aa = "4.4.0"
     }

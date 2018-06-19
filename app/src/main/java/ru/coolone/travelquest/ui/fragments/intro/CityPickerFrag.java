@@ -45,8 +45,12 @@ public class CityPickerFrag extends Fragment {
                     val metrics = new DisplayMetrics();
                     getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
                     rows = (include.getHeight() / (metrics.heightPixels / 5));
-                    if(rows == 0)
+                    if (rows == 0)
                         rows = 1;
+
+                    SettingsFrag.CityType.values()[SettingsFrag.CityType.INTRO.ordinal()].size = include.getHeight() / rows;
+
+                    SettingsFrag.initCityImages(getContext());
 
                     SettingsFrag.initCitiesLayout(
                             getContext(),
@@ -62,8 +66,8 @@ public class CityPickerFrag extends Fragment {
                                         city
                                 );
                             },
-                            include.getHeight() / rows,
-                            rows
+                            rows,
+                            SettingsFrag.CityType.INTRO
                     );
                 }
         );
