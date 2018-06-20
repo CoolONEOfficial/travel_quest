@@ -2,6 +2,8 @@ package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,17 +22,21 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.PlacePhotoMetadata;
-import com.google.android.gms.location.places.PlacePhotoMetadataBuffer;
-import com.google.android.gms.location.places.PlacePhotoMetadataResult;
 import com.google.android.gms.location.places.Places;
+import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Click;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.ViewById;
+import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -37,6 +44,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
@@ -536,8 +544,19 @@ public class PlaceDetailsFrag extends Fragment {
 
         PlaceDetailsFrag parent;
 
+        RequestQueue queue;
+
+        ImageViewer.Builder imageViewer;
+
         PhotoTask(PlaceDetailsFrag parent) {
             this.parent = parent;
+        }
+
+        int getScreenWidth() {
+            Display display = parent.getActivity().getWindowManager().getDefaultDisplay();
+            Point size = new Point();
+            display.getSize(size);
+            return size.x > 1600 ? 1600 : size.x;
         }
 
         @Override
@@ -545,17 +564,69 @@ public class PlaceDetailsFrag extends Fragment {
             if (params.length != 1) {
                 return null;
             }
-            final String placeId = params[0];
+            val placeId = params[0];
+
+            queue = Volley.newRequestQueue(parent.getContext());
+
+            val key = parent.getContext().getString(R.string.GOOGLE_MAPS_API_KEY);
+
+            queue.add(new JsonObjectRequest(
+                    new Uri.Builder()
+                            .scheme("https")
+                            .authority("maps.googleapis.com")
+                            .appendPath("maps")
+                            .appendPath("api")
+                            .appendPath("place")
+                            .appendPath("details")
+                            .appendPath("json")
+                            .appendQueryParameter("key", key)
+                            .appendQueryParameter("placeid", placeId)
+                            .build().toString(),
+                    null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        @SneakyThrows
+                        public void onResponse(JSONObject response) {
+                            val photosArray = response.getJSONObject("result")
+                                    .getJSONArray("photos");
+
+                            val photosLinks = new String[photosArray.length()];
+
+                            for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
+                                val mPhoto = photosArray.getJSONObject(mPhotoId);
+
+                                photosLinks[mPhotoId] = new Uri.Builder()
+                                        .scheme("https")
+                                        .authority("maps.googleapis.com")
+                                        .appendPath("maps")
+                                        .appendPath("api")
+                                        .appendPath("place")
+                                        .appendPath("photo")
+                                        .appendQueryParameter("key", key)
+                                        .appendQueryParameter("maxwidth", Integer.toString(getScreenWidth()))
+                                        .appendQueryParameter(
+                                                "photoreference",
+                                                mPhoto.getString("photo_reference")
+                                        ).toString();
+                            }
+
+                            imageViewer = new ImageViewer.Builder<>(parent.getContext(), photosLinks);
+                        }
+                    },
+                    error -> {
+
+                    }
+            ));
 
             // Get photos result
-            PlacePhotoMetadataResult result = Places.GeoDataApi
+            val result = Places.GeoDataApi
                     .getPlacePhotos(MainActivity.getApiClient(), placeId)
                     .await();
 
             // Parse photos result
             if (result.getStatus().isSuccess()) {
                 // Get photos buffer
-                PlacePhotoMetadataBuffer photoMetadataBuffer = result.getPhotoMetadata();
+                val photoMetadataBuffer = result.getPhotoMetadata();
 
                 // Parse photos buffer
                 if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
@@ -569,7 +640,7 @@ public class PlaceDetailsFrag extends Fragment {
                         val mAttributedPhotoIdFinal = mAttributedPhotoId;
 
                         // Get the first bitmap
-                        PlacePhotoMetadata photo = photoMetadataBuffer
+                        val photo = photoMetadataBuffer
                                 .get(mAttributedPhotoId)
                                 .freeze();
 
@@ -579,10 +650,11 @@ public class PlaceDetailsFrag extends Fragment {
                                 .getPhoto(MainActivity.getApiClient())
                                 .setResultCallback(
                                         placePhotoResult -> {
-                                            if (parent.photosLayout != null)
+                                            if (parent.photosLayout != null) {
                                                 ((ImageView)
                                                         parent.photosLayout.getChildAt(mAttributedPhotoIdFinal)
                                                 ).setImageBitmap(placePhotoResult.getBitmap());
+                                            }
                                         }
                                 );
                     }
@@ -606,13 +678,19 @@ public class PlaceDetailsFrag extends Fragment {
                  mAttributedPhotoId < values[0];
                  mAttributedPhotoId++) {
                 // Create image view
-                ImageView mPhotoView = new ImageView(parent.getActivity());
+                val mPhotoView = new SimpleDraweeView(parent.getActivity());
                 parent.setDescriptionPhotoImageView(mPhotoView);
-                mPhotoView.setImageBitmap(
-                        BitmapFactory.decodeResource(
-                                parent.getResources(),
-                                R.drawable.pattern
-                        )
+                val bmp = BitmapFactory.decodeResource(
+                        parent.getResources(),
+                        R.drawable.pattern
+                );
+                mPhotoView.setImageBitmap(bmp);
+                val imageCount = parent.photosLayout.getChildCount();
+                mPhotoView.setOnClickListener(
+                        v -> {
+                            if (imageViewer != null)
+                                imageViewer.setStartPosition(imageCount).show();
+                        }
                 );
 
                 // Add view
