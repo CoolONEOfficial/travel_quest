@@ -11,6 +11,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -587,35 +589,35 @@ public class PlaceDetailsFrag extends Fragment {
                         @Override
                         @SneakyThrows
                         public void onResponse(JSONObject response) {
-                            val photosArray = response.getJSONObject("result")
-                                    .getJSONArray("photos");
+                            if(response.getString("status").equals("OK")) {
+                                val photosArray = response.getJSONObject("result")
+                                        .getJSONArray("photos");
 
-                            val photosLinks = new String[photosArray.length()];
+                                val photosLinks = new String[photosArray.length()];
 
-                            for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
-                                val mPhoto = photosArray.getJSONObject(mPhotoId);
+                                for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
+                                    val mPhoto = photosArray.getJSONObject(mPhotoId);
 
-                                photosLinks[mPhotoId] = new Uri.Builder()
-                                        .scheme("https")
-                                        .authority("maps.googleapis.com")
-                                        .appendPath("maps")
-                                        .appendPath("api")
-                                        .appendPath("place")
-                                        .appendPath("photo")
-                                        .appendQueryParameter("key", key)
-                                        .appendQueryParameter("maxwidth", Integer.toString(getScreenWidth()))
-                                        .appendQueryParameter(
-                                                "photoreference",
-                                                mPhoto.getString("photo_reference")
-                                        ).toString();
+                                    photosLinks[mPhotoId] = new Uri.Builder()
+                                            .scheme("https")
+                                            .authority("maps.googleapis.com")
+                                            .appendPath("maps")
+                                            .appendPath("api")
+                                            .appendPath("place")
+                                            .appendPath("photo")
+                                            .appendQueryParameter("key", key)
+                                            .appendQueryParameter("maxwidth", Integer.toString(getScreenWidth()))
+                                            .appendQueryParameter(
+                                                    "photoreference",
+                                                    mPhoto.getString("photo_reference")
+                                            ).toString();
+                                }
+
+                                imageViewer = new ImageViewer.Builder<>(parent.getContext(), photosLinks);
                             }
-
-                            imageViewer = new ImageViewer.Builder<>(parent.getContext(), photosLinks);
                         }
                     },
-                    error -> {
-
-                    }
+                    error -> Log.e(TAG, "Error while get google maps photos", error)
             ));
 
             // Get photos result
@@ -690,6 +692,11 @@ public class PlaceDetailsFrag extends Fragment {
                         v -> {
                             if (imageViewer != null)
                                 imageViewer.setStartPosition(imageCount).show();
+                            else Toast.makeText(
+                                    parent.getContext(),
+                                    parent.getContext().getString(R.string.details_photos_not_loaded),
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
                 );
 

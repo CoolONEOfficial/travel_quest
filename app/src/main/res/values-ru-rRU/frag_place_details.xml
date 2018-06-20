@@ -13,4 +13,6 @@
 
     <string name="details_star_error_anonymous">Чтобы оценивать описания необходимо зарегистрироваться</string>
     <string name="details_star_error_self">Нельзя оценить свое описание</string>
+
+    <string name="details_photos_not_loaded">Фотографии еще не загрузились</string>
 </resources>
