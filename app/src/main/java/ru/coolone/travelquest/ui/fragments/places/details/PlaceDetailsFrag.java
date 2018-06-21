@@ -12,7 +12,6 @@ import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,11 +25,10 @@ import android.widget.Toast;
 
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
+import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
-import com.facebook.drawee.view.SimpleDraweeView;
 import com.google.android.gms.location.places.Place;
-import com.google.android.gms.location.places.Places;
 import com.stfalcon.frescoimageviewer.ImageViewer;
 
 import org.androidannotations.annotations.AfterViews;
@@ -334,7 +332,7 @@ public class PlaceDetailsFrag extends Fragment {
         detailsError(e.getLocalizedMessage());
     }
 
-    private void setDescriptionPhotoImageView(ImageView imageView) {
+    private void setPhotoImageView(ImageView imageView) {
         // Set photo image view
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 (int) getResources().getDimension(R.dimen.details_photos_size_anchored),
@@ -542,7 +540,7 @@ public class PlaceDetailsFrag extends Fragment {
         void onPhotosLoadingStarted();
     }
 
-    static private class PhotoTask extends AsyncTask<String, Integer, Void> {
+    static private class PhotoTask extends AsyncTask<String, Void, Void> {
 
         PlaceDetailsFrag parent;
 
@@ -552,13 +550,6 @@ public class PlaceDetailsFrag extends Fragment {
 
         PhotoTask(PlaceDetailsFrag parent) {
             this.parent = parent;
-        }
-
-        int getScreenWidth() {
-            Display display = parent.getActivity().getWindowManager().getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            return size.x > 1600 ? 1600 : size.x;
         }
 
         @Override
@@ -589,120 +580,109 @@ public class PlaceDetailsFrag extends Fragment {
                         @Override
                         @SneakyThrows
                         public void onResponse(JSONObject response) {
-                            if(response.getString("status").equals("OK")) {
-                                val photosArray = response.getJSONObject("result")
-                                        .getJSONArray("photos");
+                            if (response.getString("status").equals("OK")) {
+                                val result = response.getJSONObject("result");
+                                if (result.has("photos")) {
+                                    val photosArray = result.getJSONArray("photos");
+                                    val viewerPhotosLinks = new String[photosArray.length()];
+                                    val photosLinks = new String[photosArray.length()];
 
-                                val photosLinks = new String[photosArray.length()];
+                                    val display = parent.getActivity().getWindowManager().getDefaultDisplay();
+                                    val screenResolution = new Point();
+                                    display.getSize(screenResolution);
 
-                                for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
-                                    val mPhoto = photosArray.getJSONObject(mPhotoId);
+                                    parent.fragmentListener.onPhotosLoadingStarted();
 
-                                    photosLinks[mPhotoId] = new Uri.Builder()
-                                            .scheme("https")
-                                            .authority("maps.googleapis.com")
-                                            .appendPath("maps")
-                                            .appendPath("api")
-                                            .appendPath("place")
-                                            .appendPath("photo")
-                                            .appendQueryParameter("key", key)
-                                            .appendQueryParameter("maxwidth", Integer.toString(getScreenWidth()))
-                                            .appendQueryParameter(
-                                                    "photoreference",
-                                                    mPhoto.getString("photo_reference")
-                                            ).toString();
-                                }
+                                    for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
+                                        val mPhoto = photosArray.getJSONObject(mPhotoId);
 
-                                imageViewer = new ImageViewer.Builder<>(parent.getContext(), photosLinks);
-                            }
+                                        val mLink = new Uri.Builder()
+                                                .scheme("https")
+                                                .authority("maps.googleapis.com")
+                                                .appendPath("maps")
+                                                .appendPath("api")
+                                                .appendPath("place")
+                                                .appendPath("photo")
+                                                .appendQueryParameter("key", key)
+                                                .appendQueryParameter(
+                                                        "photoreference",
+                                                        mPhoto.getString("photo_reference")
+                                                ).toString();
+
+
+                                        viewerPhotosLinks[mPhotoId] = mLink + (
+                                                screenResolution.x < screenResolution.y
+                                                        ? "&maxwidth=" + Integer.toString(Math.min(1600, screenResolution.x))
+                                                        : "&maxheight=" + Integer.toString(Math.min(1600, screenResolution.y))
+                                        );
+
+                                        photosLinks[mPhotoId] = mLink + "&maxheight=" + Integer.toString(
+                                                (int) parent.getContext().getResources()
+                                                        .getDimension(R.dimen.details_photos_size_anchored)
+                                        );
+                                    }
+
+                                    imageViewer = new ImageViewer.Builder<>(parent.getContext(), viewerPhotosLinks);
+
+                                    for (int mPhotoLinkId = 0; mPhotoLinkId < photosLinks.length; mPhotoLinkId++) {
+                                        val mPhotoLinkIdFinal = mPhotoLinkId;
+                                        val mPhotoLink = photosLinks[mPhotoLinkId];
+
+                                        publishProgress();
+
+                                        queue.add(
+                                                new ImageRequest(
+                                                        mPhotoLink,
+                                                        imageResponse -> (
+                                                                (ImageView) parent.photosLayout
+                                                                        .getChildAt(mPhotoLinkIdFinal)
+                                                        ).setImageBitmap(imageResponse),
+                                                        0, 0,
+                                                        null, null,
+                                                        error -> Log.e(TAG, "Error while get google maps photo bitmap")
+                                                )
+                                        );
+                                    }
+                                } else
+                                    // Hide photos
+                                    parent.getActivity().runOnUiThread(
+                                            () -> parent.setPhotosVisibility(View.GONE)
+                                    );
+                            } else Log.e(TAG, "Error in response while get google maps photo links." +
+                                    "Status " + response.getString("status"));
                         }
                     },
-                    error -> Log.e(TAG, "Error while get google maps photos", error)
+                    error -> Log.e(TAG, "Error while get google maps photo links", error)
             ));
 
-            // Get photos result
-            val result = Places.GeoDataApi
-                    .getPlacePhotos(MainActivity.getApiClient(), placeId)
-                    .await();
-
-            // Parse photos result
-            if (result.getStatus().isSuccess()) {
-                // Get photos buffer
-                val photoMetadataBuffer = result.getPhotoMetadata();
-
-                // Parse photos buffer
-                if (photoMetadataBuffer.getCount() > 0 && !isCancelled()) {
-                    parent.fragmentListener.onPhotosLoadingStarted();
-
-                    publishProgress(photoMetadataBuffer.getCount());
-
-                    for (int mAttributedPhotoId = 0;
-                         mAttributedPhotoId < photoMetadataBuffer.getCount();
-                         mAttributedPhotoId++) {
-                        val mAttributedPhotoIdFinal = mAttributedPhotoId;
-
-                        // Get the first bitmap
-                        val photo = photoMetadataBuffer
-                                .get(mAttributedPhotoId)
-                                .freeze();
-
-                        // Load a scaled bitmap for this photo
-                        photo
-                                .freeze()
-                                .getPhoto(MainActivity.getApiClient())
-                                .setResultCallback(
-                                        placePhotoResult -> {
-                                            if (parent.photosLayout != null) {
-                                                ((ImageView)
-                                                        parent.photosLayout.getChildAt(mAttributedPhotoIdFinal)
-                                                ).setImageBitmap(placePhotoResult.getBitmap());
-                                            }
-                                        }
-                                );
-                    }
-                } else {
-                    // Hide photos
-                    parent.getActivity().runOnUiThread(
-                            () -> parent.setPhotosVisibility(View.GONE)
-                    );
-                }
-
-                // Release the photos buffer
-                photoMetadataBuffer.release();
-            }
             return null;
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
-            // Create holders image views
-            for (int mAttributedPhotoId = 0;
-                 mAttributedPhotoId < values[0];
-                 mAttributedPhotoId++) {
-                // Create image view
-                val mPhotoView = new SimpleDraweeView(parent.getActivity());
-                parent.setDescriptionPhotoImageView(mPhotoView);
-                val bmp = BitmapFactory.decodeResource(
-                        parent.getResources(),
-                        R.drawable.pattern
-                );
-                mPhotoView.setImageBitmap(bmp);
-                val imageCount = parent.photosLayout.getChildCount();
-                mPhotoView.setOnClickListener(
-                        v -> {
-                            if (imageViewer != null)
-                                imageViewer.setStartPosition(imageCount).show();
-                            else Toast.makeText(
-                                    parent.getContext(),
-                                    parent.getContext().getString(R.string.details_photos_not_loaded),
-                                    Toast.LENGTH_SHORT
-                            ).show();
-                        }
-                );
+        protected void onProgressUpdate(Void... values) {
+            // Create holder image view
+            val mPhotoView = new ImageView(parent.getActivity());
+            parent.setPhotoImageView(mPhotoView);
+            val bmp = BitmapFactory.decodeResource(
+                    parent.getResources(),
+                    R.drawable.pattern
+            );
+            mPhotoView.setImageBitmap(bmp);
+            val imageCount = parent.photosLayout.getChildCount();
+            mPhotoView.setOnClickListener(
+                    v -> {
+                        if (imageViewer != null)
+                            imageViewer.setStartPosition(imageCount).show();
+                        else Toast.makeText(
+                                parent.getContext(),
+                                parent.getContext().getString(R.string.details_photos_not_loaded),
+                                Toast.LENGTH_SHORT
+                        ).show();
+                    }
+            );
 
-                // Add view
-                parent.photosLayout.addView(mPhotoView);
-            }
+            // Add view
+            parent.photosLayout.addView(mPhotoView);
         }
     }
 }
