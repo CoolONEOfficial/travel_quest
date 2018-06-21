@@ -22,6 +22,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +72,10 @@ public class PlaceDetailsFrag extends Fragment {
 
     @ViewById(R.id.details_details_add_button)
     FloatingActionButton detailsAddButton;
+
+    // Scroll view
+    @ViewById(R.id.details_details_scroll)
+    public ScrollView rootScrollView;
 
     @FragmentArg
     @Getter

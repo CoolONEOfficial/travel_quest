@@ -7,7 +7,7 @@
         android:id="@+id/nav_group_master"
         android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_quests"
+            android:id="@+id/nav_places"
             android:icon="@drawable/ic_menu_quests"
             android:title="@string/nav_places" />
         <item

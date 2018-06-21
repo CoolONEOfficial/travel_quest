@@ -74,11 +74,11 @@ public class PlacesFrag extends Fragment
 
     // Sliding panel
     @ViewById(R.id.places_sliding_panel)
-    SlidingUpPanelLayout slidingPanel;
+    public SlidingUpPanelLayout slidingPanel;
 
     // Fragment details
     private static final String FRAG_PLACE_DETAILS_ID = "placeDetails";
-    PlaceDetailsFrag placeDetailsFrag;
+    public PlaceDetailsFrag placeDetailsFrag;
 
     // Place
     Place currentPlace;

@@ -322,7 +322,6 @@ public class AddDetailsActivity extends AppCompatActivity
         val dismissText = getString(R.string.add_details_intro_dismiss_button);
         val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
-        frag.onAddHeaderClick();
         frag.recycler.post(
                 () -> {
                     if (!introStarted) {
@@ -775,7 +774,6 @@ public class AddDetailsActivity extends AppCompatActivity
 
                                     sendView.setVisibility(View.INVISIBLE);
                                     restoreView.setVisibility(View.INVISIBLE);
-
                                 }
                         )
                         .setNegativeButton(

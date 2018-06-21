@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements
         PlacesFrag_.SlidingUpPanelListener,
         PlacesFrag_.AutocompleteTextViewGetter {
     static final String TAG = MainActivity.class.getSimpleName();
-    static final int NAV_MENU_DEFAULT_MENU_ID = R.id.nav_quests;
+    static final int NAV_MENU_DEFAULT_MENU_ID = R.id.nav_places;
     private static final String KEY_MENU_ID = "menuId";
 
     // Preferences
@@ -384,6 +384,24 @@ public class MainActivity extends AppCompatActivity implements
     public void onBackPressed() {
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
+        } else if (currentMenuId == R.id.nav_places) {
+            val placesFrag = ((PlacesFrag) fragmentArr.get(FragmentId.PLACES.ordinal()));
+            val panel = placesFrag.slidingPanel;
+
+            placesFrag.placeDetailsFrag.rootScrollView.fullScroll(View.FOCUS_UP);
+            switch (panel.getPanelState()) {
+                case EXPANDED:
+                    panel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+                    break;
+                case ANCHORED:
+                    panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    break;
+                case COLLAPSED:
+                    panel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
+                    break;
+                default:
+                    super.onBackPressed();
+            }
         } else {
             super.onBackPressed();
         }
@@ -514,7 +532,7 @@ public class MainActivity extends AppCompatActivity implements
         } else {
             FragmentId fragId = null;
             switch (menuId) {
-                case R.id.nav_quests:
+                case R.id.nav_places:
                     fragId = FragmentId.PLACES;
                     break;
                 case R.id.nav_settings:
@@ -543,8 +561,8 @@ public class MainActivity extends AppCompatActivity implements
 
             // Transparency
             setToolbarTransparent(
-                    menuId == R.id.nav_quests,
-                    menuId != R.id.nav_quests
+                    menuId == R.id.nav_places,
+                    menuId != R.id.nav_places
             );
 
             // Colors
@@ -552,7 +570,7 @@ public class MainActivity extends AppCompatActivity implements
             val mapBlack = "night".equalsIgnoreCase(mapStyle)
                     || "solarized".equalsIgnoreCase(mapStyle);
             setToolbarColors(
-                    menuId == R.id.nav_quests
+                    menuId == R.id.nav_places
                             ? (
                             mapBlack
                                     ? Color.WHITE
@@ -580,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements
             }
 
             // Autocomplete place text
-            if (menuId == R.id.nav_quests) {
+            if (menuId == R.id.nav_places) {
                 val autocompleteTextViewParams = new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.MATCH_PARENT

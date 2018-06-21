@@ -10,8 +10,8 @@ android {
         applicationId "ru.coolone.travelquest"
         minSdkVersion 19
         targetSdkVersion 27
-        versionCode 17
-        versionName "2.3"
+        versionCode 18
+        versionName "2.4"
         multiDexEnabled true
 
         // Google maps key
@@ -48,7 +48,6 @@ dependencies {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         maven { url "https://jitpack.io" }
-
     }
     ext {
         support = "27.1.1"
