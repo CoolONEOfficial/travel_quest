@@ -96,12 +96,13 @@
                     android:id="@+id/details_photos_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:foregroundGravity="center"
                     android:scrollbars="none">
 
                     <LinearLayout
                         android:id="@+id/details_photos_layout"
                         android:layout_width="wrap_content"
-                        android:layout_height="match_parent"
+                        android:layout_height="wrap_content"
                         android:orientation="horizontal" />
 
                 </HorizontalScrollView>
@@ -110,7 +111,9 @@
                     android:id="@+id/details_details_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_below="@id/details_photos_scroll" />
+                    android:layout_below="@id/details_photos_scroll"
+                    android:clipToPadding="false"
+                    android:paddingBottom="80dp" />
 
                 <ImageView
                     android:id="@+id/details_details_unknown_text_smile"
@@ -177,9 +180,9 @@
             android:layout_marginStart="@dimen/content_inset"
             android:layout_marginTop="@dimen/content_inset"
             android:layout_weight="1"
+            android:autoLink="web"
             android:textColor="@color/primary_text"
             android:textSize="18sp"
-            android:autoLink="web"
             tools:ignore="HardcodedText" />
 
         <TextView
@@ -190,10 +193,10 @@
             android:layout_marginEnd="@dimen/content_inset"
             android:layout_marginTop="@dimen/content_inset"
             android:layout_weight="1"
+            android:autoLink="phone"
             android:gravity="end"
             android:textColor="@color/primary_text"
             android:textSize="18sp"
-            android:autoLink="phone"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 

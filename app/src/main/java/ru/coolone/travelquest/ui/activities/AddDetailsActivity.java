@@ -557,8 +557,7 @@ public class AddDetailsActivity extends AppCompatActivity
                 .appendQueryParameter("text", text)
                 .appendQueryParameter("lang",
                         fromFrag.lang.yaTranslateLang + '-' + toFrag.lang.yaTranslateLang
-                )
-                .build();
+                );
         val uriStr = uri.toString();
         Log.d(TAG, "Translate request to " + uriStr + "...");
 

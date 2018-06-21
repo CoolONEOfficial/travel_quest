@@ -10,7 +10,9 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +25,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -42,7 +43,9 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -540,17 +543,20 @@ public class PlaceDetailsFrag extends Fragment {
         void onPhotosLoadingStarted();
     }
 
+    @RequiredArgsConstructor
     static private class PhotoTask extends AsyncTask<String, Void, Void> {
 
-        PlaceDetailsFrag parent;
-
-        RequestQueue queue;
-
-        ImageViewer.Builder imageViewer;
-
-        PhotoTask(PlaceDetailsFrag parent) {
-            this.parent = parent;
+        @AllArgsConstructor
+        static class PlacePhoto {
+            @Getter
+            String url;
+            @Getter
+            String description;
         }
+
+        final PlaceDetailsFrag parent;
+
+        ArrayList<PlacePhoto> viewerPhotos = new ArrayList<>();
 
         @Override
         protected Void doInBackground(String... params) {
@@ -559,10 +565,9 @@ public class PlaceDetailsFrag extends Fragment {
             }
             val placeId = params[0];
 
-            queue = Volley.newRequestQueue(parent.getContext());
+            val queue = Volley.newRequestQueue(parent.getContext());
 
             val key = parent.getContext().getString(R.string.GOOGLE_MAPS_API_KEY);
-
             queue.add(new JsonObjectRequest(
                     new Uri.Builder()
                             .scheme("https")
@@ -574,7 +579,7 @@ public class PlaceDetailsFrag extends Fragment {
                             .appendPath("json")
                             .appendQueryParameter("key", key)
                             .appendQueryParameter("placeid", placeId)
-                            .build().toString(),
+                            .toString(),
                     null,
                     new Response.Listener<JSONObject>() {
                         @Override
@@ -584,7 +589,6 @@ public class PlaceDetailsFrag extends Fragment {
                                 val result = response.getJSONObject("result");
                                 if (result.has("photos")) {
                                     val photosArray = result.getJSONArray("photos");
-                                    val viewerPhotosLinks = new String[photosArray.length()];
                                     val photosLinks = new String[photosArray.length()];
 
                                     val display = parent.getActivity().getWindowManager().getDefaultDisplay();
@@ -609,20 +613,28 @@ public class PlaceDetailsFrag extends Fragment {
                                                         mPhoto.getString("photo_reference")
                                                 ).toString();
 
+                                        val authorsJson = mPhoto.getJSONArray("html_attributions");
+                                        val authors = new ArrayList<String>();
+                                        for (int mAuthorId = 0; mAuthorId < authorsJson.length(); mAuthorId++) {
+                                            authors.add(authorsJson.getString(mAuthorId));
+                                        }
 
-                                        viewerPhotosLinks[mPhotoId] = mLink + (
-                                                screenResolution.x < screenResolution.y
-                                                        ? "&maxwidth=" + Integer.toString(Math.min(1600, screenResolution.x))
-                                                        : "&maxheight=" + Integer.toString(Math.min(1600, screenResolution.y))
-                                        );
+                                        viewerPhotos.add(new PlacePhoto(
+                                                mLink + (
+                                                        screenResolution.x < screenResolution.y
+                                                                ? "&maxwidth=" + Integer.toString(Math.min(1600, screenResolution.x))
+                                                                : "&maxheight=" + Integer.toString(Math.min(1600, screenResolution.y))
+                                                ),
+                                                TextUtils.join(
+                                                        ", ", authors
+                                                )
+                                        ));
 
                                         photosLinks[mPhotoId] = mLink + "&maxheight=" + Integer.toString(
                                                 (int) parent.getContext().getResources()
                                                         .getDimension(R.dimen.details_photos_size_anchored)
                                         );
                                     }
-
-                                    imageViewer = new ImageViewer.Builder<>(parent.getContext(), viewerPhotosLinks);
 
                                     for (int mPhotoLinkId = 0; mPhotoLinkId < photosLinks.length; mPhotoLinkId++) {
                                         val mPhotoLinkIdFinal = mPhotoLinkId;
@@ -648,8 +660,9 @@ public class PlaceDetailsFrag extends Fragment {
                                     parent.getActivity().runOnUiThread(
                                             () -> parent.setPhotosVisibility(View.GONE)
                                     );
-                            } else Log.e(TAG, "Error in response while get google maps photo links." +
-                                    "Status " + response.getString("status"));
+                            } else
+                                Log.e(TAG, "Error in response while get google maps photo links." +
+                                        "Status " + response.getString("status"));
                         }
                     },
                     error -> Log.e(TAG, "Error while get google maps photo links", error)
@@ -671,9 +684,27 @@ public class PlaceDetailsFrag extends Fragment {
             val imageCount = parent.photosLayout.getChildCount();
             mPhotoView.setOnClickListener(
                     v -> {
-                        if (imageViewer != null)
-                            imageViewer.setStartPosition(imageCount).show();
-                        else Toast.makeText(
+                        if (viewerPhotos != null) {
+                            val overlayView = new ImageOverlayView(parent.getContext());
+
+                            new ImageViewer.Builder<>(parent.getContext(), viewerPhotos)
+                                    .setFormatter(PlacePhoto::getUrl)
+                                    .setImageChangeListener(
+                                            position -> {
+                                                val image = viewerPhotos.get(position);
+                                                overlayView.setDescription(image.getDescription());
+                                                parent.photosScroll.scrollTo(
+                                                        parent.photosLayout.getChildAt(position).getLeft()
+                                                                + parent.photosLayout.getChildAt(position).getWidth() / 2
+                                                                - parent.photosScroll.getWidth() / 2,
+                                                        0
+                                                );
+                                            }
+                                    )
+                                    .setOverlayView(overlayView)
+                                    .setStartPosition(imageCount)
+                                    .show();
+                        } else Toast.makeText(
                                 parent.getContext(),
                                 parent.getContext().getString(R.string.details_photos_not_loaded),
                                 Toast.LENGTH_SHORT
@@ -683,6 +714,22 @@ public class PlaceDetailsFrag extends Fragment {
 
             // Add view
             parent.photosLayout.addView(mPhotoView);
+        }
+
+        static class ImageOverlayView extends RelativeLayout {
+            private TextView description;
+
+            public ImageOverlayView(Context context) {
+                super(context);
+
+                val view = inflate(getContext(), R.layout.frag_place_details_photo_overlay, this);
+                description = view.findViewById(R.id.overlay_description);
+                description.setMovementMethod(LinkMovementMethod.getInstance());
+            }
+
+            public void setDescription(String description) {
+                this.description.setText(Html.fromHtml(description));
+            }
         }
     }
 }
