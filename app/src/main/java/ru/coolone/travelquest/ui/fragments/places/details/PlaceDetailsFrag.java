@@ -26,6 +26,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.toolbox.ImageRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -113,8 +114,6 @@ public class PlaceDetailsFrag extends Fragment {
     @ViewById(R.id.details_types)
     TextView typesView;
 
-    @ViewById(R.id.details_bottom)
-    LinearLayout bottom;
     @ViewById(R.id.details_bottom_delimiter)
     View bottomDelimiter;
 
@@ -135,6 +134,8 @@ public class PlaceDetailsFrag extends Fragment {
 
     @ViewById(R.id.details_layout_body)
     RelativeLayout bodyLayout;
+
+    PhotoTask photoTask;
 
     @AfterViews
     void afterViews() {
@@ -159,7 +160,16 @@ public class PlaceDetailsFrag extends Fragment {
         setTypes(types);
 
         // Photos
-        new PhotoTask(this).execute(placeId);
+        photoTask = new PhotoTask(this);
+        photoTask.execute(placeId);
+    }
+
+    @Override
+    public void onDetach() {
+        if (photoTask != null)
+            photoTask.cancel(true);
+
+        super.onDetach();
     }
 
     @Override
@@ -304,7 +314,8 @@ public class PlaceDetailsFrag extends Fragment {
     }
 
     private void setBottomInfoVisibility(int visibility) {
-        bottom.setVisibility(visibility);
+        phoneView.setVisibility(visibility);
+        urlView.setVisibility(visibility);
         bottomDelimiter.setVisibility(visibility);
     }
 
@@ -563,6 +574,14 @@ public class PlaceDetailsFrag extends Fragment {
 
         ArrayList<PlacePhoto> viewerPhotos = new ArrayList<>();
 
+        RequestQueue queue;
+
+        @Override
+        protected void onCancelled() {
+            if (queue != null)
+                queue.cancelAll(TAG);
+        }
+
         @Override
         protected Void doInBackground(String... params) {
             if (params.length != 1) {
@@ -570,7 +589,7 @@ public class PlaceDetailsFrag extends Fragment {
             }
             val placeId = params[0];
 
-            val queue = Volley.newRequestQueue(parent.getContext());
+            queue = Volley.newRequestQueue(parent.getContext());
 
             val key = parent.getContext().getString(R.string.GOOGLE_MAPS_API_KEY);
             queue.add(new JsonObjectRequest(
@@ -650,10 +669,14 @@ public class PlaceDetailsFrag extends Fragment {
                                         queue.add(
                                                 new ImageRequest(
                                                         mPhotoLink,
-                                                        imageResponse -> (
-                                                                (ImageView) parent.photosLayout
-                                                                        .getChildAt(mPhotoLinkIdFinal)
-                                                        ).setImageBitmap(imageResponse),
+                                                        imageResponse -> {
+                                                            if (parent.photosLayout != null &&
+                                                                    parent.photosLayout.getChildCount() > mPhotoLinkIdFinal)
+                                                                (
+                                                                        (ImageView) parent.photosLayout
+                                                                                .getChildAt(mPhotoLinkIdFinal)
+                                                                ).setImageBitmap(imageResponse);
+                                                        },
                                                         0, 0,
                                                         null, null,
                                                         error -> Log.e(TAG, "Error while get google maps photo bitmap")

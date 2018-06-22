@@ -325,11 +325,11 @@ public class AddDetailsActivity extends AppCompatActivity
         if (!introStarted) {
             introStarted = true;
 
-            if (frag.recyclerAdapter.getSections().isEmpty())
-                frag.onAddHeaderClick();
-
             frag.recycler.post(
                     () -> {
+                        if (frag.recyclerAdapter.getSections().isEmpty())
+                            frag.onAddHeaderClick();
+
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
                         // Intro

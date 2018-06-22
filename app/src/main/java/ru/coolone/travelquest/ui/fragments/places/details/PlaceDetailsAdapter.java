@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
@@ -17,6 +18,7 @@ import android.widget.TextView;
 
 import java.io.Serializable;
 
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
@@ -26,6 +28,7 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetails
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
+@RequiredArgsConstructor
 public class PlaceDetailsAdapter
         extends BaseSectionedAdapter<
         BaseSectionedHeader, BaseSectionedViewHolder,
@@ -33,6 +36,9 @@ public class PlaceDetailsAdapter
     private static final String TAG = PlaceDetailsAdapter.class.getSimpleName();
     @Setter
     protected OnClickListener<BaseQuestDetailsItem, BaseSectionedViewHolder> itemClickListener;
+
+    // Context
+    public final Activity activity;
 
     @Setter
     protected OnClickListener<BaseSectionedHeader, PlaceDetailsAdapter.HeaderHolder> headerClickListener;

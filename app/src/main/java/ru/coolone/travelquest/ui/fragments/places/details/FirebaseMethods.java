@@ -22,7 +22,6 @@ import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
-import ru.coolone.travelquest.ui.fragments.places.details.add.PlaceDetailsAddAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
@@ -293,7 +292,7 @@ public class FirebaseMethods {
                                 Log.d(TAG, "No cards");
                             } else for (val mDoc : docs) {
                                 val recycler = new RecyclerView(activity);
-                                val nextAdapter = new PlaceDetailsAdapter();
+                                val nextAdapter = new PlaceDetailsAdapter(activity);
                                 recycler.setAdapter(nextAdapter);
 
                                 val mDocId = mDoc.getId();
@@ -400,12 +399,11 @@ public class FirebaseMethods {
                 }
             }
 
-            if(collapseSection) {
+            if (collapseSection) {
                 adapter.collapseAllSections();
                 adapter.expandSection(0);
             }
-        }
-        else result = true;
+        } else result = true;
 
         Log.d(TAG, "--- Ended parse details headers ---");
 
@@ -508,12 +506,8 @@ public class FirebaseMethods {
         val adapter = (RecyclerView.Adapter)
                 (recyclerView.getAdapter() != null
                         ? (BaseSectionedAdapter) recyclerView.getAdapter() :
-                        (adapterClass == PlaceDetailsAddAdapter.class ||
-                                adapterClass == PlaceCardDetailsAdapter.class)
-                                ? adapterClass.getDeclaredConstructor(Activity.class)
+                        adapterClass.getDeclaredConstructor(Activity.class)
                                 .newInstance(activity)
-                                : adapterClass.getConstructor()
-                                .newInstance()
                 );
 
         if (adapter instanceof SectionedRecyclerViewAdapter) {

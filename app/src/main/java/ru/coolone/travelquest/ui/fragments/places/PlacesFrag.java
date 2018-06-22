@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentTransaction;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -156,10 +155,13 @@ public class PlacesFrag extends Fragment
         parentListener.onPanelCreate(slidingPanel);
 
         // Autocomplete fragment
-        PlacesAutocompleteTextView autocompleteTextView = ((AutocompleteTextViewGetter) getActivity())
+        val autocompleteTextView = ((AutocompleteTextViewGetter) getActivity())
                 .getAutocompleteTextView();
         autocompleteTextView.setOnPlaceSelectedListener(
                 place -> {
+                    // Hide keyboard
+                    MainActivity.hideKeyboard(getActivity());
+
                     // Create progress bar
                     ProgressBar progressBar = new ProgressBar(
                             getContext()
@@ -390,16 +392,45 @@ public class PlacesFrag extends Fragment
                         detailsLoaded = false;
                         placeDetailsFrag.setFragmentListener(PlacesFrag.this);
 
-                        // Set
-                        FragmentTransaction fragTrans = getFragmentManager().beginTransaction();
-                        fragTrans.replace(
-                                R.id.places_sliding_container,
-                                placeDetailsFrag
-                        );
-                        fragTrans.commit();
+                        if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED) {
+
+                            val slideListener = new SlidingUpPanelLayout.PanelSlideListener() {
+                                @Override
+                                public void onPanelSlide(View panel, float slideOffset) {
+                                }
+
+                                @Override
+                                public void onPanelStateChanged(
+                                        View panel,
+                                        SlidingUpPanelLayout.PanelState previousState,
+                                        SlidingUpPanelLayout.PanelState newState
+                                ) {
+                                    if (newState == SlidingUpPanelLayout.PanelState.COLLAPSED) {
+                                        changePlaceDetailsFrag(placeDetailsFrag);
+
+                                        slidingPanel.removePanelSlideListener(this);
+                                    }
+                                }
+                            };
+
+                            slidingPanel.addPanelSlideListener(slideListener);
+                            slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                        } else
+                            changePlaceDetailsFrag(placeDetailsFrag);
                     }
                 });
     }
+
+    void changePlaceDetailsFrag(PlaceDetailsFrag placeDetailsFrag) {
+        // Set
+        val fragTrans = getFragmentManager().beginTransaction();
+        fragTrans.replace(
+                R.id.places_sliding_container,
+                placeDetailsFrag
+        );
+        fragTrans.commit();
+    }
+
 
     @Override
     public void onResume() {
