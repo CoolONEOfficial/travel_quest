@@ -322,11 +322,14 @@ public class AddDetailsActivity extends AppCompatActivity
         val dismissText = getString(R.string.add_details_intro_dismiss_button);
         val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
-        frag.recycler.post(
-                () -> {
-                    if (!introStarted) {
-                        introStarted = true;
+        if (!introStarted) {
+            introStarted = true;
 
+            if (frag.recyclerAdapter.getSections().isEmpty())
+                frag.onAddHeaderClick();
+
+            frag.recycler.post(
+                    () -> {
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
                         // Intro
@@ -343,6 +346,7 @@ public class AddDetailsActivity extends AppCompatActivity
                                 dismissText
                         );
 
+                        // Find translate button
                         FrameLayout translateButtonLayout = null;
                         for (val mTab : tabs)
                             if (mTab.first.getVisibility() == View.VISIBLE)
@@ -381,9 +385,10 @@ public class AddDetailsActivity extends AppCompatActivity
 
                         sequence.start();
                     }
-                }
-        );
+            );
+        }
     }
+
 
     @Override
     public void onBackPressed() {

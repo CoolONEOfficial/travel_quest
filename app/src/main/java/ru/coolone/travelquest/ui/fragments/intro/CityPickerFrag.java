@@ -1,11 +1,12 @@
 package ru.coolone.travelquest.ui.fragments.intro;
 
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.widget.GridLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.RelativeLayout;
 
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -31,29 +32,29 @@ public class CityPickerFrag extends Fragment {
     RelativeLayout container;
 
     @ViewById(R.id.dialog_city_picker_include)
-    View include;
+    HorizontalScrollView cityImagesScroll;
 
     @ViewById(R.id.dialog_city_images)
     GridLayout cityImages;
 
     int rows;
 
+    @SuppressLint("ClickableViewAccessibility")
     @AfterViews
     void afterViews() {
         container.post(
                 () -> {
                     val metrics = new DisplayMetrics();
                     getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
-                    rows = (include.getHeight() / (metrics.heightPixels / 5));
+                    rows = (cityImagesScroll.getHeight() / (metrics.heightPixels / 5));
                     if (rows == 0)
                         rows = 1;
 
-                    SettingsFrag.CityType.values()[SettingsFrag.CityType.INTRO.ordinal()].size = include.getHeight() / rows;
-
-                    SettingsFrag.initCityImages(getContext());
+                    SettingsFrag.CityType.values()[SettingsFrag.CityType.INTRO.ordinal()].size =
+                            cityImagesScroll.getHeight() / rows;
 
                     SettingsFrag.initCitiesLayout(
-                            getContext(),
+                            getActivity(),
                             cityImages,
                             (v, city) -> {
                                 SettingsFrag.selectCitySelect(

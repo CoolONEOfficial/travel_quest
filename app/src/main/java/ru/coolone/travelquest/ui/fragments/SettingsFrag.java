@@ -1,5 +1,6 @@
 package ru.coolone.travelquest.ui.fragments;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -7,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
@@ -171,7 +173,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
         }
     }
 
-    static public enum CityType {
+    public enum CityType {
         SETTINGS(300),
         INTRO;
 
@@ -182,58 +184,6 @@ public class SettingsFrag extends PreferenceFragmentCompat {
         }
 
         CityType() {
-        }
-    }
-
-    static Bitmap[][] cityBitmaps = new Bitmap[CityType.values().length][SupportCity.values().length];
-
-    static public void initCitiesLayout(
-            Context context,
-            GridLayout layout,
-            OnClickCityListener listener,
-            int rowsCount,
-            CityType cityType
-    ) {
-        layout.setRowCount(rowsCount);
-
-        for (val mCity : SupportCity.values()) {
-            val mCityImageContainer = new FrameLayout(context);
-
-            val mCityImage = new ImageView(context);
-            val mCityImageParams = new FrameLayout.LayoutParams(
-                    cityType.size,
-                    cityType.size
-            );
-            mCityImage.setLayoutParams(mCityImageParams);
-            mCityImage.setImageBitmap(
-                    cityBitmaps[cityType.ordinal()][mCity.ordinal()]
-            );
-            mCityImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-            val mCityLabel = new TextView(context);
-            mCityLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-            mCityLabel.setText(mCity.nameId);
-            mCityLabel.setTextSize(
-                    (float) ((22. / 400.) * cityType.size)
-            );
-            mCityLabel.setTextColor(Color.WHITE);
-            mCityLabel.setBackgroundColor(Color.BLACK);
-            mCityLabel.getBackground().setAlpha(128);
-            val mCityLabelParams = new FrameLayout.LayoutParams(
-                    cityType.size,
-                    ViewGroup.LayoutParams.WRAP_CONTENT
-            );
-            mCityLabelParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
-            mCityLabel.setLayoutParams(mCityLabelParams);
-
-            mCityImageContainer.addView(mCityImage);
-            mCityImageContainer.addView(mCityLabel);
-
-            mCityImageContainer.setOnClickListener(
-                    (v) -> listener.onClickCity(v, mCity)
-            );
-
-            layout.addView(mCityImageContainer);
         }
     }
 
@@ -257,27 +207,84 @@ public class SettingsFrag extends PreferenceFragmentCompat {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        initCityImages(getContext());
     }
 
-    static public void initCityImages(
-            Context context
+    static int imagesLoading = 0;
+
+    static public void initCitiesLayout(
+            Activity context,
+            GridLayout layout,
+            OnClickCityListener listener,
+            int rowsCount,
+            CityType cityType
     ) {
-        for (val mCityType : CityType.values()) {
-            for (val mCity : SupportCity.values()) {
-                if (mCityType.size > 0)
-                    cityBitmaps[mCityType.ordinal()][mCity.ordinal()] =
-                            Bitmap.createScaledBitmap(
-                                    BitmapFactory.decodeResource(
-                                            context.getResources(),
-                                            mCity.drawableId
-                                    ),
-                                    mCityType.size, mCityType.size,
-                                    false
-                            );
-            }
-        }
+        val pattern = Bitmap.createScaledBitmap(
+                BitmapFactory.decodeResource(
+                        context.getResources(),
+                        R.drawable.pattern
+                ),
+                cityType.size, cityType.size,
+                false
+        );
+
+        context.runOnUiThread(
+                () -> {
+                    layout.setRowCount(rowsCount);
+
+                    for (val mCity : SupportCity.values()) {
+                        val mCityImageContainer = new FrameLayout(context);
+
+                        val mCityImage = new ImageView(context);
+                        val mCityImageParams = new FrameLayout.LayoutParams(
+                                cityType.size,
+                                cityType.size
+                        );
+                        mCityImage.setLayoutParams(mCityImageParams);
+                        mCityImage.setImageBitmap(
+                                pattern
+                        );
+                        mCityImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+
+                        val mCityLabel = new TextView(context);
+                        mCityLabel.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+                        mCityLabel.setText(mCity.nameId);
+                        mCityLabel.setTextSize(
+                                (float) ((22. / 400.) * cityType.size)
+                        );
+                        mCityLabel.setTextColor(Color.WHITE);
+                        mCityLabel.setBackgroundColor(Color.BLACK);
+                        mCityLabel.getBackground().setAlpha(128);
+                        val mCityLabelParams = new FrameLayout.LayoutParams(
+                                cityType.size,
+                                ViewGroup.LayoutParams.WRAP_CONTENT
+                        );
+                        mCityLabelParams.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+                        mCityLabel.setLayoutParams(mCityLabelParams);
+
+                        mCityImageContainer.addView(mCityImage);
+                        mCityImageContainer.addView(mCityLabel);
+
+                        mCityImageContainer.setOnClickListener(
+                                (v) -> listener.onClickCity(v, mCity)
+                        );
+
+                        AsyncTask.execute(
+                                () -> mCityImage.setImageBitmap(
+                                        Bitmap.createScaledBitmap(
+                                                BitmapFactory.decodeResource(
+                                                        context.getResources(),
+                                                        mCity.drawableId
+                                                ),
+                                                cityType.size, cityType.size,
+                                                false
+                                        )
+                                )
+                        );
+
+                        layout.addView(mCityImageContainer);
+                    }
+                }
+        );
     }
 
     @Override
@@ -334,7 +341,7 @@ public class SettingsFrag extends PreferenceFragmentCompat {
                         preference -> {
                             if (imagesLayout.getChildCount() == 0) {
                                 initCitiesLayout(
-                                        getContext(),
+                                        SettingsFrag.this.getActivity(),
                                         imagesLayout,
                                         (v, city) -> {
                                             selectCitySelect(getContext(), imagesLayout, city.ordinal());
