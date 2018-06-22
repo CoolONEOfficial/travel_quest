@@ -327,20 +327,15 @@ public class AddDetailsActivity extends AppCompatActivity
 
             frag.recycler.post(
                     () -> {
+                        MainActivity.sequenceItems.clear();
+
                         if (frag.recyclerAdapter.getSections().isEmpty())
                             frag.onAddHeaderClick();
 
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
-                        // Intro
-                        ShowcaseConfig config = new ShowcaseConfig();
-                        config.setDelay(100);
-
-                        MaterialShowcaseSequence sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
-
-                        sequence.setConfig(config);
-
-                        sequence.addSequenceItem(
+                        MainActivity.addIntroItem(
+                                this,
                                 frag.addSectionButton,
                                 getString(R.string.add_details_intro_add_header),
                                 dismissText
@@ -353,35 +348,51 @@ public class AddDetailsActivity extends AppCompatActivity
                                 translateButtonLayout = mTab.first;
 
                         if (translateButtonLayout != null)
-                            sequence.addSequenceItem(
+                            MainActivity.addIntroItem(
+                                    this,
                                     translateButtonLayout,
                                     getString(R.string.add_details_intro_translate),
                                     dismissText
                             );
 
-                        sequence.addSequenceItem(
+                        MainActivity.addIntroItem(
+                                this,
                                 firstHolder.findViewById(R.id.add_details_head_add),
                                 getString(R.string.add_details_intro_add),
                                 dismissText
                         );
 
-                        sequence.addSequenceItem(
+                        MainActivity.addIntroItem(
+                                this,
                                 firstHolder.findViewById(R.id.add_details_head_remove),
                                 getString(R.string.add_details_intro_remove),
                                 dismissText
                         );
 
-                        sequence.addSequenceItem(
+                        MainActivity.addIntroItem(
+                                this,
                                 sendView,
                                 getString(R.string.add_details_intro_send),
                                 dismissText
                         );
 
-                        sequence.addSequenceItem(
+                        MainActivity.addIntroItem(
+                                this,
                                 restoreView,
                                 getString(R.string.add_details_intro_restore),
                                 dismissText
                         );
+
+                        val sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+
+                        // Intro
+                        ShowcaseConfig config = new ShowcaseConfig();
+                        config.setDelay(100);
+
+                        sequence.setConfig(config);
+
+                        for (val mItem : MainActivity.sequenceItems)
+                            sequence.addSequenceItem(mItem);
 
                         sequence.start();
                     }
@@ -389,10 +400,15 @@ public class AddDetailsActivity extends AppCompatActivity
         }
     }
 
-
     @Override
     public void onBackPressed() {
-        homeSelected();
+        if (!MainActivity.sequenceItems.isEmpty()) {
+            for (val mItem : MainActivity.sequenceItems)
+                mItem.removeFromWindow();
+            MainActivity.sequenceItems.clear();
+        }
+        else
+            homeSelected();
     }
 
     @Override

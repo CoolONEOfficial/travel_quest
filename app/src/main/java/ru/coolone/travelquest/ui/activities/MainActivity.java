@@ -58,12 +58,18 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.ViewById;
 
+import java.util.ArrayList;
+
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.fragments.AboutFrag_;
 import ru.coolone.travelquest.ui.fragments.SettingsFrag_;
 import ru.coolone.travelquest.ui.fragments.places.PlacesFrag;
 import ru.coolone.travelquest.ui.fragments.places.PlacesFrag_;
+import uk.co.deanwild.materialshowcaseview.MaterialShowcaseView;
+
+import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.ANCHORED;
+import static com.sothree.slidinguppanel.SlidingUpPanelLayout.PanelState.COLLAPSED;
 
 @SuppressLint("Registered")
 @EActivity
@@ -358,13 +364,7 @@ public class MainActivity extends AppCompatActivity implements
         return apiClient;
     }
 
-    public static void hideKeyboard(Activity activity) {
-        val view = activity.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
-    }
+    public static ArrayList<MaterialShowcaseView> sequenceItems = new ArrayList<>();
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -389,21 +389,51 @@ public class MainActivity extends AppCompatActivity implements
         toolbarTitle.setTextColor(color);
     }
 
+    public static void hideKeyboard(Activity activity) {
+        val view = activity.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+    }
+
+    static public void addIntroItem(
+            Activity activity,
+            View target,
+            String content,
+            String dismiss
+    ) {
+        sequenceItems.add(
+                new MaterialShowcaseView.Builder(activity)
+                        .setTarget(target)
+                        .setTitleText("")
+                        .setDismissText(dismiss)
+                        .setContentText(content)
+                        .build()
+        );
+    }
+
+
     @Override
     public void onBackPressed() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+        if (!sequenceItems.isEmpty()) {
+            for (val mItem : sequenceItems)
+                mItem.removeFromWindow();
+            sequenceItems.clear();
+        } else if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else if (currentMenuId == R.id.nav_places) {
             val placesFrag = ((PlacesFrag) fragmentArr.get(FragmentId.PLACES.ordinal()));
+
             val panel = placesFrag.slidingPanel;
 
             placesFrag.placeDetailsFrag.rootScrollView.fullScroll(View.FOCUS_UP);
             switch (panel.getPanelState()) {
                 case EXPANDED:
-                    panel.setPanelState(SlidingUpPanelLayout.PanelState.ANCHORED);
+                    panel.setPanelState(ANCHORED);
                     break;
                 case ANCHORED:
-                    panel.setPanelState(SlidingUpPanelLayout.PanelState.COLLAPSED);
+                    panel.setPanelState(COLLAPSED);
                     break;
                 case COLLAPSED:
                     panel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);

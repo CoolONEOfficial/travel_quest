@@ -469,13 +469,24 @@ public class PlaceDetailsFrag extends Fragment {
 
                                         val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
                                         if (firstAdapter != null) {
-                                            sequence.addSequenceItem(
+                                            MainActivity.sequenceItems.clear();
+
+                                            MainActivity.addIntroItem(
+                                                    getActivity(),
                                                     firstAdapter.itemView,
                                                     getString(R.string.details_intro_details),
                                                     skipButton
                                             );
 
-                                            sequence.addSequenceItem(
+                                            MainActivity.addIntroItem(
+                                                    getActivity(),
+                                                    firstAdapter.itemView,
+                                                    getString(R.string.details_intro_details),
+                                                    skipButton
+                                            );
+
+                                            MainActivity.addIntroItem(
+                                                    getActivity(),
                                                     firstAdapter.itemView
                                                             .findViewById(R.id.card_details_star),
                                                     getString(
@@ -486,7 +497,8 @@ public class PlaceDetailsFrag extends Fragment {
                                                     skipButton
                                             );
 
-                                            sequence.addSequenceItem(
+                                            MainActivity.addIntroItem(
+                                                    getActivity(),
                                                     logon
                                                             ? detailsAddButton
                                                             : new View(getContext()),
@@ -497,6 +509,9 @@ public class PlaceDetailsFrag extends Fragment {
                                                     ),
                                                     skipButton
                                             );
+
+                                            for (val mItem : MainActivity.sequenceItems)
+                                                sequence.addSequenceItem(mItem);
 
                                             introStarted = true;
                                             sequence.start();
