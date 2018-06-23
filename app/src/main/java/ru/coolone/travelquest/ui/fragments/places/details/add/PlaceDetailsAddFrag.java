@@ -131,11 +131,12 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
                                 task,
                                 (BaseSectionedAdapter) recycler.getAdapter(),
                                 false,
-                                PlaceDetailsAddFrag.this.getActivity()
+                                PlaceDetailsAddFrag.this.getActivity(),
+                                () -> {
+                                    if (listener != null)
+                                        listener.onSectionsLoaded(lang);
+                                }
                         );
-
-                        if (listener != null)
-                            listener.onSectionsLoaded(lang);
                     })
                     .addOnFailureListener(
                             e -> {

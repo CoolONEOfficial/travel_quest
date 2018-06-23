@@ -281,14 +281,13 @@ public class FirebaseMethods {
                                 mDoc.getReference().collection("coll").get()
                                         .addOnSuccessListener(
                                                 collDetails -> {
-                                                    if (parseDetailsHeaders(
+                                                    if (!parseDetailsHeaders(
                                                             collDetails,
                                                             nextAdapter,
                                                             true,
-                                                            activity
+                                                            activity,
+                                                            listener::onTaskSuccess
                                                     ))
-                                                        listener.onTaskSuccess();
-                                                    else
                                                         listener.onTaskError(new Exception("Error while parsing card details"));
                                                 }
                                         )
@@ -315,15 +314,20 @@ public class FirebaseMethods {
             QuerySnapshot coll,
             BaseSectionedAdapter adapter,
             boolean collapseSection,
-            Activity activity
+            Activity activity,
+            TasksCounter.TaskListener listener
     ) {
         boolean result = false;
 
         Log.d(TAG, "--- Started parse details headers ---");
 
+        val parseCounter = new TasksCounter("parse", listener);
+
         val docs = coll.getDocuments();
 
         if (!docs.isEmpty()) {
+            parseCounter.onStartTasks(docs.size());
+
             for (DocumentSnapshot mDoc : docs) {
                 if (mDoc.contains("title")) {
                     // Recycler view
@@ -351,7 +355,8 @@ public class FirebaseMethods {
                                                 nextSection,
                                                 adapter,
                                                 collapseSection,
-                                                activity
+                                                activity,
+                                                parseCounter
                                         );
                                     }
                             );
@@ -360,6 +365,8 @@ public class FirebaseMethods {
                 } else {
                     Log.e(TAG, "mDoc not contain title!");
                 }
+
+                parseCounter.onEndTask();
             }
 
             if (collapseSection) {
@@ -378,9 +385,12 @@ public class FirebaseMethods {
             Pair<BaseSectionedHeader, List<BaseQuestDetailsItem>> section,
             BaseSectionedAdapter parentAdapter,
             boolean collapseSection,
-            Activity activity) {
+            Activity activity,
+            TasksCounter parseCounter
+    ) {
         Log.d(TAG, "--- Started parse details sections ---");
 
+        parseCounter.onStartTasks(coll.getDocuments().size());
         for (DocumentSnapshot mDoc : coll.getDocuments()) {
             Log.d(TAG, "mDoc id: " + mDoc.getId());
 
@@ -429,7 +439,8 @@ public class FirebaseMethods {
                                                 nextSection,
                                                 parentAdapter,
                                                 collapseSection,
-                                                activity
+                                                activity,
+                                                parseCounter
                                         );
                                     }
                                 }
@@ -437,9 +448,7 @@ public class FirebaseMethods {
                         .addOnFailureListener(
                                 e -> Log.e(TAG, "Error while getting coll in mDoc", e)
                         );
-            } else {
-                Log.e(TAG, "Unknown doc! (" + mDoc.getId() + ") " + mDoc);
-            }
+            } else Log.e(TAG, "Unknown doc! (" + mDoc.getId() + ") " + mDoc);
 
             if (mItem != null) {
                 Log.d(TAG, "Item " + mItem.getClass().getSimpleName() + " added to section");
@@ -447,6 +456,8 @@ public class FirebaseMethods {
 
                 parentAdapter.notifyDataSetChanged();
             }
+
+            parseCounter.onEndTask();
         }
 
         Log.d(TAG, "--- Ended parse details sections ---");
