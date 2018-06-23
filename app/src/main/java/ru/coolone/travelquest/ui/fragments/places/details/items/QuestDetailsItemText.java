@@ -6,23 +6,27 @@ import android.text.Spanned;
 
 import java.io.Serializable;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 /**
  * Created by coolone on 14.11.17.
  */
 
-@AllArgsConstructor
+@RequiredArgsConstructor
 @NoArgsConstructor
 public class QuestDetailsItemText extends BaseQuestDetailsItem {
+    public boolean userEditable = false;
     @Getter
     @Setter
+    @NonNull
     Spanned text;
     @Getter
     @Setter
+    @NonNull
     String html;
 
     public QuestDetailsItemText(Parcel parcel) {

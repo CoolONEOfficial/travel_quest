@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.LayoutRes;
+import android.util.Log;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,8 @@ public class BaseSectionedAdapter<
         I extends Parcelable, IVH extends BaseSectionedViewHolder>
         extends SectionedRecyclerViewAdapter<IVH>
         implements Parcelable {
+    private static final String TAG = BaseSectionedAdapter.class.getSimpleName();
+
     public BaseSectionedAdapter(Parcel parcel) {
         for (int mSectionId = 0; mSectionId < parcel.readInt(); mSectionId++) {
             sections.add(
@@ -59,9 +62,7 @@ public class BaseSectionedAdapter<
             Activity activity
     ) {
         this.sections = sections;
-        activity.runOnUiThread(
-                () -> notifyDataSetChanged()
-        );
+        activity.runOnUiThread(this::notifyDataSetChanged);
     }
 
     public void setSections(ArrayList<Pair<H, ArrayList<I>>> sections) {
@@ -209,6 +210,8 @@ public class BaseSectionedAdapter<
     }
 
     protected void onSectionsChanged() {
+        Log.d(TAG, "Sections changed");
+
         if (listener != null)
             listener.sectionsChanged();
     }

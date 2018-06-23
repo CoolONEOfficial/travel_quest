@@ -21,6 +21,7 @@ import java.util.Random;
 import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.TasksCounter;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
 import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetailsItem;
@@ -33,60 +34,6 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
  */
 public class FirebaseMethods {
     private static final String TAG = FirebaseMethods.class.getSimpleName();
-
-    private static int startedDeleteTasks;
-    private static final Object startedDeleteTasksLock = new Object();
-
-    private static void onStartDeleteTasks(int count) {
-        synchronized (startedDeleteTasksLock) {
-            startedDeleteTasks += count;
-        }
-    }
-
-    private static void onStartDeleteTask() {
-        synchronized (startedDeleteTasksLock) {
-            startedDeleteTasks++;
-        }
-    }
-
-    private static void onEndDeleteTask() {
-        synchronized (startedDeleteTasksLock) {
-            startedDeleteTasks--;
-        }
-    }
-
-    private static int startedSerializeTasks;
-    private static final Object startedSerializeTasksLock = new Object();
-
-    private static void onEndSerializeTask(TaskListener listener) {
-        onEndSerializeTask();
-
-        Log.d(TAG, "checkEndTask started, tasks count: " + startedSerializeTasks);
-
-        if (startedSerializeTasks == 0) {
-            Log.d(TAG, "All serialize tasks ended!");
-            listener.onTaskCompleted();
-            listener.onTaskSuccess();
-        }
-    }
-
-    private static void onStartSerializeTasks(int count) {
-        synchronized (startedSerializeTasksLock) {
-            startedSerializeTasks += count;
-        }
-    }
-
-    private static void onStartSerializeTask() {
-        synchronized (startedSerializeTasksLock) {
-            startedSerializeTasks++;
-        }
-    }
-
-    private static void onEndSerializeTask() {
-        synchronized (startedSerializeTasksLock) {
-            startedSerializeTasks--;
-        }
-    }
 
     public interface TaskListener {
         void onTaskSuccess();
@@ -101,7 +48,16 @@ public class FirebaseMethods {
             RecyclerView recyclerView,
             TaskListener listener
     ) {
-        onStartSerializeTask();
+        val serializeCounter = new TasksCounter(
+                "serialize",
+                () -> {
+                    Log.d(TAG, "All serialize tasks ended!");
+                    listener.onTaskCompleted();
+                    listener.onTaskSuccess();
+                }
+        );
+        serializeCounter.onStartTask();
+
         coll.get().addOnSuccessListener(
                 queryDocumentSnapshots -> {
                     if (queryDocumentSnapshots.getDocuments().isEmpty())
@@ -110,11 +66,26 @@ public class FirebaseMethods {
                                 coll,
                                 (BaseSectionedAdapter) recyclerView.getAdapter(),
                                 0,
-                                listener
+                                listener,
+                                serializeCounter
                         );
                     else {
+                        val deleteCounter = new TasksCounter(
+                                "delete",
+                                () -> {
+                                    // Start serialize docs
+                                    serializeDetails(
+                                            coll,
+                                            (BaseSectionedAdapter) recyclerView.getAdapter(),
+                                            0,
+                                            listener,
+                                            serializeCounter
+                                    );
+                                }
+                        );
+
                         // Delete all old docs
-                        onStartDeleteTasks(queryDocumentSnapshots.getDocuments().size());
+                        deleteCounter.onStartTasks(queryDocumentSnapshots.getDocuments().size());
                         for (val mDoc : queryDocumentSnapshots.getDocuments())
                             mDoc.getReference().delete()
                                     .addOnFailureListener(
@@ -126,25 +97,14 @@ public class FirebaseMethods {
                                             }
                                     )
                                     .addOnSuccessListener(
-                                            task -> {
-                                                onEndDeleteTask();
-
-                                                if (startedDeleteTasks == 0)
-                                                    // Start serialize docs
-                                                    serializeDetails(
-                                                            coll,
-                                                            (BaseSectionedAdapter) recyclerView.getAdapter(),
-                                                            0,
-                                                            listener
-                                                    );
-                                            }
+                                            task -> deleteCounter.onEndTask()
                                     );
                     }
                 }
         ).addOnFailureListener(
                 e -> Log.e(TAG, "Error while get docs of coll " + coll.getId())
         ).addOnCompleteListener(
-                task -> onEndSerializeTask()
+                task -> serializeCounter.onEndTask()
         );
     }
 
@@ -175,7 +135,8 @@ public class FirebaseMethods {
             CollectionReference coll,
             BaseSectionedAdapter adapter,
             int startId,
-            TaskListener listener
+            TaskListener listener,
+            TasksCounter serializeCounter
     ) {
         Log.d(TAG, "--- Started serialize details ---");
 
@@ -199,7 +160,7 @@ public class FirebaseMethods {
                     ) + getSaltString()
             );
 
-            onStartSerializeTask();
+            serializeCounter.onStartTask();
             mDoc.set(
                     new HashMap<String, Object>() {{
                         put("title", mSection.first.getTitle());
@@ -213,7 +174,7 @@ public class FirebaseMethods {
                         listener.onTaskError(e);
                     }
             ).addOnCompleteListener(
-                    task -> onEndSerializeTask(listener)
+                    task -> serializeCounter.onEndTask()
             );
 
             val nextColl = mDoc.collection("coll");
@@ -231,7 +192,7 @@ public class FirebaseMethods {
 
                     if (!mItemText.getText().toString().trim().isEmpty()) {
                         // Serialize
-                        onStartSerializeTask();
+                        serializeCounter.onStartTask();
                         nextColl.document(
                                 addNullsPrefix(mItemId, mSection.second.size())
                                         + getSaltString()
@@ -251,7 +212,7 @@ public class FirebaseMethods {
                                     listener.onTaskError(e);
                                 }
                         ).addOnCompleteListener(
-                                task -> onEndSerializeTask(listener)
+                                task -> serializeCounter.onEndTask()
                         );
                     }
                 } else if (mItem instanceof QuestDetailsItemRecycler) {
@@ -264,7 +225,8 @@ public class FirebaseMethods {
                             nextColl,
                             mItemAdapter,
                             mItemId,
-                            listener
+                            listener,
+                            serializeCounter
                     );
                 }
             }

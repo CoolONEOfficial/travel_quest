@@ -12,7 +12,6 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
 import android.text.Layout;
-import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -148,7 +147,6 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         public void afterTextChanged(Editable s) {
                             getHeader(getRelativePosition().section())
                                     .setTitle(s.toString());
-                            onSectionsChanged();
                         }
                     }
             );
@@ -180,7 +178,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                             adapter.addSection(
                                                     new Pair<>(
                                                             new BaseSectionedHeader(),
-                                                            new ArrayList()
+                                                            new ArrayList<>()
                                                     )
                                             );
                                             adapter.setListener(listener);
@@ -398,14 +396,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         public void afterTextChanged(Editable s) {
                             val item = ((QuestDetailsItemText) getItem(getLayoutPosition()));
                             item.setText(s);
-                            item.setHtml(
-                                    unescapeHtml4(
-                                            Html.toHtml(
-                                                    new SpannableString(s.toString().trim())
-                                            )
-                                    )
-                            );
-                            onSectionsChanged();
+                            item.setHtml(unescapeHtml4(Html.toHtml(s)));
                         }
                     }
             );
@@ -427,6 +418,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         public void bind(QuestDetailsItemText item) {
             val itemText = item.getText();
 
+            text.setEnabled(item.userEditable);
             text.setText(
                     itemText != null && !itemText.toString().trim().isEmpty()
                             ? itemText

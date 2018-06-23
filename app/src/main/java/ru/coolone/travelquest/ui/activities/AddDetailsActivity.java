@@ -51,6 +51,8 @@ import java.util.HashMap;
 import lombok.SneakyThrows;
 import lombok.val;
 import ru.coolone.travelquest.R;
+import ru.coolone.travelquest.TasksCounter;
+import ru.coolone.travelquest.ui.MyViewPager;
 import ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedAdapter;
 import ru.coolone.travelquest.ui.fragments.places.details.adapters.BaseSectionedHeader;
@@ -87,7 +89,7 @@ public class AddDetailsActivity extends AppCompatActivity
 
     // View pager
     @ViewById(R.id.add_details_viewpager)
-    ViewPager viewPager;
+    MyViewPager viewPager;
     PlaceDetailsAddPagerAdapter pagerAdapter;
 
     // Tab layout
@@ -192,47 +194,6 @@ public class AddDetailsActivity extends AppCompatActivity
         }
     };
 
-    int startedTranslateTasks;
-    final Object startedTranslateTasksLock = new Object();
-
-    void onStartTask() {
-        synchronized (startedTranslateTasksLock) {
-            startedTranslateTasks++;
-        }
-    }
-
-    void onStartTasks(int count) {
-        synchronized (startedTranslateTasksLock) {
-            startedTranslateTasks += count;
-        }
-
-        Log.d(TAG, "Translate started task. Count: " + startedTranslateTasks);
-    }
-
-    void onEndTask() {
-        synchronized (startedTranslateTasksLock) {
-            startedTranslateTasks--;
-        }
-
-        Log.d(TAG, "Translate ended task. Count: " + startedTranslateTasks);
-    }
-
-    void onEndTask(
-            TranslateFragListener completeListener,
-            PlaceDetailsAddFrag toFrag
-    ) {
-        onEndTask();
-        Log.d(TAG, "Translate ended task with check. Count: " + startedTranslateTasks);
-
-        if (startedTranslateTasks == 0) {
-            Log.d(TAG, "Translate ended all tasks!");
-
-            toFrag.translateInProgress = false;
-            completeListener.onTranslateFragCompleted(toFrag);
-            completeListener.onTranslateFragSuccess(toFrag);
-        }
-    }
-
     void translateDetails(
             PlaceDetailsAddFrag fromFrag,
             PlaceDetailsAddFrag toFrag,
@@ -241,6 +202,13 @@ public class AddDetailsActivity extends AppCompatActivity
         toFrag.showProgressBar(getString(R.string.add_details_progress_translate));
 
         Log.d(TAG, "Started transalte " + fromFrag.lang.lang + " to " + toFrag.lang.lang);
+
+        toFrag.translated = true;
+        toFrag.translatedChanged = false;
+        toFrag.translateInProgress = true;
+        setUserEditable(toFrag, false);
+
+        untranslatedChanges = false;
 
         val fromAdapter = (PlaceDetailsAddAdapter) fromFrag.recycler.getAdapter();
         val toAdapter = (PlaceDetailsAddAdapter) toFrag.recycler.getAdapter();
@@ -259,12 +227,40 @@ public class AddDetailsActivity extends AppCompatActivity
                 toFrag,
                 fragListener
         );
+    }
 
-        toFrag.translated = true;
-        toFrag.translatedChanged = false;
-        toFrag.translateInProgress = true;
+    void setUserEditable(
+            PlaceDetailsAddFrag frag,
+            boolean userEditable
+    ) {
+        viewPager.setSwipeable(userEditable);
 
-        untranslatedChanges = false;
+        frag.addSectionButton.setEnabled(userEditable);
+
+        applyUserEditableSections(frag.recyclerAdapter.getSections(), userEditable);
+        frag.recyclerAdapter.notifyDataSetChanged();
+    }
+
+    private void applyUserEditableSections(
+            ArrayList<Pair<BaseSectionedHeader, ArrayList<BaseQuestDetailsItem>>> sections,
+            boolean userEditable
+    ) {
+        for (val mSection : sections) {
+            for (val mItem : mSection.second) {
+                if (mItem instanceof QuestDetailsItemText) {
+                    val mItemText = (QuestDetailsItemText) mItem;
+
+                    mItemText.userEditable = userEditable;
+                } else if (mItem instanceof QuestDetailsItemRecycler) {
+                    val mItemRecycler = (QuestDetailsItemRecycler) mItem;
+
+                    applyUserEditableSections(
+                            mItemRecycler.getRecyclerAdapter().getSections(),
+                            userEditable
+                    );
+                }
+            }
+        }
     }
 
     void translateDetailAdapters(
@@ -273,7 +269,17 @@ public class AddDetailsActivity extends AppCompatActivity
             PlaceDetailsAddFrag toFrag,
             TranslateFragListener fragListener
     ) {
-        onStartTasks(adapter.getSectionCount());
+        val translateCounter = new TasksCounter(
+                "translate",
+                () -> {
+                    fragListener.onTranslateFragCompleted(toFrag);
+                    fragListener.onTranslateFragSuccess(toFrag);
+                    toFrag.translateInProgress = false;
+                    setUserEditable(toFrag, true);
+                }
+        );
+
+        translateCounter.onStartTasks(adapter.getSectionCount());
 
         for (val mSection : adapter.getSections()) {
             translateHeader(
@@ -281,10 +287,11 @@ public class AddDetailsActivity extends AppCompatActivity
                     mSection.first,
                     fromFrag,
                     toFrag,
-                    fragListener
+                    fragListener,
+                    translateCounter
             );
 
-            onStartTasks(mSection.second.size());
+            translateCounter.onStartTasks(mSection.second.size());
 
             for (val mItem : mSection.second) {
                 if (mItem instanceof QuestDetailsItemRecycler) {
@@ -304,15 +311,16 @@ public class AddDetailsActivity extends AppCompatActivity
                                 mTextItem,
                                 fromFrag,
                                 toFrag,
-                                fragListener
+                                fragListener,
+                                translateCounter
                         );
                     }
                 }
 
-                onEndTask();
+                translateCounter.onEndTask();
             }
 
-            onEndTask();
+            translateCounter.onEndTask();
         }
     }
 
@@ -321,90 +329,96 @@ public class AddDetailsActivity extends AppCompatActivity
     Pair<FrameLayout, SwitchIconView> tabs[] = new Pair[MainActivity.SupportLang.values().length];
 
     @Override
-    public void onSectionsLoaded() {
-        val dismissText = getString(R.string.add_details_intro_dismiss_button);
-        val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
+    public void onSectionsLoaded(MainActivity.SupportLang fragLang) {
+        setUserEditable(
+                pagerAdapter.getItem(fragLang.ordinal()),
+                true
+        );
 
-        val sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+        if (fragLang == pagerAdapter.getItem(tabLayout.getSelectedTabPosition()).lang) {
+            val dismissText = getString(R.string.add_details_intro_dismiss_button);
+            val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
-        if (!sequence.hasFired() && !introStarted) {
-            introStarted = true;
+            val sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
 
-            if (frag.recyclerAdapter.getSections().isEmpty())
-                frag.onAddHeaderClick();
+            if (!sequence.hasFired() && !introStarted) {
+                introStarted = true;
 
-            frag.recycler.post(
-                    () -> {
-                        MainActivity.sequenceItems.clear();
+                if (frag.recyclerAdapter.getSections().isEmpty())
+                    frag.onAddHeaderClick();
 
-                        if(frag.recycler.findViewHolderForAdapterPosition(0) == null) {
-                            Log.d(TAG, "");
-                        }
-                        else Log.d(TAG, "");
+                frag.recycler.post(
+                        () -> {
+                            MainActivity.sequenceItems.clear();
 
-                        val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
+                            if (frag.recycler.findViewHolderForAdapterPosition(0) == null) {
+                                Log.d(TAG, "");
+                            } else Log.d(TAG, "");
 
-                        MainActivity.addIntroItem(
-                                this,
-                                frag.addSectionButton,
-                                getString(R.string.add_details_intro_add_header),
-                                dismissText
-                        );
+                            val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
-                        // Find translate button
-                        FrameLayout translateButtonLayout = null;
-                        for (val mTab : tabs)
-                            if (mTab.first.getVisibility() == View.VISIBLE)
-                                translateButtonLayout = mTab.first;
-
-                        if (translateButtonLayout != null)
                             MainActivity.addIntroItem(
                                     this,
-                                    translateButtonLayout,
-                                    getString(R.string.add_details_intro_translate),
+                                    frag.addSectionButton,
+                                    getString(R.string.add_details_intro_add_header),
                                     dismissText
                             );
 
-                        MainActivity.addIntroItem(
-                                this,
-                                firstHolder.findViewById(R.id.add_details_head_add),
-                                getString(R.string.add_details_intro_add),
-                                dismissText
-                        );
+                            // Find translate button
+                            FrameLayout translateButtonLayout = null;
+                            for (val mTab : tabs)
+                                if (mTab.first.getVisibility() == View.VISIBLE)
+                                    translateButtonLayout = mTab.first;
 
-                        MainActivity.addIntroItem(
-                                this,
-                                firstHolder.findViewById(R.id.add_details_head_remove),
-                                getString(R.string.add_details_intro_remove),
-                                dismissText
-                        );
+                            if (translateButtonLayout != null)
+                                MainActivity.addIntroItem(
+                                        this,
+                                        translateButtonLayout,
+                                        getString(R.string.add_details_intro_translate),
+                                        dismissText
+                                );
 
-                        MainActivity.addIntroItem(
-                                this,
-                                sendView,
-                                getString(R.string.add_details_intro_send),
-                                dismissText
-                        );
+                            MainActivity.addIntroItem(
+                                    this,
+                                    firstHolder.findViewById(R.id.add_details_head_add),
+                                    getString(R.string.add_details_intro_add),
+                                    dismissText
+                            );
 
-                        MainActivity.addIntroItem(
-                                this,
-                                restoreView,
-                                getString(R.string.add_details_intro_restore),
-                                dismissText
-                        );
+                            MainActivity.addIntroItem(
+                                    this,
+                                    firstHolder.findViewById(R.id.add_details_head_remove),
+                                    getString(R.string.add_details_intro_remove),
+                                    dismissText
+                            );
 
-                        // Intro
-                        ShowcaseConfig config = new ShowcaseConfig();
-                        config.setDelay(100);
+                            MainActivity.addIntroItem(
+                                    this,
+                                    sendView,
+                                    getString(R.string.add_details_intro_send),
+                                    dismissText
+                            );
 
-                        sequence.setConfig(config);
+                            MainActivity.addIntroItem(
+                                    this,
+                                    restoreView,
+                                    getString(R.string.add_details_intro_restore),
+                                    dismissText
+                            );
 
-                        for (val mItem : MainActivity.sequenceItems)
-                            sequence.addSequenceItem(mItem);
+                            // Intro
+                            ShowcaseConfig config = new ShowcaseConfig();
+                            config.setDelay(100);
 
-                        sequence.start();
-                    }
-            );
+                            sequence.setConfig(config);
+
+                            for (val mItem : MainActivity.sequenceItems)
+                                sequence.addSequenceItem(mItem);
+
+                            sequence.start();
+                        }
+                );
+            }
         }
     }
 
@@ -414,8 +428,7 @@ public class AddDetailsActivity extends AppCompatActivity
             for (val mItem : MainActivity.sequenceItems)
                 mItem.removeFromWindow();
             MainActivity.sequenceItems.clear();
-        }
-        else
+        } else
             homeSelected();
     }
 
@@ -423,8 +436,15 @@ public class AddDetailsActivity extends AppCompatActivity
     public void onSectionsChanged(MainActivity.SupportLang fragLang) {
         unsavedChanges = true;
 
-        if (fragLang == MainActivity.getLocale(AddDetailsActivity.this))
+        if (fragLang == MainActivity.getLocale(AddDetailsActivity.this)) {
             untranslatedChanges = true;
+
+            for (int mFragId = 0; mFragId < pagerAdapter.getCount(); mFragId++) {
+                val mFrag = pagerAdapter.getItem(mFragId);
+                if (mFrag.translated)
+                    mFrag.translatedChanged = true;
+            }
+        }
     }
 
     @Override
@@ -458,7 +478,8 @@ public class AddDetailsActivity extends AppCompatActivity
             QuestDetailsItemText itemText,
             PlaceDetailsAddFrag fromFrag,
             PlaceDetailsAddFrag toFrag,
-            TranslateFragListener fragListener
+            TranslateFragListener fragListener,
+            TasksCounter translateCounter
     ) {
         translateTranslatable(
                 new Translatable() {
@@ -472,11 +493,14 @@ public class AddDetailsActivity extends AppCompatActivity
                         itemText.setText(new SpannableString(Html.fromHtml(text)));
                         itemText.setHtml(text);
                         adapter.notifyDataSetChanged();
+
+                        Log.d(TAG, "Translate text setted: " + text);
                     }
                 },
                 fromFrag,
                 toFrag,
-                fragListener
+                fragListener,
+                translateCounter
         );
     }
 
@@ -485,7 +509,8 @@ public class AddDetailsActivity extends AppCompatActivity
             BaseSectionedHeader header,
             PlaceDetailsAddFrag fromFrag,
             PlaceDetailsAddFrag toFrag,
-            TranslateFragListener fragListener
+            TranslateFragListener fragListener,
+            TasksCounter translateCounter
     ) {
         translateTranslatable(
                 new Translatable() {
@@ -502,7 +527,8 @@ public class AddDetailsActivity extends AppCompatActivity
                 },
                 fromFrag,
                 toFrag,
-                fragListener
+                fragListener,
+                translateCounter
         );
     }
 
@@ -511,7 +537,8 @@ public class AddDetailsActivity extends AppCompatActivity
             Translatable translatable,
             PlaceDetailsAddFrag fromFrag,
             PlaceDetailsAddFrag toFrag,
-            TranslateFragListener fragListener
+            TranslateFragListener fragListener,
+            TasksCounter translateCounter
     ) {
         val text = translatable.getText();
 
@@ -556,7 +583,8 @@ public class AddDetailsActivity extends AppCompatActivity
                                 ).show();
                         }
                     },
-                    fragListener
+                    fragListener,
+                    translateCounter
             );
         }
     }
@@ -567,7 +595,8 @@ public class AddDetailsActivity extends AppCompatActivity
             PlaceDetailsAddFrag toFrag,
             TranslateListener listener,
             TranslateErrorListener errorListener,
-            TranslateFragListener fragListener
+            TranslateFragListener fragListener,
+            TasksCounter translateCounter
     ) {
         if (queue == null)
             queue = Volley.newRequestQueue(this);
@@ -591,8 +620,6 @@ public class AddDetailsActivity extends AppCompatActivity
                 uriStr,
                 null,
                 response -> {
-                    onEndTask(fragListener, toFrag);
-
                     try {
                         if (response.getInt("code") == HttpURLConnection.HTTP_OK) {
                             listener.onTranslateSuccess(response.getJSONArray("text").getString(0));
@@ -609,6 +636,8 @@ public class AddDetailsActivity extends AppCompatActivity
                             fragListener.onTranslateFragCompleted(toFrag);
                         }
                     }
+
+                    translateCounter.onEndTask();
                 },
                 error -> {
                     if (errorListener != null) {
@@ -619,7 +648,7 @@ public class AddDetailsActivity extends AppCompatActivity
                 }
         );
 
-        onStartTask();
+        translateCounter.onStartTask();
 
         queue.add(request);
     }
@@ -730,7 +759,7 @@ public class AddDetailsActivity extends AppCompatActivity
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_send_alert_title))
                         .setMessage(getString(R.string.add_details_action_send_alert_text))
-                        .setCancelable(false)
+                        .setCancelable(true)
                         .setPositiveButton(
                                 getString(R.string.add_details_action_alert_confirm),
                                 (dialog, which) -> {

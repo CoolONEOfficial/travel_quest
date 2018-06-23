@@ -101,14 +101,58 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
             translatedChanged = true;
     }
 
-    public interface Listener {
-        void onSectionsLoaded();
+    private void refreshDetails() {
+        if (placeId != null) {
+            val db = FirebaseFirestore
+                    .getInstance();
 
-        void onSectionsChanged(SupportLang fragLang);
+            val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
+            val userName = MainActivity.firebaseUser.getDisplayName();
+            if (userName != null && !userName.isEmpty())
+                docPath.append('_').append(userName);
 
-        FrameLayout getTranslateLayout(SupportLang fragLang);
+            val collRef = db
+                    .collection(lang.lang)
+                    .document("quests")
+                    .collection(placeId)
+                    .document(docPath.toString())
+                    .collection("coll");
 
-        SwitchIconView getTranslateIcon(SupportLang fragLang);
+            // Parse details
+
+            // Show bar
+            showProgressBar(getString(R.string.add_details_progress_load));
+
+            // Get doc
+            collRef.get().addOnSuccessListener(
+                    task -> {
+                        // Parse details
+                        parseDetailsHeaders(
+                                task,
+                                (BaseSectionedAdapter) recycler.getAdapter(),
+                                false,
+                                PlaceDetailsAddFrag.this.getActivity()
+                        );
+
+                        if (listener != null)
+                            listener.onSectionsLoaded(lang);
+                    })
+                    .addOnFailureListener(
+                            e -> {
+                                if (e != null && e.getLocalizedMessage() != null &&
+                                        !e.getLocalizedMessage().trim().isEmpty())
+                                    Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG)
+                                            .show();
+                            }
+                    )
+                    .addOnCompleteListener(
+                            task -> {
+                                hideProgressBar();
+
+                                translatedChanged = false;
+                            }
+                    );
+        }
     }
 
     public void restoreDetails() {
@@ -239,58 +283,14 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
         sectionsChanged();
     }
 
-    private void refreshDetails() {
-        if (placeId != null) {
-            val db = FirebaseFirestore
-                    .getInstance();
+    public interface Listener {
+        void onSectionsLoaded(SupportLang fragLang);
 
-            val docPath = new StringBuilder(MainActivity.firebaseUser.getUid());
-            val userName = MainActivity.firebaseUser.getDisplayName();
-            if (userName != null && !userName.isEmpty())
-                docPath.append('_').append(userName);
+        void onSectionsChanged(SupportLang fragLang);
 
-            val collRef = db
-                    .collection(lang.lang)
-                    .document("quests")
-                    .collection(placeId)
-                    .document(docPath.toString())
-                    .collection("coll");
+        FrameLayout getTranslateLayout(SupportLang fragLang);
 
-            // Parse details
-
-            // Show bar
-            showProgressBar(getString(R.string.add_details_progress_load));
-
-            // Get doc
-            collRef.get().addOnSuccessListener(
-                    task -> {
-                        // Parse details
-                        parseDetailsHeaders(
-                                task,
-                                (BaseSectionedAdapter) recycler.getAdapter(),
-                                false,
-                                PlaceDetailsAddFrag.this.getActivity()
-                        );
-
-                        if (listener != null)
-                            listener.onSectionsLoaded();
-                    })
-                    .addOnFailureListener(
-                            e -> {
-                                if (e != null && e.getLocalizedMessage() != null &&
-                                        !e.getLocalizedMessage().trim().isEmpty())
-                                    Toast.makeText(getContext(), e.getLocalizedMessage(), Toast.LENGTH_LONG)
-                                            .show();
-                            }
-                    )
-                    .addOnCompleteListener(
-                            task -> {
-                                hideProgressBar();
-
-                                translatedChanged = false;
-                            }
-                    );
-        }
+        SwitchIconView getTranslateIcon(SupportLang fragLang);
     }
 
     @Override
