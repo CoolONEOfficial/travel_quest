@@ -3,6 +3,7 @@ package ru.coolone.travelquest.ui.fragments.places.details;
 import android.app.Activity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.util.Pair;
 
@@ -228,7 +229,7 @@ public class FirebaseMethods {
                     val mItemText = (QuestDetailsItemText) mItem;
                     Log.d(TAG, "mItem is text");
 
-                    if (!mItemText.getText().trim().isEmpty()) {
+                    if (!mItemText.getText().toString().trim().isEmpty()) {
                         // Serialize
                         onStartSerializeTask();
                         nextColl.document(
@@ -428,6 +429,7 @@ public class FirebaseMethods {
                 Log.d(TAG, "mDoc is text (" + mDocText + ")");
 
                 mItem = new QuestDetailsItemText(
+                        Html.fromHtml(mDocText),
                         mDocText
                 );
             } else if (mDoc.contains("title")) {

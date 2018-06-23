@@ -13,7 +13,6 @@ import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
@@ -177,23 +176,6 @@ public class MainActivity extends AppCompatActivity implements
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        // Strict mode
-        StrictMode.setThreadPolicy(
-                new StrictMode.ThreadPolicy
-                        .Builder()
-                        .detectAll()
-                        .penaltyLog()
-                        .build()
-        );
-        StrictMode.setVmPolicy(
-                new StrictMode.VmPolicy
-                        .Builder()
-                        .detectLeakedSqlLiteObjects()
-                        .detectLeakedClosableObjects()
-                        .penaltyLog()
-                        .build()
-        );
 
         if (!isGooglePlayServicesAvailable(this))
             finish();

@@ -456,16 +456,12 @@ public class PlaceDetailsFrag extends Fragment {
                             new FirebaseMethods.TaskListener() {
                                 @Override
                                 public void onTaskSuccess() {
-                                    if (!introStarted) {
-                                        // Intro
-                                        val config = new ShowcaseConfig();
-                                        config.setDelay(100);
+                                    val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
 
-                                        val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
-                                        sequence.setConfig(config);
+                                    if (!sequence.hasFired() && !introStarted) {
+                                        introStarted = true;
 
                                         val skipButton = getString(R.string.add_details_intro_dismiss_button);
-                                        val logon = !MainActivity.firebaseUser.isAnonymous();
 
                                         val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
                                         if (firstAdapter != null) {
@@ -478,12 +474,7 @@ public class PlaceDetailsFrag extends Fragment {
                                                     skipButton
                                             );
 
-                                            MainActivity.addIntroItem(
-                                                    getActivity(),
-                                                    firstAdapter.itemView,
-                                                    getString(R.string.details_intro_details),
-                                                    skipButton
-                                            );
+                                            val logon = !MainActivity.firebaseUser.isAnonymous();
 
                                             MainActivity.addIntroItem(
                                                     getActivity(),
@@ -510,10 +501,15 @@ public class PlaceDetailsFrag extends Fragment {
                                                     skipButton
                                             );
 
+                                            // Intro
+                                            val config = new ShowcaseConfig();
+                                            config.setDelay(100);
+
+                                            sequence.setConfig(config);
+
                                             for (val mItem : MainActivity.sequenceItems)
                                                 sequence.addSequenceItem(mItem);
 
-                                            introStarted = true;
                                             sequence.start();
                                         }
                                     }

@@ -12,6 +12,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.SpannableString;
 import android.util.Log;
 import android.util.Pair;
 import android.view.Gravity;
@@ -123,7 +125,8 @@ public class AddDetailsActivity extends AppCompatActivity
 
                     mNewSectionItems.add(
                             new QuestDetailsItemText(
-                                    mSectionItemText.getText()
+                                    mSectionItemText.getText(),
+                                    mSectionItemText.getHtml()
                             )
                     );
                 } else if (mSectionItem instanceof QuestDetailsItemRecycler) {
@@ -295,7 +298,7 @@ public class AddDetailsActivity extends AppCompatActivity
                     );
                 } else if (mItem instanceof QuestDetailsItemText) {
                     val mTextItem = (QuestDetailsItemText) mItem;
-                    if (!mTextItem.getText().trim().isEmpty()) {
+                    if (!mTextItem.getText().toString().trim().isEmpty()) {
                         translateItemText(
                                 adapter,
                                 mTextItem,
@@ -322,15 +325,22 @@ public class AddDetailsActivity extends AppCompatActivity
         val dismissText = getString(R.string.add_details_intro_dismiss_button);
         val frag = pagerAdapter.getItem(viewPager.getCurrentItem());
 
-        if (!introStarted) {
+        val sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
+
+        if (!sequence.hasFired() && !introStarted) {
             introStarted = true;
+
+            if (frag.recyclerAdapter.getSections().isEmpty())
+                frag.onAddHeaderClick();
 
             frag.recycler.post(
                     () -> {
                         MainActivity.sequenceItems.clear();
 
-                        if (frag.recyclerAdapter.getSections().isEmpty())
-                            frag.onAddHeaderClick();
+                        if(frag.recycler.findViewHolderForAdapterPosition(0) == null) {
+                            Log.d(TAG, "");
+                        }
+                        else Log.d(TAG, "");
 
                         val firstHolder = frag.recycler.findViewHolderForAdapterPosition(0).itemView;
 
@@ -383,8 +393,6 @@ public class AddDetailsActivity extends AppCompatActivity
                                 dismissText
                         );
 
-                        val sequence = new MaterialShowcaseSequence(AddDetailsActivity.this, TAG);
-
                         // Intro
                         ShowcaseConfig config = new ShowcaseConfig();
                         config.setDelay(100);
@@ -413,9 +421,6 @@ public class AddDetailsActivity extends AppCompatActivity
 
     @Override
     public void onSectionsChanged(MainActivity.SupportLang fragLang) {
-        sendView.setVisibility(View.VISIBLE);
-        restoreView.setVisibility(View.VISIBLE);
-
         unsavedChanges = true;
 
         if (fragLang == MainActivity.getLocale(AddDetailsActivity.this))
@@ -459,12 +464,13 @@ public class AddDetailsActivity extends AppCompatActivity
                 new Translatable() {
                     @Override
                     public String getText() {
-                        return itemText.getText();
+                        return itemText.getHtml();
                     }
 
                     @Override
                     public void setText(String text) {
-                        itemText.setText(text);
+                        itemText.setText(new SpannableString(Html.fromHtml(text)));
+                        itemText.setHtml(text);
                         adapter.notifyDataSetChanged();
                     }
                 },
@@ -491,7 +497,7 @@ public class AddDetailsActivity extends AppCompatActivity
                     @Override
                     public void setText(String text) {
                         header.setTitle(text);
-                        runOnUiThread(adapter::notifyDataSetChanged);
+                        adapter.notifyDataSetChanged();
                     }
                 },
                 fromFrag,
@@ -509,7 +515,7 @@ public class AddDetailsActivity extends AppCompatActivity
     ) {
         val text = translatable.getText();
 
-        if (!text.equals(getString(R.string.add_details_translate_progress))) {
+        if (!text.isEmpty()) {
 
             Log.d(TAG, "Translating text: " + text);
             runOnUiThread(
@@ -718,9 +724,6 @@ public class AddDetailsActivity extends AppCompatActivity
         sendView = (ImageButton) menu.findItem(R.id.add_details_action_send).getActionView();
         sendView.setImageDrawable(AppCompatResources.getDrawable(this, R.drawable.ic_check));
         sendView.getBackground().setAlpha(0);
-        sendView.post(
-                () -> sendView.setVisibility(View.INVISIBLE)
-        );
         sendView.setOnClickListener(
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_send_alert_title))
@@ -773,9 +776,6 @@ public class AddDetailsActivity extends AppCompatActivity
         restoreView = (ImageButton) menu.findItem(R.id.add_details_action_restore).getActionView();
         restoreView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_restore));
         restoreView.getBackground().setAlpha(0);
-        restoreView.post(
-                () -> restoreView.setVisibility(View.INVISIBLE)
-        );
         restoreView.setOnClickListener(
                 v -> new AlertDialog.Builder(this)
                         .setTitle(getString(R.string.add_details_action_restore_alert_title))
@@ -792,9 +792,6 @@ public class AddDetailsActivity extends AppCompatActivity
 
                                     unsavedChanges = false;
                                     untranslatedChanges = false;
-
-                                    sendView.setVisibility(View.INVISIBLE);
-                                    restoreView.setVisibility(View.INVISIBLE);
                                 }
                         )
                         .setNegativeButton(

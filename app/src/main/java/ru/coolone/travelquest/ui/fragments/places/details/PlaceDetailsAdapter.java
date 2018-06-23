@@ -6,7 +6,6 @@ import android.os.Build;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Layout;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
@@ -166,7 +165,7 @@ public class PlaceDetailsAdapter
 
         @Override
         public void bind(QuestDetailsItemText item) {
-            text.setText(Html.fromHtml(item.getText()));
+            text.setText(item.getText());
         }
     }
 

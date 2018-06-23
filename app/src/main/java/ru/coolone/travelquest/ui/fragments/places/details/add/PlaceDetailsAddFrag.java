@@ -112,10 +112,9 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     }
 
     public void restoreDetails() {
-        if (translatedChanged) {
-            recyclerAdapter.clear();
-            refreshDetails();
-        }
+        recyclerAdapter.clear();
+        recyclerAdapter.notifyDataSetChanged();
+        refreshDetails();
     }
 
     CardView progressCard;
@@ -250,13 +249,12 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
             if (userName != null && !userName.isEmpty())
                 docPath.append('_').append(userName);
 
-            val collRef =
-                    db
-                            .collection(lang.lang)
-                            .document("quests")
-                            .collection(placeId)
-                            .document(docPath.toString())
-                            .collection("coll");
+            val collRef = db
+                    .collection(lang.lang)
+                    .document("quests")
+                    .collection(placeId)
+                    .document(docPath.toString())
+                    .collection("coll");
 
             // Parse details
 
@@ -299,16 +297,16 @@ public class PlaceDetailsAddFrag extends Fragment implements PlaceDetailsAddAdap
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode == PLACE_PICKER_REQUEST &&
+        if (requestCode == PLACE_PICKER_REQUEST &&
                 resultCode == RESULT_OK) {
-            for(int mChildId = 0; mChildId < recycler.getChildCount(); mChildId++) {
+            for (int mChildId = 0; mChildId < recycler.getChildCount(); mChildId++) {
                 val mChild = recycler.getChildAt(mChildId);
                 val mChildHolder = recycler.getChildViewHolder(mChild);
 
-                if(mChildHolder instanceof PlaceDetailsAddAdapter.ItemHolderText) {
+                if (mChildHolder instanceof PlaceDetailsAddAdapter.ItemHolderText) {
                     val mChildText = (PlaceDetailsAddAdapter.ItemHolderText) mChildHolder;
 
-                    if(mChildText.placeSelectedListener != null) {
+                    if (mChildText.placeSelectedListener != null) {
                         mChildText.placeSelectedListener.onPlaceSelected(
                                 PlacePicker.getPlace(getContext(), data)
                         );

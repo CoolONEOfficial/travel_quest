@@ -2,6 +2,7 @@ package ru.coolone.travelquest.ui.fragments.places.details.add;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Parcel;
 import android.support.v7.app.AlertDialog;
@@ -20,15 +21,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.URLUtil;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
-
-import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,6 +44,8 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.BaseQuestDetails
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemRecycler;
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
+import static android.webkit.URLUtil.isValidUrl;
+import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 
 /**
@@ -255,6 +255,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         public boolean onCreateActionMode(android.view.ActionMode mode, Menu menu) {
                             MenuInflater inflater = mode.getMenuInflater();
                             inflater.inflate(R.menu.activity_add_details_text_select_actions, menu);
+
                             return true;
                         }
 
@@ -267,7 +268,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         @SneakyThrows
                         public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
                             val textHtmlCoded = Html.toHtml(text.getText());
-                            val textHtml = StringEscapeUtils.unescapeHtml4(textHtmlCoded);
+                            val textHtml = unescapeHtml4(textHtmlCoded);
                             val textSpan = text.getText();
 
                             val startIndexSpan = text.getSelectionStart();
@@ -305,7 +306,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                             .setPositiveButton(
                                                     activity.getString(android.R.string.ok),
                                                     (dialog, which) -> {
-                                                        if (URLUtil.isValidUrl(editUri.getText().toString())) {
+                                                        if (isValidUrl(editUri.getText().toString())) {
 
                                                             sb.delete(startIndexHtml, endIndexHtml);
                                                             sb.insert(
@@ -317,8 +318,11 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                                                             + "</a>"
                                                             );
 
-                                                            text.setText(Html.fromHtml(sb.toString()));
-                                                            textItem.setText(sb.toString());
+                                                            val resultHtml = sb.toString();
+                                                            val result = Html.fromHtml(resultHtml);
+                                                            text.setText(result);
+                                                            textItem.setText(result);
+                                                            textItem.setHtml(resultHtml);
                                                         } else Toast.makeText(
                                                                 activity,
                                                                 R.string.add_details_text_link_invalid,
@@ -338,16 +342,24 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                         sb.delete(startIndexHtml, endIndexHtml);
                                         sb.insert(
                                                 startIndexHtml,
-                                                "<a href=\"http://www.coolone.ru/travelquest"
-                                                        + "?lat=" + place.getLatLng().latitude
-                                                        + "&lng=" + place.getLatLng().longitude
+                                                "<a href=\""
+                                                        + new Uri.Builder()
+                                                        .scheme("http")
+                                                        .authority("www.coolone.ru")
+                                                        .appendPath("travelquest")
+                                                        .appendQueryParameter("lat", String.valueOf(place.getLatLng().latitude))
+                                                        .appendQueryParameter("lng", String.valueOf(place.getLatLng().longitude))
+                                                        .build()
                                                         + "\">"
                                                         + token
                                                         + "</a>"
                                         );
 
-                                        text.setText(Html.fromHtml(sb.toString()));
-                                        textItem.setText(sb.toString());
+                                        val resultHtml = sb.toString();
+                                        val result = Html.fromHtml(resultHtml);
+                                        text.setText(result);
+                                        textItem.setText(result);
+                                        textItem.setHtml(resultHtml);
                                     };
                                     activity.startActivityForResult(
                                             new PlacePicker.IntentBuilder()
@@ -380,7 +392,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         @Override
                         public void afterTextChanged(Editable s) {
                             ((QuestDetailsItemText) getItem(getLayoutPosition()))
-                                    .setText(s.toString());
+                                    .setText(s);
                         }
                     }
             );
@@ -401,9 +413,10 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         @Override
         public void bind(QuestDetailsItemText item) {
             val itemText = item.getText();
+
             text.setText(
-                    itemText != null && !itemText.trim().isEmpty()
-                            ? Html.fromHtml(itemText)
+                    itemText != null && !itemText.toString().trim().isEmpty()
+                            ? itemText
                             : ""
             );
         }

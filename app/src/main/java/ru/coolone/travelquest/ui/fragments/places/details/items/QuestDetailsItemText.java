@@ -2,6 +2,9 @@ package ru.coolone.travelquest.ui.fragments.places.details.items;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.text.Spanned;
+
+import java.io.Serializable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -15,13 +18,16 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class QuestDetailsItemText extends BaseQuestDetailsItem {
-    public QuestDetailsItemText(Parcel parcel) {
-        text = parcel.readString();
-    }
-
     @Getter
     @Setter
-    String text;
+    Spanned text;
+    @Getter
+    @Setter
+    String html;
+
+    public QuestDetailsItemText(Parcel parcel) {
+        text = (Spanned) parcel.readSerializable();
+    }
 
     @Override
     public int getListItemId() {
@@ -35,7 +41,7 @@ public class QuestDetailsItemText extends BaseQuestDetailsItem {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(text);
+        dest.writeSerializable((Serializable) text);
     }
 
     public static final Parcelable.Creator<QuestDetailsItemText> CREATOR = new Parcelable.Creator<QuestDetailsItemText>() {
