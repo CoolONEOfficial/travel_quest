@@ -709,7 +709,9 @@ public class AddDetailsActivity extends AppCompatActivity
                                         )
                                 )
                             translateDetails(
-                                    pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
+                                    pagerAdapter.getItem(
+                                            MainActivity.getLocale(AddDetailsActivity.this).ordinal()
+                                    ),
                                     mFrag,
                                     fragListener
                             );

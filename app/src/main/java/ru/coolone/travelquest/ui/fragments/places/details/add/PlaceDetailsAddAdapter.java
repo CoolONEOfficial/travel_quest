@@ -12,6 +12,7 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.InputType;
 import android.text.Layout;
+import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -45,7 +46,6 @@ import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItem
 import ru.coolone.travelquest.ui.fragments.places.details.items.QuestDetailsItemText;
 
 import static android.webkit.URLUtil.isValidUrl;
-import static org.apache.commons.lang3.StringEscapeUtils.unescapeHtml4;
 import static ru.coolone.travelquest.ui.fragments.places.details.FirebaseMethods.initDetailsRecyclerView;
 
 /**
@@ -112,6 +112,15 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         return getItem(section, relativePosition).getListItemId();
     }
 
+    static String unescapeHtml4(String str) {
+        val unescaped = org.apache.commons.text.StringEscapeUtils.unescapeHtml4(str);
+        return unescaped.substring(13, unescaped.length() - 5);
+    }
+
+    interface PlaceSelectedListener {
+        void onPlaceSelected(Place place);
+    }
+
     public class HeaderHolder
             extends BaseSectionedViewHolder<BaseSectionedHeader>
             implements View.OnClickListener, View.OnLongClickListener, Serializable {
@@ -139,6 +148,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         public void afterTextChanged(Editable s) {
                             getHeader(getRelativePosition().section())
                                     .setTitle(s.toString());
+                            onSectionsChanged();
                         }
                     }
             );
@@ -228,10 +238,6 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
         }
     }
 
-    interface PlaceSelectedListener {
-        void onPlaceSelected(Place place);
-    }
-
     public class ItemHolderText
             extends BaseSectionedViewHolder<QuestDetailsItemText>
             implements Serializable {
@@ -267,8 +273,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                         @Override
                         @SneakyThrows
                         public boolean onActionItemClicked(android.view.ActionMode mode, MenuItem item) {
-                            val textHtmlCoded = Html.toHtml(text.getText());
-                            val textHtml = unescapeHtml4(textHtmlCoded);
+                            val textHtml = unescapeHtml4(Html.toHtml(text.getText()));
                             val textSpan = text.getText();
 
                             val startIndexSpan = text.getSelectionStart();
@@ -391,8 +396,16 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
                         @Override
                         public void afterTextChanged(Editable s) {
-                            ((QuestDetailsItemText) getItem(getLayoutPosition()))
-                                    .setText(s);
+                            val item = ((QuestDetailsItemText) getItem(getLayoutPosition()));
+                            item.setText(s);
+                            item.setHtml(
+                                    unescapeHtml4(
+                                            Html.toHtml(
+                                                    new SpannableString(s.toString().trim())
+                                            )
+                                    )
+                            );
+                            onSectionsChanged();
                         }
                     }
             );
