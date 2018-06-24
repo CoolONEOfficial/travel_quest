@@ -200,7 +200,7 @@ public class FirebaseMethods {
                                 new HashMap<String, Object>() {{
                                     put(
                                             "text",
-                                            mItemText.getText()
+                                            mItemText.getHtml()
                                     );
                                 }}
                         ).addOnSuccessListener(

@@ -28,6 +28,9 @@ import android.widget.Toast;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Whitelist;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 
@@ -112,8 +115,16 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
     }
 
     static String unescapeHtml4(String str) {
-        val unescaped = org.apache.commons.text.StringEscapeUtils.unescapeHtml4(str);
-        return unescaped.length() > 18 ? unescaped.substring(13, unescaped.length() - 5) : unescaped;
+        val jsoup = Jsoup.clean(str,
+                new Whitelist()
+                        .addTags("a")
+
+                        .addAttributes("a", "href")
+
+                        .addProtocols("a", "href", "ftp", "http", "https", "mailto")
+        ).replace("\n", "");
+
+        return jsoup;
     }
 
     interface PlaceSelectedListener {
