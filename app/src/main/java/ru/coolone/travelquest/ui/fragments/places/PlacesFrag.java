@@ -74,6 +74,57 @@ public class PlacesFrag extends Fragment
     // Sliding panel
     @ViewById(R.id.places_sliding_panel)
     public SlidingUpPanelLayout slidingPanel;
+    float slideOffset;
+    SlidingUpPanelListener parentListener;
+    SlidingUpPanelLayout.PanelSlideListener slideListener = new SlidingUpPanelLayout.PanelSlideListener() {
+        @Override
+        public void onPanelSlide(View panel, float slideOffset) {
+            PlacesFrag.this.slideOffset = slideOffset;
+
+            // Refresh photos size
+            refreshPhotosSize(
+                    slidingLayout.findViewById(R.id.details_photos_layout),
+                    slideOffset
+            );
+
+            // Notify parent
+            parentListener.onPanelSlide(slidingPanel, slideOffset);
+        }
+
+        @Override
+        public void onPanelStateChanged(View panel,
+                                        SlidingUpPanelLayout.PanelState previousState,
+                                        SlidingUpPanelLayout.PanelState newState) {
+            // Set map padding
+            switch (newState) {
+                case HIDDEN:
+                    map.setPadding(0, getActionBarHeight(getActivity())
+                                    + MainActivity.getStatusBarHeight(getActivity()),
+                            0, 0);
+                    break;
+                case COLLAPSED:
+                    map.setPadding(0, getActionBarHeight(getActivity())
+                                    + MainActivity.getStatusBarHeight(getActivity()),
+                            0, slidingLayout.findViewById(R.id.details_layout_header)
+                                    .getHeight());
+                    break;
+                case EXPANDED:
+                    if (!detailsLoaded) {
+                        // Load details
+                        detailsLoaded = true;
+                        placeDetailsFrag.setPlaceId(placeDetailsFrag.getPlaceId());
+                    }
+                    break;
+            }
+
+            // Notify parent
+            parentListener.onPanelStateChanged(slidingPanel, previousState, newState);
+        }
+    };
+
+    public void invalidateSlidingPanel() {
+        slideListener.onPanelSlide(slidingLayout, slideOffset);
+    }
 
     // Fragment details
     private static final String FRAG_PLACE_DETAILS_ID = "placeDetails";
@@ -108,50 +159,7 @@ public class PlacesFrag extends Fragment
             slidingPanel.setPanelState(SlidingUpPanelLayout.PanelState.HIDDEN);
 
         // Add listeners
-        val parentListener = (SlidingUpPanelListener) getActivity();
-        slidingPanel.addPanelSlideListener(new SlidingUpPanelLayout.PanelSlideListener() {
-            @Override
-            public void onPanelSlide(View panel, float slideOffset) {
-                // Refresh photos size
-                refreshPhotosSize(
-                        panel.findViewById(R.id.details_photos_layout),
-                        slideOffset
-                );
-
-                // Notify parent
-                parentListener.onPanelSlide(slidingPanel, slideOffset);
-            }
-
-            @Override
-            public void onPanelStateChanged(View panel,
-                                            SlidingUpPanelLayout.PanelState previousState,
-                                            SlidingUpPanelLayout.PanelState newState) {
-                // Set map padding
-                switch (newState) {
-                    case HIDDEN:
-                        map.setPadding(0, getActionBarHeight(getActivity())
-                                        + MainActivity.getStatusBarHeight(getActivity()),
-                                0, 0);
-                        break;
-                    case COLLAPSED:
-                        map.setPadding(0, getActionBarHeight(getActivity())
-                                        + MainActivity.getStatusBarHeight(getActivity()),
-                                0, panel.findViewById(R.id.details_layout_header)
-                                        .getHeight());
-                        break;
-                    case EXPANDED:
-                        if (!detailsLoaded) {
-                            // Load details
-                            detailsLoaded = true;
-                            placeDetailsFrag.setPlaceId(placeDetailsFrag.getPlaceId());
-                        }
-                        break;
-                }
-
-                // Notify parent
-                parentListener.onPanelStateChanged(slidingPanel, previousState, newState);
-            }
-        });
+        slidingPanel.addPanelSlideListener(slideListener);
         parentListener.onPanelCreate(slidingPanel);
 
         // Autocomplete fragment
@@ -247,7 +255,7 @@ public class PlacesFrag extends Fragment
                     FRAG_PLACE_DETAILS_ID
             );
             if (placeDetailsFrag != null) {
-                placeDetailsFrag.setFragmentListener(this);
+                placeDetailsFrag.setParentListener(this);
             }
         }
     }
@@ -267,6 +275,7 @@ public class PlacesFrag extends Fragment
     @Override
     public void onAttach(Context context) {
         this.context = (FragmentActivity) context;
+        parentListener = (SlidingUpPanelListener) getActivity();
         super.onAttach(context);
     }
 
@@ -280,15 +289,21 @@ public class PlacesFrag extends Fragment
 
     private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
         float anchoredOffset = getPanelAnchoredOffset(getActivity());
-        if (slideOffset > anchoredOffset && slideOffset < 1.0f) {
-            // Change photos height
-            for (int mPhotoId = 0; mPhotoId < photosLayout.getChildCount(); mPhotoId++) {
-                photosLayout.getChildAt(mPhotoId).getLayoutParams().height =
-                        (int) (getResources().getDimension(R.dimen.details_photos_size_anchored)
-                                * (1 - (slideOffset - anchoredOffset)));
-            }
-            photosLayout.requestLayout();
+        // Change photos height
+        for (int mPhotoId = 0; mPhotoId < photosLayout.getChildCount(); mPhotoId++) {
+            photosLayout.getChildAt(mPhotoId).getLayoutParams().height =
+                    (int) (
+                            getResources().getDimension(R.dimen.details_photos_size_anchored) * (
+                                    1 - (
+                                            Math.max(
+                                                    Math.min(slideOffset, 1.0f),
+                                                    anchoredOffset
+                                            ) - anchoredOffset
+                                    )
+                            )
+                    );
         }
+        photosLayout.requestLayout();
     }
 
     @Override
@@ -331,8 +346,8 @@ public class PlacesFrag extends Fragment
                                         ),
                         getResources().getDimension(
                                 startPosition != null || startPlace != null
-                                ? R.dimen.map_link_zoom
-                                : R.dimen.map_zoom
+                                        ? R.dimen.map_link_zoom
+                                        : R.dimen.map_zoom
                         )
                 )
         );
@@ -390,9 +405,9 @@ public class PlacesFrag extends Fragment
                         // Create details fragment
                         placeDetailsFrag = PlaceDetailsFrag.newInstance(currentPlace, getContext());
                         detailsLoaded = false;
-                        placeDetailsFrag.setFragmentListener(PlacesFrag.this);
+                        placeDetailsFrag.setParentListener(PlacesFrag.this);
 
-                        if(slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED) {
+                        if (slidingPanel.getPanelState() == SlidingUpPanelLayout.PanelState.ANCHORED) {
 
                             val slideListener = new SlidingUpPanelLayout.PanelSlideListener() {
                                 @Override
@@ -502,6 +517,11 @@ public class PlacesFrag extends Fragment
             setPanelOffset();
         else
             slidingLayout.post(this::setPanelOffset);
+    }
+
+    @Override
+    public PlacesFrag getPlacesFrag() {
+        return this;
     }
 
     public interface AutocompleteTextViewGetter {

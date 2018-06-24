@@ -54,6 +54,7 @@ import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.AddDetailsActivity_;
 import ru.coolone.travelquest.ui.activities.MainActivity;
+import ru.coolone.travelquest.ui.fragments.places.PlacesFrag;
 import uk.co.deanwild.materialshowcaseview.MaterialShowcaseSequence;
 import uk.co.deanwild.materialshowcaseview.ShowcaseConfig;
 
@@ -66,7 +67,7 @@ public class PlaceDetailsFrag extends Fragment {
     static final String TAG = PlaceDetailsFrag.class.getSimpleName();
 
     @Setter
-    private FragmentListener fragmentListener;
+    private FragmentListener parentListener;
 
     @ViewById(R.id.details_details_recycler)
     public RecyclerView detailsRecyclerView;
@@ -204,8 +205,8 @@ public class PlaceDetailsFrag extends Fragment {
                 false);
 
         // Call listener
-        if (fragmentListener != null)
-            fragmentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
+        if (parentListener != null)
+            parentListener.onQuestDetailsCreateView(view, container, savedInstanceState);
 
         return view;
     }
@@ -325,18 +326,22 @@ public class PlaceDetailsFrag extends Fragment {
     }
 
     private void setDescriptionVisibility(int visibility) {
-        val errorVisibility = (visibility == View.VISIBLE
-                ? View.GONE
-                : View.VISIBLE);
+        if(isAdded()) {
+            val errorVisibility = (visibility == View.VISIBLE
+                    ? View.GONE
+                    : View.VISIBLE);
 
-        // Description visibility
-        detailsRecyclerView.setVisibility(visibility);
+            // Description visibility
+            detailsRecyclerView.setVisibility(visibility);
 
-        // Error visibility
-        detailsUnknownText.setVisibility(errorVisibility);
-        detailsUnknownTextPrimary.setVisibility(errorVisibility);
-        detailsUnknownTextPrimary.setText("");
-        detailsUnknownTextSmile.setVisibility(errorVisibility);
+            // Error visibility
+            detailsUnknownText.setVisibility(errorVisibility);
+            detailsUnknownTextPrimary.setVisibility(errorVisibility);
+            detailsUnknownTextPrimary.setText("");
+            detailsUnknownTextSmile.setVisibility(errorVisibility);
+        } else getView().post(
+                () -> setDescriptionVisibility(visibility)
+        );
     }
 
     private void detailsError(String errStr) {
@@ -418,118 +423,122 @@ public class PlaceDetailsFrag extends Fragment {
     static boolean introStarted = false;
 
     public void setPlaceId(String placeId) {
-        this.placeId = placeId;
+        if(detailsRecyclerView != null) {
+            this.placeId = placeId;
 
-        // Clear cards
-        val adapter = (PlaceCardDetailsAdapter) detailsRecyclerView.getAdapter();
-        adapter.dataset.clear();
+            // Clear cards
+            val adapter = (PlaceCardDetailsAdapter) detailsRecyclerView.getAdapter();
+            adapter.dataset.clear();
 
-        val collRef =
-                MainActivity.getQuestsRoot(MainActivity.getLocale(getContext()).lang)
-                        .collection(placeId);
+            val collRef =
+                    MainActivity.getQuestsRoot(MainActivity.getLocale(getContext()).lang)
+                            .collection(placeId);
 
-        // Parse details
+            // Parse details
 
-        // Show progress bar
-        val bar = new ProgressBar(getContext());
-        val params = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.addRule(
-                RelativeLayout.CENTER_IN_PARENT
-        );
-        bar.setLayoutParams(params);
-        bodyLayout.addView(bar);
+            // Show progress bar
+            val bar = new ProgressBar(getContext());
+            val params = new RelativeLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT
+            );
+            params.addRule(
+                    RelativeLayout.CENTER_IN_PARENT
+            );
+            bar.setLayoutParams(params);
+            bodyLayout.addView(bar);
 
-        // Get doc
-        collRef.get().addOnSuccessListener(
-                task -> {
-                    // Show details
-                    setDescriptionVisibility(View.VISIBLE);
+            // Get doc
+            collRef.get().addOnSuccessListener(
+                    task -> {
+                        // Show details
+                        setDescriptionVisibility(View.VISIBLE);
 
-                    // Parse details
-                    parseDetailsCards(
-                            task,
-                            adapter,
-                            getActivity(),
-                            new FirebaseMethods.TaskListener() {
-                                @Override
-                                public void onTaskSuccess() {
-                                    val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
+                        // Parse details
+                        parseDetailsCards(
+                                task,
+                                adapter,
+                                getActivity(),
+                                new FirebaseMethods.TaskListener() {
+                                    @Override
+                                    public void onTaskSuccess() {
+                                        val sequence = new MaterialShowcaseSequence(getActivity(), TAG);
 
-                                    if (!sequence.hasFired() && !introStarted) {
-                                        introStarted = true;
+                                        if (!sequence.hasFired() && !introStarted) {
+                                            introStarted = true;
 
-                                        val skipButton = getString(R.string.add_details_intro_dismiss_button);
+                                            val skipButton = getString(R.string.add_details_intro_dismiss_button);
 
-                                        val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
-                                        if (firstAdapter != null) {
-                                            MainActivity.sequenceItems.clear();
+                                            val firstAdapter = detailsRecyclerView.findViewHolderForAdapterPosition(0);
+                                            if (firstAdapter != null) {
+                                                MainActivity.sequenceItems.clear();
 
-                                            MainActivity.addIntroItem(
-                                                    getActivity(),
-                                                    firstAdapter.itemView,
-                                                    getString(R.string.details_intro_details),
-                                                    skipButton
-                                            );
+                                                MainActivity.addIntroItem(
+                                                        getActivity(),
+                                                        firstAdapter.itemView,
+                                                        getString(R.string.details_intro_details),
+                                                        skipButton
+                                                );
 
-                                            val logon = !MainActivity.firebaseUser.isAnonymous();
+                                                val logon = !MainActivity.firebaseUser.isAnonymous();
 
-                                            MainActivity.addIntroItem(
-                                                    getActivity(),
-                                                    firstAdapter.itemView
-                                                            .findViewById(R.id.card_details_star),
-                                                    getString(
-                                                            logon
-                                                                    ? R.string.details_intro_star_registered
-                                                                    : R.string.details_intro_star_not_registered
-                                                    ),
-                                                    skipButton
-                                            );
+                                                MainActivity.addIntroItem(
+                                                        getActivity(),
+                                                        firstAdapter.itemView
+                                                                .findViewById(R.id.card_details_star),
+                                                        getString(
+                                                                logon
+                                                                        ? R.string.details_intro_star_registered
+                                                                        : R.string.details_intro_star_not_registered
+                                                        ),
+                                                        skipButton
+                                                );
 
-                                            MainActivity.addIntroItem(
-                                                    getActivity(),
-                                                    logon
-                                                            ? detailsAddButton
-                                                            : new View(getContext()),
-                                                    getString(
-                                                            logon
-                                                                    ? R.string.details_intro_add_registered
-                                                                    : R.string.details_intro_add_not_registered
-                                                    ),
-                                                    skipButton
-                                            );
+                                                MainActivity.addIntroItem(
+                                                        getActivity(),
+                                                        logon
+                                                                ? detailsAddButton
+                                                                : new View(getContext()),
+                                                        getString(
+                                                                logon
+                                                                        ? R.string.details_intro_add_registered
+                                                                        : R.string.details_intro_add_not_registered
+                                                        ),
+                                                        skipButton
+                                                );
 
-                                            // Intro
-                                            val config = new ShowcaseConfig();
-                                            config.setDelay(100);
+                                                // Intro
+                                                val config = new ShowcaseConfig();
+                                                config.setDelay(100);
 
-                                            sequence.setConfig(config);
+                                                sequence.setConfig(config);
 
-                                            for (val mItem : MainActivity.sequenceItems)
-                                                sequence.addSequenceItem(mItem);
+                                                for (val mItem : MainActivity.sequenceItems)
+                                                    sequence.addSequenceItem(mItem);
 
-                                            sequence.start();
+                                                sequence.start();
+                                            }
                                         }
                                     }
-                                }
 
-                                @Override
-                                public void onTaskError(Exception e) {
-                                    detailsError(e);
-                                }
+                                    @Override
+                                    public void onTaskError(Exception e) {
+                                        detailsError(e);
+                                    }
 
-                                @Override
-                                public void onTaskCompleted() {
+                                    @Override
+                                    public void onTaskCompleted() {
+                                    }
                                 }
-                            }
+                        );
+                    })
+                    .addOnFailureListener(this::detailsError)
+                    .addOnCompleteListener(
+                            task -> bodyLayout.removeView(bar)
                     );
-                })
-                .addOnFailureListener(this::detailsError)
-                .addOnCompleteListener(
-                        task -> bodyLayout.removeView(bar)
-                );
+        } else getView().post(
+                () -> setPlaceId(placeId)
+        );
     }
 
     public void setTypes(String[] types) {
@@ -553,7 +562,7 @@ public class PlaceDetailsFrag extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        if (fragmentListener == null) {
+        if (parentListener == null) {
             throw new ClassCastException(
                     "Parent activity must implements FragmentListener"
             );
@@ -568,6 +577,8 @@ public class PlaceDetailsFrag extends Fragment {
         );
 
         void onPhotosLoadingStarted();
+
+        PlacesFrag getPlacesFrag();
     }
 
     @RequiredArgsConstructor
@@ -581,7 +592,7 @@ public class PlaceDetailsFrag extends Fragment {
             String description;
         }
 
-        final PlaceDetailsFrag parent;
+        final PlaceDetailsFrag parentFrag;
 
         ArrayList<PlacePhoto> viewerPhotos = new ArrayList<>();
 
@@ -600,9 +611,9 @@ public class PlaceDetailsFrag extends Fragment {
             }
             val placeId = params[0];
 
-            queue = Volley.newRequestQueue(parent.getContext());
+            queue = Volley.newRequestQueue(parentFrag.getContext());
 
-            val key = parent.getContext().getString(R.string.GOOGLE_MAPS_API_KEY);
+            val key = parentFrag.getContext().getString(R.string.GOOGLE_MAPS_API_KEY);
             queue.add(new JsonObjectRequest(
                     new Uri.Builder()
                             .scheme("https")
@@ -626,11 +637,11 @@ public class PlaceDetailsFrag extends Fragment {
                                     val photosArray = result.getJSONArray("photos");
                                     val photosLinks = new String[photosArray.length()];
 
-                                    val display = parent.getActivity().getWindowManager().getDefaultDisplay();
+                                    val display = parentFrag.getActivity().getWindowManager().getDefaultDisplay();
                                     val screenResolution = new Point();
                                     display.getSize(screenResolution);
 
-                                    parent.fragmentListener.onPhotosLoadingStarted();
+                                    parentFrag.parentListener.onPhotosLoadingStarted();
 
                                     for (int mPhotoId = 0; mPhotoId < photosArray.length(); mPhotoId++) {
                                         val mPhoto = photosArray.getJSONObject(mPhotoId);
@@ -666,7 +677,7 @@ public class PlaceDetailsFrag extends Fragment {
                                         ));
 
                                         photosLinks[mPhotoId] = mLink + "&maxheight=" + Integer.toString(
-                                                (int) parent.getContext().getResources()
+                                                (int) parentFrag.getContext().getResources()
                                                         .getDimension(R.dimen.details_photos_size_anchored)
                                         );
                                     }
@@ -681,10 +692,10 @@ public class PlaceDetailsFrag extends Fragment {
                                                 new ImageRequest(
                                                         mPhotoLink,
                                                         imageResponse -> {
-                                                            if (parent.photosLayout != null &&
-                                                                    parent.photosLayout.getChildCount() > mPhotoLinkIdFinal)
+                                                            if (parentFrag.photosLayout != null &&
+                                                                    parentFrag.photosLayout.getChildCount() > mPhotoLinkIdFinal)
                                                                 (
-                                                                        (ImageView) parent.photosLayout
+                                                                        (ImageView) parentFrag.photosLayout
                                                                                 .getChildAt(mPhotoLinkIdFinal)
                                                                 ).setImageBitmap(imageResponse);
                                                         },
@@ -696,8 +707,8 @@ public class PlaceDetailsFrag extends Fragment {
                                     }
                                 } else
                                     // Hide photos
-                                    parent.getActivity().runOnUiThread(
-                                            () -> parent.setPhotosVisibility(View.GONE)
+                                    parentFrag.getActivity().runOnUiThread(
+                                            () -> parentFrag.setPhotosVisibility(View.GONE)
                                     );
                             } else
                                 Log.e(TAG, "Error in response while get google maps photo links." +
@@ -713,29 +724,29 @@ public class PlaceDetailsFrag extends Fragment {
         @Override
         protected void onProgressUpdate(Void... values) {
             // Create holder image view
-            val mPhotoView = new ImageView(parent.getActivity());
-            parent.setPhotoImageView(mPhotoView);
+            val mPhotoView = new ImageView(parentFrag.getActivity());
+            parentFrag.setPhotoImageView(mPhotoView);
             val bmp = BitmapFactory.decodeResource(
-                    parent.getResources(),
+                    parentFrag.getResources(),
                     R.drawable.pattern
             );
             mPhotoView.setImageBitmap(bmp);
-            val imageCount = parent.photosLayout.getChildCount();
+            val imageCount = parentFrag.photosLayout.getChildCount();
             mPhotoView.setOnClickListener(
                     v -> {
                         if (viewerPhotos != null) {
-                            val overlayView = new ImageOverlayView(parent.getContext());
+                            val overlayView = new ImageOverlayView(parentFrag.getContext());
 
-                            new ImageViewer.Builder<>(parent.getContext(), viewerPhotos)
+                            new ImageViewer.Builder<>(parentFrag.getContext(), viewerPhotos)
                                     .setFormatter(PlacePhoto::getUrl)
                                     .setImageChangeListener(
                                             position -> {
                                                 val image = viewerPhotos.get(position);
                                                 overlayView.setDescription(image.getDescription());
-                                                parent.photosScroll.scrollTo(
-                                                        parent.photosLayout.getChildAt(position).getLeft()
-                                                                + parent.photosLayout.getChildAt(position).getWidth() / 2
-                                                                - parent.photosScroll.getWidth() / 2,
+                                                parentFrag.photosScroll.scrollTo(
+                                                        parentFrag.photosLayout.getChildAt(position).getLeft()
+                                                                + parentFrag.photosLayout.getChildAt(position).getWidth() / 2
+                                                                - parentFrag.photosScroll.getWidth() / 2,
                                                         0
                                                 );
                                             }
@@ -744,15 +755,18 @@ public class PlaceDetailsFrag extends Fragment {
                                     .setStartPosition(imageCount)
                                     .show();
                         } else Toast.makeText(
-                                parent.getContext(),
-                                parent.getContext().getString(R.string.details_photos_not_loaded),
+                                parentFrag.getContext(),
+                                parentFrag.getContext().getString(R.string.details_photos_not_loaded),
                                 Toast.LENGTH_SHORT
                         ).show();
                     }
             );
 
             // Add view
-            parent.photosLayout.addView(mPhotoView);
+            parentFrag.photosLayout.addView(mPhotoView);
+
+            parentFrag.parentListener.getPlacesFrag()
+                    .invalidateSlidingPanel();
         }
 
         static class ImageOverlayView extends RelativeLayout {

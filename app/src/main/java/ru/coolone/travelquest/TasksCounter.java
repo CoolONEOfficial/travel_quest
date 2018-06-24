@@ -33,9 +33,11 @@ public class TasksCounter {
     int tasksCount;
 
     String getTasksName() {
-        return tasksName != null && !tasksName.isEmpty()
-                ? tasksName
-                : toString();
+        return (
+                tasksName != null && !tasksName.isEmpty()
+                        ? tasksName
+                        : "unknown"
+        ) + " (" + System.identityHashCode(this) + ")";
     }
 
     public void onStartTasks(int count) {

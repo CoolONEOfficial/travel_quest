@@ -672,16 +672,18 @@ public class AddDetailsActivity extends AppCompatActivity
                     public void onPageSelected(int position) {
                         super.onPageSelected(position);
 
+                        val fromFrag = pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal());
                         val frag = pagerAdapter.getItem(position);
                         val tab = tabs[frag.lang.ordinal()];
                         if (tab.first.getVisibility() == View.VISIBLE &&
                                 tab.second.isIconEnabled() &&
+                                fromFrag.recyclerAdapter.getSectionCount() > 0 &&
                                 (untranslatedChanges ||
                                         ((PlaceDetailsAddAdapter) frag.recycler.getAdapter())
                                                 .getSectionCount() == 0) &&
                                 !frag.translateInProgress) {
                             translateDetails(
-                                    pagerAdapter.getItem(MainActivity.getLocale(AddDetailsActivity.this).ordinal()),
+                                    fromFrag,
                                     pagerAdapter.getItem(position),
                                     fragListener
                             );

@@ -113,7 +113,7 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
 
     static String unescapeHtml4(String str) {
         val unescaped = org.apache.commons.text.StringEscapeUtils.unescapeHtml4(str);
-        return unescaped.substring(13, unescaped.length() - 5);
+        return unescaped.length() > 18 ? unescaped.substring(13, unescaped.length() - 5) : unescaped;
     }
 
     interface PlaceSelectedListener {
@@ -186,7 +186,9 @@ public class PlaceDetailsAddAdapter extends BaseSectionedAdapter<
                                             detailsItem = new QuestDetailsItemRecycler((BaseSectionedAdapter) recycler.getAdapter());
                                             break;
                                         case 1:
-                                            detailsItem = new QuestDetailsItemText();
+                                            detailsItem = new QuestDetailsItemText() {{
+                                                userEditable = true;
+                                            }};
                                             break;
                                     }
 

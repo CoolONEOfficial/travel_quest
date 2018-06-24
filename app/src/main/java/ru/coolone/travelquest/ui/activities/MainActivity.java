@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements
     ActionBarDrawerToggle toggle;
 
     // Fragments array
-    SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
+    public SparseArrayCompat<Fragment> fragmentArr = new SparseArrayCompat<>();
     int savedMenuId = -1;
     int currentMenuId;
 
@@ -428,7 +428,7 @@ public class MainActivity extends AppCompatActivity implements
         }
     }
 
-    Fragment getFragmentById(FragmentId fragmentId) {
+    public Fragment getFragmentById(FragmentId fragmentId) {
         Fragment fragment = fragmentArr.get(fragmentId.ordinal());
 
         if (fragment == null) {
@@ -764,7 +764,7 @@ public class MainActivity extends AppCompatActivity implements
     /**
      * Ids for @{@link Fragment}s
      */
-    enum FragmentId {
+    public enum FragmentId {
         ABOUT,
         PLACES,
         SETTINGS
