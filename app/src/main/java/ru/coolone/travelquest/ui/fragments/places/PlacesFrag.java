@@ -13,6 +13,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -84,6 +85,7 @@ public class PlacesFrag extends Fragment
             // Refresh photos size
             refreshPhotosSize(
                     slidingLayout.findViewById(R.id.details_photos_layout),
+                    slidingLayout.findViewById(R.id.details_photos_scroll),
                     slideOffset
             );
 
@@ -287,21 +289,28 @@ public class PlacesFrag extends Fragment
         return 0;
     }
 
-    private void refreshPhotosSize(LinearLayout photosLayout, float slideOffset) {
+    private void refreshPhotosSize(
+            LinearLayout photosLayout,
+            HorizontalScrollView photosScroll,
+            float slideOffset
+    ) {
         float anchoredOffset = getPanelAnchoredOffset(getActivity());
         // Change photos height
         for (int mPhotoId = 0; mPhotoId < photosLayout.getChildCount(); mPhotoId++) {
-            photosLayout.getChildAt(mPhotoId).getLayoutParams().height =
-                    (int) (
-                            getResources().getDimension(R.dimen.details_photos_size_anchored) * (
-                                    1 - (
-                                            Math.max(
-                                                    Math.min(slideOffset, 1.0f),
-                                                    anchoredOffset
-                                            ) - anchoredOffset
-                                    )
+            val height = (int) (
+                    getResources().getDimension(R.dimen.details_photos_size_anchored) * (
+                            1 - (
+                                    Math.max(
+                                            Math.min(slideOffset, 1.0f),
+                                            anchoredOffset
+                                    ) - anchoredOffset
                             )
-                    );
+                    )
+            );
+
+            photosLayout.getChildAt(mPhotoId).getLayoutParams().height = height;
+
+            photosScroll.getLayoutParams().height = height;
         }
         photosLayout.requestLayout();
     }

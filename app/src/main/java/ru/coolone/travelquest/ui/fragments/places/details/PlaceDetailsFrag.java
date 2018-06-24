@@ -1,7 +1,6 @@
 package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -657,7 +656,8 @@ public class PlaceDetailsFrag extends Fragment {
                                                 .appendQueryParameter(
                                                         "photoreference",
                                                         mPhoto.getString("photo_reference")
-                                                ).toString();
+                                                )
+                                                .toString();
 
                                         val authorsJson = mPhoto.getJSONArray("html_attributions");
                                         val authors = new ArrayList<String>();
@@ -726,11 +726,6 @@ public class PlaceDetailsFrag extends Fragment {
             // Create holder image view
             val mPhotoView = new ImageView(parentFrag.getActivity());
             parentFrag.setPhotoImageView(mPhotoView);
-            val bmp = BitmapFactory.decodeResource(
-                    parentFrag.getResources(),
-                    R.drawable.pattern
-            );
-            mPhotoView.setImageBitmap(bmp);
             val imageCount = parentFrag.photosLayout.getChildCount();
             mPhotoView.setOnClickListener(
                     v -> {

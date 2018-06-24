@@ -95,9 +95,10 @@
                 <HorizontalScrollView
                     android:id="@+id/details_photos_scroll"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="200dp"
                     android:foregroundGravity="center"
-                    android:scrollbars="none">
+                    android:scrollbars="none"
+                    android:background="@drawable/pattern_fill">
 
                     <LinearLayout
                         android:id="@+id/details_photos_layout"
