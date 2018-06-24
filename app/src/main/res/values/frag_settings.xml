@@ -1,6 +1,4 @@
 <resources>
-    <string name="settings_filename" translatable="false">settings</string>
-
     <!-- Keys -->
     <string name="settings_key_map_style" translatable="false">mapstyle</string>
     <string name="settings_key_city_pref" translatable="false">city_screen</string>

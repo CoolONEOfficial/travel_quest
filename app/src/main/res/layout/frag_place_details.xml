@@ -96,9 +96,9 @@
                     android:id="@+id/details_photos_scroll"
                     android:layout_width="match_parent"
                     android:layout_height="200dp"
+                    android:background="@drawable/pattern_fill"
                     android:foregroundGravity="center"
-                    android:scrollbars="none"
-                    android:background="@drawable/pattern_fill">
+                    android:scrollbars="none">
 
                     <LinearLayout
                         android:id="@+id/details_photos_layout"
@@ -162,9 +162,19 @@
         android:layout_alignBottom="@+id/details_details_scroll"
         android:layout_alignParentEnd="true"
         android:layout_gravity="bottom|end"
-        android:layout_margin="16dp"
-        android:src="@drawable/ic_edit_place"
-        android:visibility="visible" />
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_edit_place" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/details_share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/details_details_scroll"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_toStartOf="@id/details_details_add_button"
+        android:src="@drawable/ic_share" />
 
     <TextView
         android:id="@+id/details_url"
@@ -206,6 +216,6 @@
         android:layout_above="@id/details_url"
         android:layout_marginLeft="@dimen/content_inset"
         android:layout_marginRight="@dimen/content_inset"
-        android:background="@color/secondary_text_inverse" />
+        android:background="@color/divider" />
 
 </RelativeLayout>

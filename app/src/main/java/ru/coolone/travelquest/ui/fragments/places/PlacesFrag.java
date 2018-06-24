@@ -39,6 +39,7 @@ import org.androidannotations.annotations.FragmentArg;
 import org.androidannotations.annotations.OnActivityResult;
 import org.androidannotations.annotations.ViewById;
 
+import lombok.Getter;
 import lombok.val;
 import ru.coolone.travelquest.R;
 import ru.coolone.travelquest.ui.activities.MainActivity;
@@ -133,6 +134,7 @@ public class PlacesFrag extends Fragment
     public PlaceDetailsFrag placeDetailsFrag;
 
     // Place
+    @Getter
     Place currentPlace;
     PointOfInterest currentPoi;
 

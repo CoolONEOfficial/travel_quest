@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="intro_button_text">Продолжить</string>
-
-    <string name="intro_greetings_title">Приветствие</string>
     <string name="intro_greetings_text">Добро пожаловать в Travel Quest - приложение для изучения городов России! Здесь вы сможете узнать описание любого исторического обьекта, его историю, факты о нем, и другую интересную информацию.</string>
     <string name="intro_places_title">Исторические обьекты</string>
     <string name="intro_places_text">Для получения информации о обьекте, тапните по нему.</string>

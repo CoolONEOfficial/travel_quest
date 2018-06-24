@@ -36,7 +36,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -284,7 +283,7 @@ public class MainActivity extends AppCompatActivity implements
         return result;
     }
 
-    public static DocumentReference getQuestsRoot(String lang) {
+    public static DocumentReference getPlacesRoot(String lang) {
         return FirebaseFirestore.getInstance()
                 .collection(lang)
                 .document("quests");
@@ -519,7 +518,7 @@ public class MainActivity extends AppCompatActivity implements
         }
 
         // Margin
-        ((RelativeLayout.LayoutParams) findViewById(R.id.fragment_container).getLayoutParams())
+        ((ViewGroup.MarginLayoutParams) (findViewById(R.id.fragment_container).getLayoutParams()))
                 .topMargin = fragmentMargin
                 ? toolbarMain.getHeight()
                 : 0;

@@ -2,7 +2,6 @@
 <resources>
     <string name="confirm_mail_button">Проверить</string>
     <string name="confirm_mail_subtitle">Пройдите по ссылке в отправленном на вашу почту письме, и нажмите на кнопку</string>
-    <string name="confirm_mail_title">Подтверждение почты</string>
     <string name="confirm_mail_error">Проверка окончилась неудачей</string>
     <string name="confirm_mail_progress">Проверяем&#8230;</string>
 </resources>

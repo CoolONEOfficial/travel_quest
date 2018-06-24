@@ -2,7 +2,6 @@
 <resources>
     <!-- Unknown title -->
     <string name="details_unknown">Описания не доступны\nили их пока что никто не добавил</string>
-    <string name="details_add_details">Добавить/Изменить описание</string>
     <string name="details_unnamed_user">Пользователь №</string>
 
     <string name="details_intro_details">Это один из вариантов описания обьекта</string>

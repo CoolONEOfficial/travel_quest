@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="alert_splash_title">Authorization</string>
-    <string name="alert_splash_text">To use all the features of the application you need to register, but you can log in anonymously to get acquainted with the functionality of this application.</string>
-    <string name="alert_splash_button_auth">Log in / Sign in</string>
-    <string name="alert_splash_button_anonymous">Anonymous logon</string>
-</resources>

@@ -6,8 +6,6 @@
     <string name="add_details_tab_russian_title">Русский</string>
     <string name="add_details_tab_english_title">Английский</string>
 
-    <string name="add_details_details_hint">Описание</string>
-
     <string name="add_details_action_send_title">Отправить</string>
     <string name="add_details_action_restore_title">Перезагрузить</string>
 

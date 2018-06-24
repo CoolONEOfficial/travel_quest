@@ -11,9 +11,9 @@
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="@dimen/content_inset"
         android:layout_marginStart="@dimen/content_inset"
-        android:background="#90909090" />
+        android:background="@color/divider" />
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"

@@ -11,7 +11,7 @@
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="@dimen/content_inset"
         android:layout_marginStart="@dimen/content_inset"
-        android:background="#90909090" />
+        android:background="@color/divider" />
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/add_details_item_recycler"

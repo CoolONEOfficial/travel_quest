@@ -14,19 +14,4 @@
         <item>Solarized</item>
         <item>Светлая</item>
     </string-array>
-
-    <string-array name="city_titles">
-        <item>Нижний Новгород</item>
-        <item>Москва</item>
-        <item>Красноярск</item>
-        <item>Новосибирск</item>
-        <item>Тюмень</item>
-        <item>Ростов-на-Дону</item>
-        <item>Самара</item>
-        <item>Санкт Петербург</item>
-        <item>Пенза</item>
-        <item>Севастополь</item>
-        <item>Новокузнецк</item>
-        <item>Барнаул</item>
-    </string-array>
 </resources>

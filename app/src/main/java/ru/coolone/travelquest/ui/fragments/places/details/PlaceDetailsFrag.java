@@ -1,6 +1,7 @@
 package ru.coolone.travelquest.ui.fragments.places.details;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Point;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -42,7 +43,6 @@ import org.json.JSONObject;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -190,6 +190,21 @@ public class PlaceDetailsFrag extends Fragment {
                 .startForResult(REQUEST_CODE_ADD_DETAILS);
     }
 
+    @Click(R.id.details_share_button)
+    void onShareButtonClicked() {
+        val place = parentListener.getCurrentPlace().getLatLng();
+        startActivity(
+                new Intent(android.content.Intent.ACTION_VIEW,
+                        Uri.parse(
+                                "geo:" + place.latitude
+                                        + "," + place.longitude
+                                        + "?q=" + place.latitude
+                                        + "," + place.longitude
+                        )
+                )
+        );
+    }
+
     /**
      * Activities request codes
      */
@@ -199,7 +214,7 @@ public class PlaceDetailsFrag extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.frag_place_details,
+        val view = inflater.inflate(R.layout.frag_place_details,
                 container,
                 false);
 
@@ -217,11 +232,11 @@ public class PlaceDetailsFrag extends Fragment {
      */
     public static PlaceDetailsFrag newInstance(com.google.android.gms.location.places.Place place, Context context) {
         // Convert List<Place types ids> to List<Place types>
-        List<Integer> placeTypeIds = place.getPlaceTypes();
-        ArrayList<String> placeTypes = new ArrayList<>();
+        val placeTypeIds = place.getPlaceTypes();
+        val placeTypes = new ArrayList<String>();
         for (int mPlaceTypeIdId = 0; mPlaceTypeIdId < placeTypeIds.size(); mPlaceTypeIdId++) {
-            Integer mPlaceId = place.getPlaceTypes().get(mPlaceTypeIdId);
-            String mPlaceType = placeTypeIdToString(context, mPlaceId);
+            val mPlaceId = place.getPlaceTypes().get(mPlaceTypeIdId);
+            val mPlaceType = placeTypeIdToString(context, mPlaceId);
             if (mPlaceType != null)
                 placeTypes.add(mPlaceType);
         }
@@ -325,7 +340,7 @@ public class PlaceDetailsFrag extends Fragment {
     }
 
     private void setDescriptionVisibility(int visibility) {
-        if(isAdded()) {
+        if (isAdded()) {
             val errorVisibility = (visibility == View.VISIBLE
                     ? View.GONE
                     : View.VISIBLE);
@@ -422,7 +437,7 @@ public class PlaceDetailsFrag extends Fragment {
     static boolean introStarted = false;
 
     public void setPlaceId(String placeId) {
-        if(detailsRecyclerView != null) {
+        if (detailsRecyclerView != null) {
             this.placeId = placeId;
 
             // Clear cards
@@ -430,7 +445,7 @@ public class PlaceDetailsFrag extends Fragment {
             adapter.dataset.clear();
 
             val collRef =
-                    MainActivity.getQuestsRoot(MainActivity.getLocale(getContext()).lang)
+                    MainActivity.getPlacesRoot(MainActivity.getLocale(getContext()).lang)
                             .collection(placeId);
 
             // Parse details
@@ -578,6 +593,8 @@ public class PlaceDetailsFrag extends Fragment {
         void onPhotosLoadingStarted();
 
         PlacesFrag getPlacesFrag();
+
+        Place getCurrentPlace();
     }
 
     @RequiredArgsConstructor

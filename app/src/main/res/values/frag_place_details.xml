@@ -2,7 +2,6 @@
 <resources>
     <!-- Unknown -->
     <string name="details_unknown">Descriptions are not available\nor have not been added yet</string>
-    <string name="details_add_details">Add/Change details</string>
     <string name="details_unnamed_user">User №</string>
 
     <string name="details_intro_details">This is one of the options for describing the object</string>
@@ -15,8 +14,6 @@
     <string name="details_star_error_self">You can not evaluate your description</string>
 
     <string name="details_photos_not_loaded">Photos are not uploaded yet</string>
-
-    <dimen name="details_tab">10dp</dimen>
 
     <!-- Photos line height -->
     <dimen name="details_photos_size_anchored">200dp</dimen>

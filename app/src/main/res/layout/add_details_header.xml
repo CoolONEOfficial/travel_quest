@@ -35,7 +35,7 @@
         android:layout_width="2dp"
         android:layout_height="@dimen/delim_height"
         android:layout_gravity="center_vertical"
-        android:background="#90909090" />
+        android:background="@color/divider" />
 
     <android.support.v7.widget.AppCompatImageButton
         android:id="@+id/add_details_head_add"

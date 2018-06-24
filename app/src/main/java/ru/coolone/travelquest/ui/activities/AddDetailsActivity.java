@@ -778,7 +778,7 @@ public class AddDetailsActivity extends AppCompatActivity
                                         val userName = MainActivity.firebaseUser.getDisplayName();
                                         if (userName != null && !userName.isEmpty())
                                             docPath.append('_').append(userName);
-                                        val docRef = MainActivity.getQuestsRoot(mLang)
+                                        val docRef = MainActivity.getPlacesRoot(mLang)
                                                 .collection(placeId)
                                                 .document(docPath.toString());
 
